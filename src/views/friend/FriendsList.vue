@@ -1,0 +1,228 @@
+<!-- 好友列表 -->
+<script setup>
+import { ref } from 'vue'
+import { Search, Plus } from '@element-plus/icons-vue'
+import { getFriendListService, createApplicationService } from '@/api/friend.js'
+// 搜索框
+const input = ref('')
+// 搜索列表切换
+const IsSearch = ref(false)
+const handleFocus = () => {
+  IsSearch.value = true
+}
+const handleBlue = () => {
+  // 输入框为空 且 失焦 切换
+  if (!input.value) {
+    IsSearch.value = false
+  }
+}
+
+const createApplication = ref(false)
+// 好友列表
+const friendList = ref([
+  {
+    relation_id: 123,
+    relation_type: 'friend',
+    is_show: true,
+    pin_time: '2025-03-06T10:00:00',
+    last_show: '2025-03-06T09:55:00',
+    friend_info: {
+      account_id: 456,
+      name: 'Alice Smith',
+      avatar:
+        'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
+    },
+    is_not_disturb: false,
+    is_pin: true
+  },
+  {
+    relation_id: 456,
+    relation_type: 'group',
+    is_show: true,
+    pin_time: '2025-03-05T18:00:00',
+    last_show: '2025-03-06T10:05:00',
+    friend_info: {
+      account_id: 789,
+      name: 'Tech Enthusiasts',
+      avatar:
+        'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
+    },
+    is_not_disturb: true,
+    is_pin: true
+  },
+  {
+    relation_id: 789,
+    relation_type: 'friend',
+    is_show: false,
+    pin_time: '2025-03-04T22:00:00',
+    last_show: '2025-03-06T08:30:00',
+    friend_info: {
+      account_id: 101,
+      name: 'Bob Johnson',
+      avatar:
+        'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
+    },
+    is_not_disturb: false,
+    is_pin: false
+  },
+  {
+    relation_id: 101,
+    relation_type: 'friend',
+    is_show: true,
+    pin_time: '2025-03-03T12:00:00',
+    last_show: '2025-03-06T10:10:00',
+    friend_info: {
+      account_id: 202,
+      name: 'Charlie Brown',
+      avatar:
+        'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
+    },
+    is_not_disturb: true,
+    is_pin: false
+  }
+])
+
+// 获取好友列表
+// // const getFriendList = async () => {
+// const res = await getFriendListService()
+// friendList.value = res
+// // }
+// // getFriendList()
+
+// 点击好友 - 显示对应信息
+// 子传父  好友信息传到FriendsPage
+const emit = defineEmits(['get-friend-info'])
+
+const sendMsg = (obj) => {
+  emit('get-friend-info', obj)
+}
+
+// 发送好友申请
+const form = ref()
+const applicationInfo = ref({
+  account_id: null,
+  application_msg: ''
+})
+const handleCreateApplication = async () => {
+  createApplication.value = false
+  // console.log(applicationInfo.value)
+  const res = await createApplicationService(applicationInfo.value)
+  console.log(res)
+}
+</script>
+
+<template>
+  <el-aside>
+    <el-header>
+      <el-input
+        v-model="input"
+        :prefix-icon="Search"
+        placeholder="搜索"
+        class="search"
+        @focus="handleFocus"
+        @blur="handleBlue"
+      >
+      </el-input>
+      <el-button
+        :icon="Plus"
+        plain
+        size="small"
+        @click="createApplication = true"
+      />
+    </el-header>
+    <el-main v-if="!IsSearch" class="list">
+      <!-- IsNewFriend 判断是否点击了 “新的朋友” -->
+      <div class="list-item" @click="sendMsg({ item: {}, IsNewFriend: true })">
+        <div class="avatar">
+          <el-avatar
+            shape="square"
+            src="https://bpic.51yuansu.com/pic3/cover/01/81/34/596f92ddd06f8_610.jpg"
+          ></el-avatar>
+        </div>
+        <span class="name">新的朋友</span>
+      </div>
+      <div
+        class="list-item"
+        v-for="item in friendList"
+        :key="item.relation_id"
+        @click="sendMsg({ item, IsNewFriend: false })"
+      >
+        <div class="avatar">
+          <el-avatar shape="square" :src="item.friend_info.avatar"></el-avatar>
+        </div>
+        <span class="name">{{ item.friend_info.name }}</span>
+      </div>
+    </el-main>
+    <!-- 搜索结果列表 -->
+    <el-main v-else> <search-list></search-list> </el-main>
+
+    <!-- 添加好友 -->
+    <el-dialog
+      v-model="createApplication"
+      title="添加好友"
+      width="500"
+      class="dialog"
+    >
+      <el-form :model="applicationInfo" ref="form">
+        <el-form-item label="账号id">
+          <el-input
+            v-model="applicationInfo.account_id"
+            type="number"
+          ></el-input>
+        </el-form-item>
+        <!-- 可选 -->
+        <el-form-item label="打招呼">
+          <el-input v-model="applicationInfo.application_msg"></el-input>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="createApplication = false">取消</el-button>
+          <el-button type="primary" @click="handleCreateApplication">
+            发送申请
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
+  </el-aside>
+</template>
+
+<style lang="scss" scoped>
+.el-aside {
+  width: 215px;
+  background-color: #f5f5f5;
+  .el-header {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    height: 45px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    .el-input {
+      width: 170px;
+      height: 25px;
+    }
+    .el-button {
+      width: 10px;
+    }
+  }
+  .el-main {
+    .list-item {
+      cursor: pointer;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      padding-top: 5px;
+      .avatar {
+        margin: 0 10px;
+      }
+      .name {
+        font-size: 16px;
+      }
+    }
+    .list-item:hover {
+      background-color: #f0f0f0;
+      // background-color: #e9e9e9; 点击后颜色
+    }
+  }
+}
+</style>
