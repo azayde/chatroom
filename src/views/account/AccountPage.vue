@@ -1,49 +1,118 @@
 <script setup>
 import { ref } from 'vue'
-import { Search, Switch, Edit, Delete, Plus } from '@element-plus/icons-vue'
-
+import { Search, Switch, Edit, Delete, Check } from '@element-plus/icons-vue'
+import { getAccountService } from '@/api/user.js'
 // 搜索框
-const input = ref('')
-const AccountList1 = [
+const inputInfo = ref('')
+
+const accountList = ref([
   {
     avatar:
-      'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
+      'https://img.tukuppt.com/ad_preview/00/10/23/5c992ae114e20.jpg!/fw/980',
     name: '张三',
     account_id: '1111111',
     gender: '男',
     signature: '我想了一个好主意！'
   },
   {
-    avatar:
-      'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
-    name: '张三',
-    account_id: '1111111',
+    avatar: 'https://pic3.zhimg.com/v2-87d78fc44236a144aa52cd8ea18e9da2_r.jpg',
+    name: '李四',
+    account_id: '2222222',
     gender: '男',
     signature: '我想了一个好主意！'
   },
   {
-    avatar:
-      'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
-    name: '张三',
-    account_id: '1111111',
-    gender: '男',
-    signature: '我想了一个好主意！'
-  },
-  {
-    avatar:
-      'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
-    name: '张三',
-    account_id: '1111111',
+    avatar: 'https://img.shetu66.com/2023/07/05/1688537701771625.png',
+    name: '王五',
+    account_id: '3333333',
     gender: '男',
     signature: '我想了一个好主意！'
   }
-]
+])
+// 渲染数据
+// 获取用户的所有账号(搜索时调用)
+// const getAccountList = () => {
+//   const res = await getAccountService()
+//   console.log(res)
+//   accountList.value = res
+// }
+// getAccountList()
 
-// 对话框（修改信息）
-const bools = ref(false)
+// 传到对话框里（修改 or 添加 账号）
+const accountEditRef = ref()
+// 添加账号
+const handleAdd = () => {
+  // accountEditRef.value = {}
+  accountEditRef.value.open({})
+}
+// 修改账号
+const handleEdit = (row) => {
+  // console.log(data.account_id)
+  accountEditRef.value.open({ row })
+}
+// 删除账号
+const handleDel = (row) => {
+  // 删除
+  // deleteAccountService
+  ElMessageBox.confirm('你确认删除该分类信息吗？', '温馨提示', {
+    type: 'warning',
+    confirmButtonText: '确认',
+    cancelButtonText: '取消'
+  })
+  console.log(row)
+}
 
-// 性别（单选框）
-const radio1 = ref(1)
+// 提交
+const handleSubmit = (data) => {
+  const index = accountList.value.findIndex(
+    (item) => item.account_id === data.account_id
+  )
+  // 判断是添加还是编辑
+  if (index === -1) {
+    // 添加新账号 TODO:
+    // accountRegisterServie
+    // 调用接口 - 返回数据 - 放到数组
+    // 这种好像都行？？
+    accountList.value.push({ ...data })
+    ElMessage.success('添加成功')
+
+    // accountList.value.push(data)
+  } else {
+    // 更新现有账号
+    // updateAccountService
+    accountList.value[index] = data
+    ElMessage.success('编辑成功')
+  }
+  console.log(accountList.value)
+}
+
+// 当前账号id，读取store信息 TODO
+const activeAccountId = ref('1111111')
+// 账号切换
+const handleSwtich = (id) => {
+  // 获取账号的token，存入store
+  // getAccountTokenService
+  //  根据id 获取账号信息
+  // getAccountInfoById
+  // 账号信息存入store（覆盖之前的）
+  // 防抖，一直点不起作用 TODO:
+  console.log(id)
+  activeAccountId.value = id
+  ElMessage.success('切换成功')
+}
+
+// 账号搜索
+const handleSearch = () => {
+  // 搜索接口
+  // searchAccountByName
+  const name = inputInfo.value
+  console.log(name)
+  // accountList.value = []
+}
+// 搜索重置
+const handleReset = () => {
+  inputInfo.value = ''
+}
 </script>
 
 <template>
@@ -52,57 +121,65 @@ const radio1 = ref(1)
       <el-header>
         <h1>账号管理</h1>
         <div class="btn">
-          <el-button type="primary">添加账号</el-button>
+          <el-button type="primary" @click="handleAdd">添加账号</el-button>
         </div>
       </el-header>
       <el-main>
         <div class="search">
           <span class="title">账号搜索</span>
           <el-input
-            v-model="input"
+            v-model="inputInfo"
             :prefix-icon="Search"
             placeholder="搜索"
             class="search-input"
           >
           </el-input>
-          <el-button type="primary" text bg>搜索</el-button>
-          <el-button type="plain" text bg>重置</el-button>
+          <el-button type="primary" text bg @click="handleSearch"
+            >搜索</el-button
+          >
+          <el-button plain text bg @click="handleReset">重置</el-button>
         </div>
-        <el-table style="width: 100%" :data="AccountList1">
+        <el-table style="width: 100%" :data="accountList">
           <el-table-column label="头像" width="100">
-            <div class="avatar">
-              <el-avatar
-                shape="square"
-                src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
-              ></el-avatar>
-            </div>
+            <template #default="{ row }">
+              <div class="avatar">
+                <el-avatar shape="square" :src="row.avatar"></el-avatar>
+              </div>
+            </template>
           </el-table-column>
-          <el-table-column label="昵称">张三</el-table-column>
-          <el-table-column label="账号">111111</el-table-column>
+          <el-table-column label="昵称" prop="name"></el-table-column>
+          <el-table-column label="账号" prop="account_id"></el-table-column>
           <el-table-column label="操作" width="150">
-            <template #default="{ row, $index }">
+            <template #default="{ row }">
               <!-- 当前账号 ---  switch按钮可消失（切换） -->
               <el-button
+                v-if="row.account_id === activeAccountId"
+                :icon="Check"
+                circle
+                type="success"
+                plain
+              ></el-button>
+              <el-button
+                v-else
                 :icon="Switch"
                 circle
-                plain
                 type="primary"
-                @click="onEditChannel(row, $index)"
+                plain
+                @click="handleSwtich(row.account_id)"
               ></el-button>
-              <!-- @click 被我改了，回头改回来  TODO-->
               <el-button
                 :icon="Edit"
                 circle
-                plain
                 type="primary"
-                @click="bools = true"
+                plain
+                @click="handleEdit(row)"
               ></el-button>
               <el-button
                 :icon="Delete"
                 circle
-                plain
                 type="danger"
-                @click="onDelChannel(row, $index)"
+                plain
+                @click="handleDel(row)"
               ></el-button>
             </template>
           </el-table-column>
@@ -113,40 +190,7 @@ const radio1 = ref(1)
       </el-main>
     </el-container>
     <!-- 修改 -->
-    <el-dialog v-model="bools" title="修改账号信息" width="500" class="dialog">
-      <el-form>
-        <el-upload
-          class="avatar-uploader"
-          :auto-upload="false"
-          :show-file-list="false"
-        >
-          <img v-if="imgUrl" :src="imgUrl" class="avatar" />
-          <el-icon v-else class="avatar-uploader-icon">
-            <Plus />
-          </el-icon>
-        </el-upload>
-        <el-form-item label="账号名称">
-          <el-input></el-input>
-        </el-form-item>
-        <el-form-item label="性别">
-          <el-radio-group v-model="radio1">
-            <el-radio value="1">男</el-radio>
-            <el-radio value="2">女</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="个性签名">
-          <el-input></el-input>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="dialogFormVisible = false">取消</el-button>
-          <el-button type="primary" @click="dialogFormVisible = false">
-            确定
-          </el-button>
-        </div>
-      </template>
-    </el-dialog>
+    <account-edit ref="accountEditRef" @submit="handleSubmit"></account-edit>
   </div>
 </template>
 
@@ -199,37 +243,6 @@ const radio1 = ref(1)
       }
       .list-item:hover {
         background-color: #f0f0f0;
-      }
-    }
-  }
-}
-
-.dialog {
-  .avatar-uploader {
-    :deep() {
-      .avatar {
-        width: 178px;
-        height: 178px;
-        display: block;
-      }
-      .el-upload {
-        border: 1px dashed var(--el-border-color);
-        border-radius: 6px;
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-        transition: var(--el-transition-duration-fast);
-        margin-bottom: 15px;
-      }
-      .el-upload:hover {
-        border-color: var(--el-color-primary);
-      }
-      .el-icon.avatar-uploader-icon {
-        font-size: 28px;
-        color: #8c939d;
-        width: 178px;
-        height: 178px;
-        text-align: center;
       }
     }
   }

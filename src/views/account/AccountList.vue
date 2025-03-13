@@ -1,7 +1,8 @@
 <script setup>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Plus } from '@element-plus/icons-vue'
-// import { getAccountTokenService } from '@/api/user.js'
+import { getAccountTokenService } from '@/api/user.js'
 
 import { useUserStore } from '@/stores'
 // 路由
@@ -27,6 +28,37 @@ const getAccountId = async (obj) => {
 
   router.push('/')
 }
+
+// 传到对话框里（修改 or 添加 账号）
+const accountEditRef = ref()
+// 添加账号
+const handleAdd = () => {
+  // accountEditRef.value = {}
+  accountEditRef.value.open({})
+}
+// 提交
+const handleSubmit = (data) => {
+  // const index = accountList.value.findIndex(
+  //   (item) => item.account_id === data.account_id
+  // )
+  // // 判断是添加还是编辑
+  // if (index === -1) {
+  //   // 添加新账号 TODO:
+  //   // accountRegisterServie
+  //   // 调用接口 - 返回数据 - 放到数组
+  //   // 这种好像都行？？
+  //   accountList.value.push({ ...data })
+  //   ElMessage.success('添加成功')
+
+  //   // accountList.value.push(data)
+  // } else {
+  //   // 更新现有账号
+  //   // updateAccountService
+  //   accountList.value[index] = data
+  //   ElMessage.success('编辑成功')
+  // }
+  // console.log(accountList.value)
+}
 </script>
 
 <template>
@@ -46,11 +78,12 @@ const getAccountId = async (obj) => {
     </template>
     <template v-else>
       <!-- <el-empty description="没有账号"></el-empty> -->
-      <div class="add">
+      <div class="add" @click="handleAdd">
         <el-icon><Plus /></el-icon>
         <div class="member-name">添加账号</div>
       </div>
     </template>
+    <account-edit ref="accountEditRef" @submit="handleSubmit"></account-edit>
   </div>
 </template>
 

@@ -17,7 +17,7 @@ const handleSetNote = () => {
 const props = defineProps({
   userInfo: Object
 })
-console.log(props)
+// console.log(props)
 
 // 没有数据传输时，怎么处理？？
 // 好友  -  非好友
