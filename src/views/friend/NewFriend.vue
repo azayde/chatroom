@@ -77,13 +77,14 @@ const getNewFriendList = () => {
 getNewFriendList()
 
 // 创建好友申请
-const props = defineProps({ newFriend: Object })
-console.log(props.newFriend)
-if (props.newFriend) {
-  newFriendList.value.unshift(props.newFriend)
+// const props = defineProps({ newFriend: Object })
+// console.log(props.newFriend)
+// if (props.newFriend) {
+//   newFriendList.value.unshift(props.newFriend)
 
-  // 重新渲染一遍
-}
+//   // 重新渲染一遍
+// }
+
 // 接受好友申请
 // const handleAccept = async (id) => {
 const handleAccept = (id) => {

@@ -108,24 +108,27 @@ const applicationInfo = ref({
 const handleCreateApplication = async () => {
   createApplication.value = false
   // console.log(applicationInfo.value)
+
+  // 调接口
   // const res = await createApplicationService(applicationInfo.value)
   // console.log(res)
-  const res = {
-    account_id_1: 111111111111111,
-    account_id_2: 1111111,
-    apply_msg: '请求添加你为好友',
-    status: '已申请',
-    create_at: '2025-03-12T10:00:00Z',
-    update_at: '2025-03-12T10:00:00Z',
-    name: '张三',
-    avatar:
-      'https://img.tukuppt.com/ad_preview/00/10/23/5c992ae114e20.jpg!/fw/980'
-  }
-  emit('get-friend-info', {
-    // newFriend: applicationInfo.value,
-    newFriend: res,
-    IsNewFriend: true
-  })
+
+  // const res = {
+  //   account_id_1: 111111111111111,
+  //   account_id_2: 1111111,
+  //   apply_msg: '请求添加你为好友',
+  //   status: '已申请',
+  //   create_at: '2025-03-12T10:00:00Z',
+  //   update_at: '2025-03-12T10:00:00Z',
+  //   name: '张三',
+  //   avatar:
+  //     'https://img.tukuppt.com/ad_preview/00/10/23/5c992ae114e20.jpg!/fw/980'
+  // }
+  // emit('get-friend-info', {
+  //   // newFriend: applicationInfo.value,
+  //   newFriend: res,
+  //   IsNewFriend: true
+  // })
 }
 </script>
 

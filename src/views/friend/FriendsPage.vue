@@ -10,13 +10,15 @@ import { ref } from 'vue'
 // FriendsList里的数据，传到 该页面
 // 然后数据再传到 user-card
 const IsNewFriend = ref(false)
+
 // 申请信息
-const newFriend = ref()
+// const newFriend = ref()
+
 // 好友信息
 const friendInfo = ref()
 const getFriendInfo = (obj) => {
-  newFriend.value = obj.newFriend
-  console.log(newFriend.value)
+  // newFriend.value = obj.newFriend
+  // console.log(newFriend.value)
   // console.log(typeof newFriend.value)
   IsNewFriend.value = obj.IsNewFriend
   friendInfo.value = obj.item
@@ -28,7 +30,8 @@ const getFriendInfo = (obj) => {
   <el-container>
     <friends-list @get-friend-info="getFriendInfo"></friends-list>
     <el-main>
-      <new-friend v-if="IsNewFriend" :newFriend="newFriend"></new-friend>
+      <!-- <new-friend v-if="IsNewFriend" :newFriend="newFriend"></new-friend> -->
+      <new-friend v-if="IsNewFriend"></new-friend>
       <!-- friendInfo 不为空时，展示 -->
       <user-card
         v-else-if="friendInfo"
