@@ -5,8 +5,10 @@ import axios from 'axios'
 // const router = useRouter()
 
 // const baseURL = 'http://10.8.233.204:8080'
-const baseURL = 'http://192.168.1.111:8080/api'
+const baseURL = 'http://192.168.3.34:8000/api'
 // const baseURL = 'http://127.0.0.1:8080'
+
+const userStore = useUserStore()
 
 const instance = axios.create({
   // TODO 1. 基础地址，超时时间
@@ -18,10 +20,11 @@ const instance = axios.create({
 instance.interceptors.request.use(
   (config) => {
     // TODO 2. 携带token
-    const userStore = useUserStore()
     if (userStore.token) {
-      config.headers.Authorization = userStore.token
+      config.headers.Authorization = `Bearer ${userStore.token}`
+      // config.headers.AuthorizationKey = userStore.token
       console.log(userStore.token)
+      console.log(config)
       // 账号token TODO:
     }
     return config

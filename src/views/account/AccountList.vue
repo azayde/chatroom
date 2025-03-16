@@ -10,17 +10,44 @@ const router = useRouter()
 // 仓库 - 用户
 const userStore = useUserStore()
 
-const props = defineProps({
-  account: Array
-})
-console.log(props.account)
+// 账号信息
+const accountInfo = ref([
+  {
+    id: 1111111,
+    name: '成员1',
+    avatar:
+      'https://img2.baidu.com/it/u=55345731,784172631&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=500',
+    gender: '男',
+    signature: '我想了一个好主意！'
+  },
+  {
+    id: 2,
+    name: '成员2',
+    avatar:
+      'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg',
+    gender: '男',
+    signature: '我想了一个好主意！'
+  }
+])
+
+// 进入账号页面 调用这个函数
+// const getAccount = async () => {
+//   const res = await getAccountService()
+//   accountInfo.value = res.data.list
+// }
+// getAccount()
+
+// const props = defineProps({
+//   account: Array
+// })
+// console.log(props.account)
 
 const getAccountId = async (obj) => {
   // const res = await getAccountTokenService(id)
   // userStore.setAccountToken(res.data.account_token.token)
 
   // 账号信息存入本地
-  // userStore.setAccountInfo(obj)
+  userStore.setAccountInfo(obj)
 
   // console.log(obj)
   // console.log(res)
@@ -38,35 +65,25 @@ const handleAdd = () => {
 }
 // 提交
 const handleSubmit = (data) => {
-  // const index = accountList.value.findIndex(
-  //   (item) => item.account_id === data.account_id
-  // )
-  // // 判断是添加还是编辑
-  // if (index === -1) {
-  //   // 添加新账号 TODO:
-  //   // accountRegisterServie
-  //   // 调用接口 - 返回数据 - 放到数组
-  //   // 这种好像都行？？
-  //   accountList.value.push({ ...data })
-  //   ElMessage.success('添加成功')
-
-  //   // accountList.value.push(data)
-  // } else {
-  //   // 更新现有账号
-  //   // updateAccountService
-  //   accountList.value[index] = data
-  //   ElMessage.success('编辑成功')
-  // }
-  // console.log(accountList.value)
+  console.log(data)
+  // 添加新账号 TODO:
+  // accountRegisterServie
+  // 调用接口 - 返回数据 - 放到数组
+  accountInfo.value.push({ ...data })
+  // accountList.value.push(data)
+  // 重新渲染
+  // getAccount()
+  ElMessage.success('添加成功')
+  console.log(accountInfo.value)
 }
 </script>
 
 <template>
   <div class="account-list">
-    <template v-if="account.length > 0">
+    <template v-if="accountInfo.length > 0">
       <div
         class="member-item"
-        v-for="item in account"
+        v-for="item in accountInfo"
         :key="item.id"
         @click="getAccountId(item)"
       >

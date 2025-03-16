@@ -1,12 +1,46 @@
 <script setup>
+import { ref, watch } from 'vue'
 import {
   UserFilled,
   Avatar,
   ChatDotRound,
   SwitchButton
 } from '@element-plus/icons-vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 const router = useRouter()
+const route = useRoute()
+
+// 侧边栏高亮
+const chatroom = ref(false)
+const friend = ref(false)
+const group = ref(false)
+const highlightChange = async () => {
+  const path = route.path.split('/')[2]
+  if (path === 'chatroom') {
+    chatroom.value = true
+    friend.value = false
+    group.value = false
+  } else if (path === 'friend') {
+    chatroom.value = false
+    friend.value = true
+    group.value = false
+  } else if (path === 'group') {
+    chatroom.value = false
+    friend.value = false
+    group.value = true
+  } else {
+    chatroom.value = false
+    friend.value = false
+    group.value = false
+  }
+}
+highlightChange()
+// 路由变化高亮变化
+watch(route, () => {
+  highlightChange()
+})
+
+// 退出登录
 const logout = async () => {
   await ElMessageBox.confirm('确定退出登录吗？', '提示', {
     confirmButtonText: '确定',
@@ -27,17 +61,29 @@ const logout = async () => {
         <div class="avatar" @click="router.push('/chat/user')">
           <img src="@/assets/avatar.jpg" alt="" />
         </div>
-        <div class="li" @click="router.push('/chat/chatroom')">
+        <div
+          class="li"
+          :class="{ active: chatroom }"
+          @click="router.push('/chat/chatroom')"
+        >
           <el-badge :value="0" class="item" :hidden="true" :offset="[0, 0]">
             <el-icon><ChatDotRound /></el-icon>
           </el-badge>
         </div>
-        <div class="li" @click="router.push('/chat/friend')">
+        <div
+          class="li"
+          :class="{ active: friend }"
+          @click="router.push('/chat/friend')"
+        >
           <el-badge :value="0" class="item" :hidden="true">
             <el-icon><UserFilled /></el-icon>
           </el-badge>
         </div>
-        <div class="li" @click="router.push('/chat/group')">
+        <div
+          class="li"
+          :class="{ active: group }"
+          @click="router.push('/chat/group')"
+        >
           <el-badge :value="0" class="item" :hidden="true">
             <el-icon>
               <Avatar />
@@ -99,6 +145,9 @@ const logout = async () => {
         padding-left: 10px;
       }
       .li:hover {
+        background-color: #409eff;
+      }
+      .active {
         background-color: #409eff;
       }
       #logout {

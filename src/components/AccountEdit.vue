@@ -63,12 +63,6 @@ const open = (obj) => {
     imgUrl.value = ''
     isEdit.value = false
   }
-  // if (obj.index) {
-  //   formData.value = { ...obj.data }
-  //   currentIndex.value = obj.index
-  //   console.log(currentIndex.value)
-  // }
-
   // 调用open的同时打开对话框
   // console.log(formData.value)
   console.log(imgUrl.value)

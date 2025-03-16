@@ -20,33 +20,6 @@ const userStore = useUserStore()
 // 登录用户后 登录账号
 const IsAccountLogin = ref(false)
 
-// 账号信息
-const accountInfo = ref([
-  // {
-  //   id: 1,
-  //   name: '成员1',
-  //   avatar:
-  //     'https://img2.baidu.com/it/u=55345731,784172631&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=500',
-  //   gender: '男',
-  //   signature: '我想了一个好主意！'
-  // },
-  // {
-  //   id: 2,
-  //   name: '成员2',
-  //   avatar:
-  //     'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg',
-  //   gender: '男',
-  //   signature: '我想了一个好主意！'
-  // }
-])
-
-// 进入账号页面 调用这个函数
-// const getAccount = async () => {
-//   const res = await getAccountService()
-//   accountInfo.value = res.data.list
-// }
-// getAccount()
-
 const form = ref()
 // 是否是注册
 const isRegister = ref(false)
@@ -163,9 +136,9 @@ const login = async () => {
 
   console.log('点击登录')
   // TODO: 登录逻辑
-  // const res = await userLoginService(formModel.value)
-  // console.log(res.data.data.token.access_token)
-  // userStore.setToken(res.data.data.token.access_token)
+  const res = await userLoginService(formModel.value)
+  console.log(res.data.data.token.access_token)
+  userStore.setToken(res.data.data.token.access_token)
   // data.data.token.refresh_token
   // data.data.token.access_token
   // 是否记得账号密码（记住我）
@@ -320,7 +293,8 @@ watch(isRegister, () => {
     </el-col>
 
     <el-col :span="6" :offset="9" class="account" v-else>
-      <account-list :account="accountInfo"></account-list>
+      <!-- <account-list :account="accountInfo"></account-list> -->
+      <account-list></account-list>
     </el-col>
   </el-row>
 </template>

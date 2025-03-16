@@ -1,7 +1,9 @@
 <script setup>
 import { ref } from 'vue'
 import { Search, Switch, Edit, Delete, Check } from '@element-plus/icons-vue'
-import { getAccountService } from '@/api/user.js'
+import { getAccountService, accountRegisterServie } from '@/api/user.js'
+import { useUserStore } from '@/stores'
+const userStore = useUserStore()
 // 搜索框
 const inputInfo = ref('')
 
@@ -10,21 +12,21 @@ const accountList = ref([
     avatar:
       'https://img.tukuppt.com/ad_preview/00/10/23/5c992ae114e20.jpg!/fw/980',
     name: '张三',
-    account_id: '1111111',
+    account_id: 1111111,
     gender: '男',
     signature: '我想了一个好主意！'
   },
   {
     avatar: 'https://pic3.zhimg.com/v2-87d78fc44236a144aa52cd8ea18e9da2_r.jpg',
     name: '李四',
-    account_id: '2222222',
+    account_id: 2222222,
     gender: '男',
     signature: '我想了一个好主意！'
   },
   {
     avatar: 'https://img.shetu66.com/2023/07/05/1688537701771625.png',
     name: '王五',
-    account_id: '3333333',
+    account_id: 3333333,
     gender: '男',
     signature: '我想了一个好主意！'
   }
@@ -60,6 +62,7 @@ const handleDel = (row) => {
     cancelButtonText: '取消'
   })
   console.log(row)
+  // 重新渲染
 }
 
 // 提交
@@ -70,13 +73,16 @@ const handleSubmit = (data) => {
   // 判断是添加还是编辑
   if (index === -1) {
     // 添加新账号 TODO:
-    // accountRegisterServie
     // 调用接口 - 返回数据 - 放到数组
+    const res = accountRegisterServie(data)
+    console.log(res)
+
     // 这种好像都行？？
     accountList.value.push({ ...data })
-    ElMessage.success('添加成功')
-
     // accountList.value.push(data)
+    ElMessage.success('添加成功')
+    // 重新渲染
+    // getAccountList()
   } else {
     // 更新现有账号
     // updateAccountService
@@ -84,10 +90,12 @@ const handleSubmit = (data) => {
     ElMessage.success('编辑成功')
   }
   console.log(accountList.value)
+  // 重新渲染
+  // getAccountList()
 }
 
 // 当前账号id，读取store信息 TODO
-const activeAccountId = ref('1111111')
+const activeAccountId = ref(userStore.accountInfo.id)
 // 账号切换
 const handleSwtich = (id) => {
   // 获取账号的token，存入store
