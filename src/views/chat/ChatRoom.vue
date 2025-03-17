@@ -21,17 +21,52 @@ const handleBlur = () => {
   console.log('失焦')
   // 恢复原来的
 }
+
+// 父传子
+const props = defineProps({
+  chatInfo: Object
+})
+console.log(props.chatInfo)
 </script>
 
 <template>
   <el-container class="chat-room">
     <el-header>
-      <h1>张三（聊天对象）</h1>
+      <h1>
+        {{
+          chatInfo.relation_type === 'friend'
+            ? chatInfo.friend_info.name
+            : chatInfo.group_info.name
+        }}{{ chatInfo.relation_type === 'group' ? '（4）' : '' }}
+      </h1>
       <div class="more" @click="drawer = true">
         <el-icon><MoreFilled /></el-icon>
       </div>
     </el-header>
-    <el-main> 聊天 </el-main>
+    <el-main>
+      <el-scrollbar>
+        <!-- 左侧消息 -->
+        <div class="chat-item left">
+          <div class="user-avatar">
+            <el-avatar
+              shape="square"
+              src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
+            ></el-avatar>
+          </div>
+          <div class="chat-pao">能帮我看看这个需求怎么实现吗？</div>
+        </div>
+        <!-- 右侧消息 -->
+        <div class="chat-item right">
+          <div class="user-avatar">
+            <el-avatar
+              shape="square"
+              src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
+            ></el-avatar>
+          </div>
+          <div class="chat-pao">当然可以，请描述具体需求</div>
+        </div>
+      </el-scrollbar>
+    </el-main>
     <el-footer>
       <div class="Ibox">
         <div class="fun">
@@ -73,7 +108,10 @@ const handleBlur = () => {
     <!-- 右上角 三点 -- 聊天对象的详细信息 -->
     <!-- TODO  -->
     <el-drawer v-model="drawer" :with-header="false">
-      <group-detail></group-detail>
+      <group-detail
+        v-if="chatInfo.relation_type === 'group'"
+        :groupInfo="chatInfo"
+      ></group-detail>
     </el-drawer>
 
     <!-- 抽屉 or  对话框 ？？ TODO -->
@@ -164,6 +202,74 @@ const handleBlur = () => {
   }
   .el-main {
     overflow: auto;
+    // text-align: center;
+    // display: flex;
+    // flex-direction: column;
+    // align-items: center;
+    // padding: 0 10px;
+    // margin: 0 10px;
+    background-color: #f5f5f5;
+    .el-scrollbar {
+      width: 100%;
+    }
+    .chat-item {
+      // width: 95%;
+      display: flex;
+      align-items: center;
+      margin: 8px 30px;
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+      }
+      .chat-pao {
+        position: relative;
+        padding: 5px;
+        border-radius: 6px;
+        // border: 1px solid #c2d9ea;
+        background-color: #e0effb;
+        // width: 90%;
+        max-width: 60%;
+      }
+    }
+    // before 是一个小的矩形
+    .chat-pao::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      position: absolute;
+      top: 10px;
+      border: inherit;
+      background: inherit;
+      transform: rotate(45deg);
+    }
+    // 设置两个小矩形的位置和角度旋转
+    .chat-item.right {
+      flex-direction: row-reverse;
+      .chat-pao {
+        // margin-left: 0;
+        margin-right: 15px;
+        background-color: #95ec69;
+        // border-color: #99c2ff;
+        // &引用上一层选择器
+        &::before {
+          right: -5px;
+          border-left: none;
+          border-bottom: none;
+        }
+      }
+    }
+    .chat-item.left {
+      .chat-pao {
+        margin-left: 15px;
+        background-color: #fff;
+        &::before {
+          border-right: none;
+          border-bottom: none;
+          left: -5px;
+          transform: rotate(-45deg);
+        }
+      }
+    }
   }
   .el-footer {
     // border: 1px solid #000;
@@ -185,13 +291,16 @@ const handleBlur = () => {
         align-items: center;
         .avatar-uploader,
         .doc-uploader {
-          width: 45px;
-          height: 30px;
+          width: 30px;
+          height: 20px;
+          position: relative;
+          top: -4px;
+          padding-left: 7px;
         }
         .el-icon {
-          width: 45px;
-          height: 28px;
-          margin-top: 2px;
+          width: 30px;
+          height: 24px;
+          margin-top: 5px;
           opacity: 60%;
           cursor: pointer;
         }
@@ -242,7 +351,7 @@ const handleBlur = () => {
   }
   .el-dialog {
     .list-item {
-      width: 730px;
+      width: 98%;
       cursor: pointer;
       // height: 60px;
       // border: 1px solid #000;
@@ -256,7 +365,8 @@ const handleBlur = () => {
         margin: 0 10px;
       }
       .right {
-        width: 730px;
+        width: 98%;
+        // width: 660px;
         // height: 60px;
         // margin: 10px 0;
         display: flex;

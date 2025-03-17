@@ -2,12 +2,15 @@
 <script setup>
 import { Plus, Minus, ArrowRight, Position } from '@element-plus/icons-vue'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 // import { getGroupMemberService } from '@/api/group.js'
 // switch开关 （三个）
 // pin 和 置顶 ？？
 const isPin = ref(false)
 const isShow = ref(false)
 const isNotDisturb = ref(false)
+
 const dialogFormVisible = ref(false)
 // 点击头像出现名片(点击头像名片消失)  --- 改 TODO:
 // const userCardVisible = ref(false)
@@ -121,6 +124,9 @@ const activeMemberId = ref(null)
 const handleClickMember = (id) => {
   activeMemberId.value = activeMemberId.value === id ? null : id
 }
+const sendMsg = () => {
+  router.push('/chat/chatroom')
+}
 // 群聊详情
 const props = defineProps({
   groupInfo: Object
@@ -136,143 +142,145 @@ console.log(props.groupInfo.relation_id)
       <h1>{{ groupInfo.group_info.name }}（3）</h1>
     </el-header>
     <el-main>
-      <div class="title">群描述</div>
-      <div class="description">{{ groupInfo.group_info.description }}</div>
-      <hr />
-      <div class="title">群成员</div>
-      <div class="member">
-        <el-popover
-          placement="right"
-          trigger="click"
-          width="450px"
-          :visible="activeMemberId === item.friend_info.account_id"
-          manual
-          v-for="item in groupList"
-          :key="item.friend_info.account_id"
-        >
-          <template #reference>
-            <!-- 需修改 TODO -->
-            <div
-              class="member-item"
-              @click="handleClickMember(item.friend_info.account_id)"
-            >
-              <!-- @click="userCardVisible = !userCardVisible" -->
-              <el-avatar
-                shape="square"
-                :src="item.friend_info.avatar"
-                class="member-avatar"
-              />
-              <div class="member-name">{{ item.friend_info.name }}</div>
+      <el-scrollbar>
+        <div class="title">群描述</div>
+        <div class="description">{{ groupInfo.group_info.description }}</div>
+        <hr />
+        <div class="title">群成员</div>
+        <div class="member">
+          <el-popover
+            placement="right"
+            trigger="click"
+            width="450px"
+            :visible="activeMemberId === item.friend_info.account_id"
+            manual
+            v-for="item in groupList"
+            :key="item.friend_info.account_id"
+          >
+            <template #reference>
+              <!-- 需修改 TODO -->
+              <div
+                class="member-item"
+                @click="handleClickMember(item.friend_info.account_id)"
+              >
+                <!-- @click="userCardVisible = !userCardVisible" -->
+                <el-avatar
+                  shape="square"
+                  :src="item.friend_info.avatar"
+                  class="member-avatar"
+                />
+                <div class="member-name">{{ item.friend_info.name }}</div>
+              </div>
+            </template>
+            <div class="user-info">
+              <!-- <user-card style="padding: 10px;"  @close-dialog="userCardVisible = false"></user-card> -->
+              <user-card :userInfo="item" style="padding: 10px"></user-card>
             </div>
-          </template>
-          <div class="user-info">
-            <!-- <user-card style="padding: 10px;"  @close-dialog="userCardVisible = false"></user-card> -->
-            <user-card :userInfo="item" style="padding: 10px"></user-card>
+          </el-popover>
+
+          <div class="add" @click="bools = true">
+            <el-icon><Plus /></el-icon>
+            <div class="member-name">添加</div>
           </div>
-        </el-popover>
+          <div class="remove">
+            <el-icon><Minus /></el-icon>
+            <div class="member-name">移除</div>
+          </div>
+        </div>
+        <hr />
+        <div class="title">我在本群的昵称</div>
+        <!-- 点击可修改 -->
+        <div class="nickname">成员2</div>
+        <hr />
+        <div class="Notify" @click="groupNotify = true">
+          <div class="title">群公告</div>
+          <!-- 显示最近的一条 -->
+          <div class="notify">
+            <span>11111111111</span>
+            <span
+              ><el-icon><ArrowRight /></el-icon
+            ></span>
+          </div>
+        </div>
+        <hr />
+        <div class="title">
+          <div class="chat-history">
+            <span>聊天记录</span>
+            <span
+              ><el-icon><ArrowRight /></el-icon
+            ></span>
+          </div>
+        </div>
+        <hr />
+        <!-- 按钮- true or false -->
+        <div class="title">
+          <div class="switch">
+            <span>消息免打扰</span>
+            <el-switch
+              v-model="isNotDisturb"
+              size="small"
+              style="--el-switch-on-color: #13ce66"
+            ></el-switch>
+          </div>
+        </div>
+        <hr />
+        <div class="title">
+          <div class="switch">
+            <span>置顶聊天</span>
+            <el-switch
+              v-model="isPin"
+              size="small"
+              style="--el-switch-on-color: #13ce66"
+            ></el-switch>
+          </div>
+        </div>
+        <hr />
+        <div class="title">
+          <div class="switch">
+            <span>显示在首页</span>
+            <el-switch
+              v-model="isShow"
+              size="small"
+              style="--el-switch-on-color: #13ce66"
+            ></el-switch>
+          </div>
+        </div>
+        <hr />
+        <div class="title">
+          <div class="switch">
+            <span>Pin</span>
+            <el-switch
+              v-model="isPin"
+              size="small"
+              style="--el-switch-on-color: #13ce66"
+            ></el-switch>
+          </div>
+        </div>
+        <hr />
+        <!-- 群头像，群名称，群描述 -->
+        <div class="title">
+          <div class="update" @click="dialogFormVisible = true">
+            <span>修改群聊消息</span>
+            <span
+              ><el-icon><ArrowRight /></el-icon
+            ></span>
+          </div>
+        </div>
+        <hr />
 
-        <div class="add" @click="bools = true">
-          <el-icon><Plus /></el-icon>
-          <div class="member-name">添加</div>
-        </div>
-        <div class="remove">
-          <el-icon><Minus /></el-icon>
-          <div class="member-name">移除</div>
-        </div>
-      </div>
-      <hr />
-      <div class="title">我在本群的昵称</div>
-      <!-- 点击可修改 -->
-      <div class="nickname">成员2</div>
-      <hr />
-      <div class="Notify" @click="groupNotify = true">
-        <div class="title">群公告</div>
-        <!-- 显示最近的一条 -->
-        <div class="notify">
-          <span>11111111111</span>
-          <span
-            ><el-icon><ArrowRight /></el-icon
-          ></span>
-        </div>
-      </div>
-      <hr />
-      <div class="title">
-        <div class="chat-history">
-          <span>聊天记录</span>
-          <span
-            ><el-icon><ArrowRight /></el-icon
-          ></span>
-        </div>
-      </div>
-      <hr />
-      <!-- 按钮- true or false -->
-      <div class="title">
-        <div class="switch">
-          <span>消息免打扰</span>
-          <el-switch
-            v-model="isNotDisturb"
-            size="small"
-            style="--el-switch-on-color: #13ce66"
-          ></el-switch>
-        </div>
-      </div>
-      <hr />
-      <div class="title">
-        <div class="switch">
-          <span>置顶聊天</span>
-          <el-switch
-            v-model="isPin"
-            size="small"
-            style="--el-switch-on-color: #13ce66"
-          ></el-switch>
-        </div>
-      </div>
-      <hr />
-      <div class="title">
-        <div class="switch">
-          <span>显示在首页</span>
-          <el-switch
-            v-model="isShow"
-            size="small"
-            style="--el-switch-on-color: #13ce66"
-          ></el-switch>
-        </div>
-      </div>
-      <hr />
-      <div class="title">
-        <div class="switch">
-          <span>Pin</span>
-          <el-switch
-            v-model="isPin"
-            size="small"
-            style="--el-switch-on-color: #13ce66"
-          ></el-switch>
-        </div>
-      </div>
-      <hr />
-      <!-- 群头像，群名称，群描述 -->
-      <div class="title">
-        <div class="update" @click="dialogFormVisible = true">
-          <span>修改群聊消息</span>
-          <span
-            ><el-icon><ArrowRight /></el-icon
-          ></span>
-        </div>
-      </div>
-      <hr />
+        <!-- <div class="title">清空聊天记录</div> -->
 
-      <!-- <div class="title">清空聊天记录</div> -->
-
-      <!-- 不是群主 -->
-      <div class="title exit" v-if="true">退出群聊</div>
-      <!-- 群主 -->
-      <div class="title disband" v-else>解散群聊</div>
-      <hr />
-      <div class="btn">
-        <el-button type="primary" text bg
-          ><el-icon><Position /></el-icon>发消息</el-button
-        >
-      </div>
+        <!-- 不是群主 -->
+        <div class="title exit" v-if="true">退出群聊</div>
+        <!-- 群主 -->
+        <div class="title disband" v-else>解散群聊</div>
+        <hr />
+        <div class="btn">
+          <el-button type="primary" text bg @click="sendMsg"
+            ><el-icon><Position /></el-icon>发消息</el-button
+          >
+        </div>
+      </el-scrollbar>
     </el-main>
   </el-container>
 
@@ -331,6 +339,7 @@ console.log(props.groupInfo.relation_id)
 
 <style lang="scss" scoped>
 .el-container {
+  height: 94vh;
   .el-header {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     height: 45px;
@@ -344,7 +353,8 @@ console.log(props.groupInfo.relation_id)
     // width: 90%;
     // margin: 0 auto;
     // padding: 5px 20px;
-    padding-top: 20px;
+    // padding-top: 20px;
+    // margin-top: 20px;
     padding-left: 5px;
     hr {
       // color: #000;
@@ -354,6 +364,7 @@ console.log(props.groupInfo.relation_id)
       background-color: #ececec;
     }
     .title {
+      margin-top: 10px;
       padding-left: 15px;
       font-size: 15px;
       margin-bottom: 5px;

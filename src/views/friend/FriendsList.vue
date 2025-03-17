@@ -21,14 +21,15 @@ const createApplication = ref(false)
 // 好友列表
 const friendList = ref([
   {
-    relation_id: 123,
+    relation_id: 1,
     relation_type: 'friend',
     is_show: true,
     pin_time: '2025-03-06T10:00:00',
     last_show: '2025-03-06T09:55:00',
     friend_info: {
-      account_id: 456,
+      account_id: 101,
       name: 'Alice Smith',
+      gender: '女',
       avatar:
         'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
     },
@@ -37,15 +38,16 @@ const friendList = ref([
   },
   {
     relation_id: 456,
-    relation_type: 'group',
+    relation_type: 'friend',
     is_show: true,
     pin_time: '2025-03-05T18:00:00',
     last_show: '2025-03-06T10:05:00',
     friend_info: {
       account_id: 789,
       name: 'Tech Enthusiasts',
+      gender: '男',
       avatar:
-        'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
+        'https://picx.zhimg.com/v2-52a6e836434d15d74a2121bbd6bed34d_720w.jpg?source=172ae18b'
     },
     is_not_disturb: true,
     is_pin: true
@@ -59,6 +61,7 @@ const friendList = ref([
     friend_info: {
       account_id: 101,
       name: 'Bob Johnson',
+      gender: '男',
       avatar:
         'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
     },
@@ -66,16 +69,17 @@ const friendList = ref([
     is_pin: false
   },
   {
-    relation_id: 101,
+    relation_id: 3,
     relation_type: 'friend',
     is_show: true,
     pin_time: '2025-03-03T12:00:00',
     last_show: '2025-03-06T10:10:00',
     friend_info: {
-      account_id: 202,
-      name: 'Charlie Brown',
+      account_id: 103,
+      name: 'Charlie',
+      gender: '女',
       avatar:
-        'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
+        'https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con'
     },
     is_not_disturb: true,
     is_pin: false

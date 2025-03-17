@@ -50,9 +50,7 @@ const dialogEmailVisible = ref(false)
             </div>
             <!-- 签名 ？？ ！！！！！！！ -->
             <div class="span">
-              个性签名：<span
-                >他人很好购房合同如果还突然韩国发都让它发挥通过夫人的aaaaffggyy！！！！！！！！！</span
-              >
+              个性签名：<span>{{ userStore.accountInfo.signature }}</span>
             </div>
           </div>
         </div>

@@ -1,44 +1,27 @@
 <script setup>
 import { ref } from 'vue'
 import { Search, Switch, Edit, Delete, Check } from '@element-plus/icons-vue'
-import { getAccountService, accountRegisterServie } from '@/api/user.js'
+import {
+  getAccountTokenService,
+  getAccountService,
+  accountRegisterServie,
+  updateAccountService,
+  searchAccountByName
+} from '@/api/user.js'
 import { useUserStore } from '@/stores'
 const userStore = useUserStore()
 // 搜索框
 const inputInfo = ref('')
 
-const accountList = ref([
-  {
-    avatar:
-      'https://img.tukuppt.com/ad_preview/00/10/23/5c992ae114e20.jpg!/fw/980',
-    name: '张三',
-    account_id: 1111111,
-    gender: '男',
-    signature: '我想了一个好主意！'
-  },
-  {
-    avatar: 'https://pic3.zhimg.com/v2-87d78fc44236a144aa52cd8ea18e9da2_r.jpg',
-    name: '李四',
-    account_id: 2222222,
-    gender: '男',
-    signature: '我想了一个好主意！'
-  },
-  {
-    avatar: 'https://img.shetu66.com/2023/07/05/1688537701771625.png',
-    name: '王五',
-    account_id: 3333333,
-    gender: '男',
-    signature: '我想了一个好主意！'
-  }
-])
+const accountList = ref([])
 // 渲染数据
 // 获取用户的所有账号(搜索时调用)
-// const getAccountList = () => {
-//   const res = await getAccountService()
-//   console.log(res)
-//   accountList.value = res
-// }
-// getAccountList()
+const getAccountList = async () => {
+  const res = await getAccountService()
+  console.log(res.data.data)
+  accountList.value = res.data.data.list
+}
+getAccountList()
 
 // 传到对话框里（修改 or 添加 账号）
 const accountEditRef = ref()
@@ -49,7 +32,7 @@ const handleAdd = () => {
 }
 // 修改账号
 const handleEdit = (row) => {
-  // console.log(data.account_id)
+  // console.log(data.id)
   accountEditRef.value.open({ row })
 }
 // 删除账号
@@ -66,43 +49,55 @@ const handleDel = (row) => {
 }
 
 // 提交
-const handleSubmit = (data) => {
-  const index = accountList.value.findIndex(
-    (item) => item.account_id === data.account_id
-  )
+const handleSubmit = async (data) => {
+  const index = accountList.value.findIndex((item) => item.id === data.id)
   // 判断是添加还是编辑
   if (index === -1) {
     // 添加新账号 TODO:
     // 调用接口 - 返回数据 - 放到数组
-    const res = accountRegisterServie(data)
+    const res = await accountRegisterServie(data)
     console.log(res)
-
-    // 这种好像都行？？
-    accountList.value.push({ ...data })
-    // accountList.value.push(data)
-    ElMessage.success('添加成功')
     // 重新渲染
-    // getAccountList()
+    getAccountList()
+    ElMessage.success('添加成功')
   } else {
     // 更新现有账号
-    // updateAccountService
+    console.log(data)
+    const res = await updateAccountService({
+      account_id: data.id,
+      name: data.name,
+      gender: data.gender,
+      signature: data.signature
+    })
+    console.log(res)
     accountList.value[index] = data
+    // 重新渲染
+    getAccountList()
+    // 如果修改的是当前登录的账号
+    if (data.id === activeAccountId.value) {
+      // 更新账号信息
+      userStore.setAccountInfo(data)
+      console.log(123)
+    }
     ElMessage.success('编辑成功')
   }
   console.log(accountList.value)
-  // 重新渲染
-  // getAccountList()
 }
 
 // 当前账号id，读取store信息 TODO
 const activeAccountId = ref(userStore.accountInfo.id)
 // 账号切换
-const handleSwtich = (id) => {
+const handleSwtich = async (id) => {
   // 获取账号的token，存入store
-  // getAccountTokenService
+  console.log(typeof id)
+  const res = await getAccountTokenService(id)
+  console.log(res.data.data.account_token.token)
+  userStore.setAccountToken(res.data.data.account_token.token)
   //  根据id 获取账号信息
   // getAccountInfoById
   // 账号信息存入store（覆盖之前的）
+  // userStore.setAccountInfo()
+
   // 防抖，一直点不起作用 TODO:
   console.log(id)
   activeAccountId.value = id
@@ -112,9 +107,11 @@ const handleSwtich = (id) => {
 // 账号搜索
 const handleSearch = () => {
   // 搜索接口
-  // searchAccountByName
   const name = inputInfo.value
   console.log(name)
+  const res = searchAccountByName(name)
+  console.log(res)
+
   // accountList.value = []
 }
 // 搜索重置
@@ -156,12 +153,12 @@ const handleReset = () => {
             </template>
           </el-table-column>
           <el-table-column label="昵称" prop="name"></el-table-column>
-          <el-table-column label="账号" prop="account_id"></el-table-column>
+          <el-table-column label="账号" prop="id"></el-table-column>
           <el-table-column label="操作" width="150">
             <template #default="{ row }">
               <!-- 当前账号 ---  switch按钮可消失（切换） -->
               <el-button
-                v-if="row.account_id === activeAccountId"
+                v-if="row.id === activeAccountId"
                 :icon="Check"
                 circle
                 type="success"
@@ -173,7 +170,7 @@ const handleReset = () => {
                 circle
                 type="primary"
                 plain
-                @click="handleSwtich(row.account_id)"
+                @click="handleSwtich(row.id)"
               ></el-button>
               <el-button
                 :icon="Edit"

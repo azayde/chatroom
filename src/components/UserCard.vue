@@ -3,17 +3,23 @@
 <script setup>
 import { Position, MoreFilled, Delete } from '@element-plus/icons-vue'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 // switch开关 （三个）
-const value1 = ref(true)
-
+const isPin = ref(false)
+const isShow = ref(false)
+const isNotDisturb = ref(false)
 const dialogFormVisible = ref(false)
 
+// 更多（右上角三点）
 const morePopver = ref(null)
 const handleSetNote = () => {
   morePopver.value.hide()
   dialogFormVisible.value = true
 }
-
+const sendMsg = () => {
+  router.push('/chat/chatroom')
+}
 const props = defineProps({
   userInfo: Object
 })
@@ -30,7 +36,7 @@ const props = defineProps({
         <el-avatar
           size="large"
           shape="square"
-          src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
+          :src="userInfo.friend_info.avatar"
         ></el-avatar>
       </div>
       <div class="right">
@@ -41,7 +47,9 @@ const props = defineProps({
         <div class="span">
           昵称：<span>{{ userInfo.friend_info.name }}</span>
         </div>
-        <div class="span">性别：<span>男</span></div>
+        <div class="span">
+          性别：<span>{{ userInfo.friend_info.gender }}</span>
+        </div>
         <div class="span">
           账号：<span>{{ userInfo.friend_info.account_id }}</span>
         </div>
@@ -73,7 +81,7 @@ const props = defineProps({
           >
             <span>消息免打扰</span>
             <el-switch
-              v-model="value1"
+              v-model="isNotDisturb"
               size="small"
               style="--el-switch-on-color: #13ce66"
             ></el-switch>
@@ -92,7 +100,7 @@ const props = defineProps({
           >
             <span>置顶聊天</span>
             <el-switch
-              v-model="value1"
+              v-model="isPin"
               size="small"
               style="--el-switch-on-color: #13ce66"
             ></el-switch>
@@ -111,7 +119,7 @@ const props = defineProps({
           >
             <span>显示在首页</span>
             <el-switch
-              v-model="value1"
+              v-model="isShow"
               size="small"
               style="--el-switch-on-color: #13ce66"
             ></el-switch>
@@ -130,7 +138,7 @@ const props = defineProps({
           >
             <span>pin</span>
             <el-switch
-              v-model="value1"
+              v-model="isPin"
               size="small"
               style="--el-switch-on-color: #13ce66"
             ></el-switch>
@@ -142,7 +150,7 @@ const props = defineProps({
     </div> -->
     </div>
     <div class="btn">
-      <el-button type="primary" text bg
+      <el-button type="primary" text bg @click="sendMsg"
         ><el-icon><Position /></el-icon>发消息</el-button
       >
       <el-button v-if="true" type="danger" text bg

@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Plus } from '@element-plus/icons-vue'
-import { getAccountTokenService } from '@/api/user.js'
+import { getAccountService, getAccountTokenService } from '@/api/user.js'
 
 import { useUserStore } from '@/stores'
 // 路由
@@ -11,40 +11,19 @@ const router = useRouter()
 const userStore = useUserStore()
 
 // 账号信息
-const accountInfo = ref([
-  {
-    id: 1111111,
-    name: '成员1',
-    avatar:
-      'https://img2.baidu.com/it/u=55345731,784172631&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=500',
-    gender: '男',
-    signature: '我想了一个好主意！'
-  },
-  {
-    id: 2,
-    name: '成员2',
-    avatar:
-      'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg',
-    gender: '男',
-    signature: '我想了一个好主意！'
-  }
-])
+const accountInfo = ref([])
 
 // 进入账号页面 调用这个函数
-// const getAccount = async () => {
-//   const res = await getAccountService()
-//   accountInfo.value = res.data.list
-// }
-// getAccount()
-
-// const props = defineProps({
-//   account: Array
-// })
-// console.log(props.account)
+const getAccount = async () => {
+  const res = await getAccountService()
+  console.log(res.data.data)
+  accountInfo.value = res.data.data.list
+}
+getAccount()
 
 const getAccountId = async (obj) => {
-  // const res = await getAccountTokenService(id)
-  // userStore.setAccountToken(res.data.account_token.token)
+  const res = await getAccountTokenService(obj.id)
+  userStore.setAccountToken(res.data.data.account_token.token)
 
   // 账号信息存入本地
   userStore.setAccountInfo(obj)

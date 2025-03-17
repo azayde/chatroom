@@ -16,6 +16,62 @@ const handleBlue = () => {
     IsSearch.value = false
   }
 }
+
+// 聊天列表
+const chatList = ref([
+  {
+    relation_id: 1,
+    relation_type: 'friend',
+    pin_time: '2025-03-01T10:00:00Z',
+    friend_info: {
+      account_id: 101,
+      name: 'Alice Smith',
+      avatar:
+        'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
+    }
+  },
+  {
+    relation_id: 24,
+    relation_type: 'group',
+    pin_time: '2025-03-11T11:00:00',
+    group_info: {
+      relation_id: 1212,
+      name: '数据分析交流群',
+      description: '分享数据分析技巧',
+      avatar: 'https://img.shetu66.com/2023/06/28/1687937373741115.png'
+    }
+  },
+  {
+    relation_id: 3,
+    relation_type: 'friend',
+    pin_time: '2025-03-15T12:00:00Z',
+    friend_info: {
+      account_id: 103,
+      name: 'Charlie',
+      avatar:
+        'https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con'
+    }
+  },
+  {
+    relation_id: 22,
+    relation_type: 'group',
+    pin_time: '2025-03-10T15:00:00',
+    group_info: {
+      relation_id: 1010,
+      name: '低代码开发平台',
+      description: '探索低代码/零代码开发',
+      avatar: 'https://pic.616pic.com/ys_bnew_img/00/02/01/VafZfftlPM.jpg'
+    }
+  }
+])
+// 当前聊天页
+const activeChat = ref()
+const emit = defineEmits(['get-message'])
+const handleClick = (obj) => {
+  activeChat.value = obj
+  console.log(obj)
+  emit('get-message', obj)
+}
 </script>
 
 <template>
@@ -33,58 +89,33 @@ const handleBlue = () => {
     </el-header>
     <!-- 聊天列表 -->
     <el-main v-if="!IsSearch" class="list">
-      <div class="list-item">
+      <div
+        class="list-item"
+        v-for="item in chatList"
+        :key="item.relation_id"
+        @click="handleClick(item)"
+      >
         <div class="left">
           <el-badge class="item" :value="0" :hidden="true">
             <div class="avatar">
               <el-avatar
                 shape="square"
-                src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
+                :src="
+                  item.relation_type === 'friend'
+                    ? item.friend_info.avatar
+                    : item.group_info.avatar
+                "
               ></el-avatar>
             </div>
           </el-badge>
         </div>
         <div class="right">
           <div class="top">
-            <span class="name">张三</span>
-            <span class="time_now">19:30</span>
-          </div>
-          <span class="message">1234424343565655676676876875</span>
-        </div>
-      </div>
-      <div class="list-item">
-        <div class="left">
-          <el-badge class="item" :value="0" :hidden="true">
-            <div class="avatar">
-              <el-avatar
-                shape="square"
-                src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
-              ></el-avatar>
-            </div>
-          </el-badge>
-        </div>
-        <div class="right">
-          <div class="top">
-            <span class="name">张三</span>
-            <span class="time_now">19:30</span>
-          </div>
-          <span class="message">1234424343565655676676876875</span>
-        </div>
-      </div>
-      <div class="list-item">
-        <div class="left">
-          <el-badge class="item" :value="0" :hidden="true">
-            <div class="avatar">
-              <el-avatar
-                shape="square"
-                src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
-              ></el-avatar>
-            </div>
-          </el-badge>
-        </div>
-        <div class="right">
-          <div class="top">
-            <span class="name">张三</span>
+            <span class="name">{{
+              item.relation_type === 'friend'
+                ? item.friend_info.name
+                : item.group_info.name
+            }}</span>
             <span class="time_now">19:30</span>
           </div>
           <span class="message">1234424343565655676676876875</span>
@@ -137,6 +168,10 @@ const handleBlue = () => {
         }
         .name {
           font-size: 16px;
+          width: 100px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         .time_now {
           font-size: 12px;
@@ -155,7 +190,9 @@ const handleBlue = () => {
     }
     .list-item:hover {
       background-color: #f0f0f0;
-      // background-color: #e9e9e9; 点击后颜色
+    }
+    .active {
+      background-color: #e9e9e9; //点击后颜色
     }
   }
 }

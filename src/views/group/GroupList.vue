@@ -38,7 +38,7 @@ const groupList = ref([
   },
   {
     relation_id: 23,
-    relation_type: 'channel',
+    relation_type: 'group',
     is_show: false,
     pin_time: '2025-03-09T20:00:00',
     last_show: '2025-03-11T07:00:00',
@@ -52,7 +52,7 @@ const groupList = ref([
   },
   {
     relation_id: 24,
-    relation_type: 'friend',
+    relation_type: 'group',
     is_show: true,
     pin_time: '2025-03-11T11:00:00',
     last_show: '2025-03-11T11:15:00',
@@ -64,7 +64,7 @@ const groupList = ref([
     }
   },
   {
-    relation_id: 2,
+    relation_id: 28,
     relation_type: 'group',
     is_show: false,
     pin_time: '2025-03-05T14:15:00',

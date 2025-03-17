@@ -15,7 +15,7 @@ const userStore = useUserStore()
 const newFriendList = ref([
   {
     account_id_1: 111111111111111,
-    account_id_2: 1111111,
+    account_id_2: 749899612160,
     apply_msg: '请求添加你为好友',
     status: '已申请',
     create_at: '2025-03-12T10:00:00Z',
@@ -26,7 +26,7 @@ const newFriendList = ref([
   },
   {
     account_id_1: 333333333333333,
-    account_id_2: 1111111,
+    account_id_2: 749899612160,
     apply_msg: '想加入你的群组',
     refuse: '群组已满',
     status: '已拒绝',
@@ -37,7 +37,7 @@ const newFriendList = ref([
   },
   {
     account_id_1: 555555555555555,
-    account_id_2: 1111111,
+    account_id_2: 749899612160,
     apply_msg: '请求访问你的项目',
     status: '已同意',
     create_at: '2025-03-14T08:00:00Z',
@@ -47,7 +47,7 @@ const newFriendList = ref([
   },
   {
     account_id_1: 777777777777777,
-    account_id_2: 1111111,
+    account_id_2: 749899612160,
     apply_msg: '请求成为你的朋友',
     status: '已申请',
     create_at: '2025-03-15T16:45:00Z',
@@ -57,7 +57,7 @@ const newFriendList = ref([
       'https://img.tukuppt.com/png_preview/02/94/12/HUJ75JzwjF.jpg!/fw/780'
   },
   {
-    account_id_1: 1111111,
+    account_id_1: 749899612160,
     account_id_2: 888888888888888,
     apply_msg: '我是成员1',
     status: '已申请',

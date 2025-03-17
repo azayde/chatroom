@@ -36,8 +36,8 @@ export const getAccountService = () => {
 }
 
 // 获取账号的token
-export const getAccountTokenService = (params) => {
-  return request.get('/account/token', { params })
+export const getAccountTokenService = (id) => {
+  return request.get('/account/token', { account_id: id })
 }
 
 // 删除账号
@@ -46,8 +46,18 @@ export const deleteAccountService = (id) => {
 }
 
 // 更新账号信息
-export const updateAccountService = ({ name, gender, signature }) => {
-  return request.put('/account/update', { name, gender, signature })
+export const updateAccountService = ({
+  account_id,
+  name,
+  gender,
+  signature
+}) => {
+  return request.put('/account/update', {
+    account_id,
+    name,
+    gender,
+    signature
+  })
 }
 
 // 更改账户头像并将其保存在服务器中
