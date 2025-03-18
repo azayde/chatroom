@@ -8,4 +8,4 @@ import '@/assets/main.scss'
   </div>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped></style>

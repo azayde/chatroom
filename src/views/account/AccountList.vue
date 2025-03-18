@@ -2,7 +2,11 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Plus } from '@element-plus/icons-vue'
-import { getAccountService, getAccountTokenService } from '@/api/user.js'
+import {
+  getAccountService,
+  getAccountTokenService,
+  accountRegisterServie
+} from '@/api/user.js'
 
 import { useUserStore } from '@/stores'
 // 路由
@@ -22,8 +26,10 @@ const getAccount = async () => {
 getAccount()
 
 const getAccountId = async (obj) => {
+  console.log(typeof obj.id)
+  console.log(obj)
   const res = await getAccountTokenService(obj.id)
-  userStore.setAccountToken(res.data.data.account_token.token)
+  console.log(res.data.data.account_token.token)
 
   // 账号信息存入本地
   userStore.setAccountInfo(obj)
@@ -43,15 +49,14 @@ const handleAdd = () => {
   accountEditRef.value.open({})
 }
 // 提交
-const handleSubmit = (data) => {
+const handleSubmit = async (data) => {
   console.log(data)
-  // 添加新账号 TODO:
-  // accountRegisterServie
+  // 添加新账号
   // 调用接口 - 返回数据 - 放到数组
-  accountInfo.value.push({ ...data })
-  // accountList.value.push(data)
+  const res = await accountRegisterServie(data)
+  console.log(res)
   // 重新渲染
-  // getAccount()
+  getAccount()
   ElMessage.success('添加成功')
   console.log(accountInfo.value)
 }

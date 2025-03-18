@@ -21,12 +21,12 @@ instance.interceptors.request.use(
   (config) => {
     // TODO 2. 携带token
     if (userStore.token) {
-      config.headers.Authorization = `Bearer ${userStore.token}`
-      // config.headers.AccountToken = `Bearer ${userStore.accountToken}`
+      // config.headers.Authorization = `Bearer ${userStore.token}`
+      config.headers.AccountToken = `Bearer ${userStore.accountToken}`
       // config.headers.Authorization = `Bearer ${}`
       // config.headers.AuthorizationKey = userStore.token
-      console.log(userStore.token)
-      console.log(config)
+      // console.log(userStore.token)
+      // console.log(config)
       // 账号token TODO:
     }
     return config

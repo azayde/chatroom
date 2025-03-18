@@ -124,7 +124,7 @@ const props = defineProps({
               style="--el-switch-on-color: #13ce66"
             ></el-switch>
           </div>
-          <hr
+          <!-- <hr
             style="
               margin: 2px 0;
               border: none;
@@ -142,7 +142,7 @@ const props = defineProps({
               size="small"
               style="--el-switch-on-color: #13ce66"
             ></el-switch>
-          </div>
+          </div> -->
         </div>
       </el-popover>
       <!-- <div class="more">

@@ -13,7 +13,55 @@ const goAccount = () => {
   router.push('/account')
 }
 
+const email = userStore.user.email
+// 表单内容
+const formModel = ref({
+  newEmail: '',
+  password: '',
+  repassword: '',
+  code: ''
+})
+
+const rules = {
+  newEmail: [
+    { required: true, message: '请输入邮箱', trigger: 'blur' },
+    {
+      pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      message: '请输入正确的邮箱地址',
+      trigger: 'blur'
+    }
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    {
+      pattern: /^\S{6,15}$/,
+      message: '密码必须是6-15位的非空字符',
+      trigger: 'blur'
+    }
+  ],
+  repassword: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    {
+      pattern: /^\S{6,15}$/,
+      message: '密码必须是6-15位的非空字符',
+      trigger: 'blur'
+    },
+    {
+      validator: (rule, value, callback) => {
+        if (value !== formModel.value.password) {
+          callback(new Error('两次输入的密码不一致'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
+  ],
+  code: [{ required: true, message: '请输入验证码', trigger: 'blur' }]
+}
+// 修改密码
 const dialogFormVisible = ref(false)
+// 修改邮箱
 const dialogEmailVisible = ref(false)
 </script>
 
@@ -48,7 +96,6 @@ const dialogEmailVisible = ref(false)
             <div class="span">
               性别：<span>{{ userStore.accountInfo.gender }}</span>
             </div>
-            <!-- 签名 ？？ ！！！！！！！ -->
             <div class="span">
               个性签名：<span>{{ userStore.accountInfo.signature }}</span>
             </div>
@@ -88,15 +135,18 @@ const dialogEmailVisible = ref(false)
     width="500"
     class="dialog"
   >
-    <el-form>
+    <el-form :model="formModel" :rules="rules">
       <el-form-item label="用户邮箱">
-        <el-input></el-input>
+        <el-input v-model="email"></el-input>
       </el-form-item>
-      <el-form-item label="新的密码">
-        <el-input></el-input>
+      <el-form-item label="新的密码" prop="password">
+        <el-input v-model="formModel.password"></el-input>
       </el-form-item>
-      <el-form-item label="验证码">
-        <el-input></el-input>
+      <el-form-item label="确认密码" prop="repassword">
+        <el-input v-model="formModel.repassword"></el-input>
+      </el-form-item>
+      <el-form-item label="验证码" prop="code">
+        <el-input v-model="formModel.code"></el-input>
       </el-form-item>
     </el-form>
     <template #footer>
@@ -116,22 +166,22 @@ const dialogEmailVisible = ref(false)
     width="500"
     class="dialog"
   >
-    <el-form>
+    <el-form :model="formModel" :rules="rules">
       <!-- 自动填充 -->
       <el-form-item label="旧邮箱">
-        <el-input></el-input>
+        <el-input v-model="email"></el-input>
       </el-form-item>
-      <el-form-item label="新邮箱">
-        <el-input></el-input>
+      <el-form-item label="新邮箱" prop="newEmail">
+        <el-input v-model="formModel.newEmail"></el-input>
       </el-form-item>
-      <el-form-item label="验证码">
-        <el-input></el-input>
+      <el-form-item label="验证码" prop="code">
+        <el-input v-model="formModel.code"></el-input>
       </el-form-item>
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取消</el-button>
-        <el-button type="primary" @click="dialogFormVisible = false">
+        <el-button @click="dialogEmailVisible = false">取消</el-button>
+        <el-button type="primary" @click="dialogEmailVisible = false">
           确定
         </el-button>
       </div>

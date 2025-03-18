@@ -2,6 +2,9 @@
 <script setup>
 import { ref } from 'vue'
 import { Search } from '@element-plus/icons-vue'
+// import { useRouter, useRoute } from 'vue-router'
+// const route = useRoute()
+// const router = useRouter()
 // 搜索框
 const input = ref('')
 
@@ -64,6 +67,10 @@ const chatList = ref([
     }
   }
 ])
+
+// if (!route.path.split('/')[2]) {
+//   router.push('/chat/chatroom')
+// }
 // 当前聊天页
 const activeChat = ref()
 const emit = defineEmits(['get-message'])

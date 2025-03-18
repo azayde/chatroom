@@ -6,7 +6,9 @@ import {
   getAccountService,
   accountRegisterServie,
   updateAccountService,
-  searchAccountByName
+  searchAccountByName,
+  deleteAccountService,
+  getAccountInfoById
 } from '@/api/user.js'
 import { useUserStore } from '@/stores'
 const userStore = useUserStore()
@@ -36,9 +38,12 @@ const handleEdit = (row) => {
   accountEditRef.value.open({ row })
 }
 // 删除账号
-const handleDel = (row) => {
+const handleDel = async (row) => {
   // 删除
-  // deleteAccountService
+  console.log(typeof row.id)
+  const res = await deleteAccountService(row.id)
+  // const res = await deleteAccountService(1021631791104)
+  console.log(res)
   ElMessageBox.confirm('你确认删除该分类信息吗？', '温馨提示', {
     type: 'warning',
     confirmButtonText: '确认',
@@ -84,6 +89,9 @@ const handleSubmit = async (data) => {
   console.log(accountList.value)
 }
 
+//  根据id 获取账号信息
+const res1 = getAccountInfoById(1021631791104)
+console.log(res1)
 // 当前账号id，读取store信息 TODO
 const activeAccountId = ref(userStore.accountInfo.id)
 // 账号切换
@@ -93,8 +101,11 @@ const handleSwtich = async (id) => {
   const res = await getAccountTokenService(id)
   console.log(res.data.data.account_token.token)
   userStore.setAccountToken(res.data.data.account_token.token)
-  //  根据id 获取账号信息
-  // getAccountInfoById
+
+  // //  根据id 获取账号信息
+  // const res1 = getAccountInfoById(id)
+  // console.log(res1)
+
   // 账号信息存入store（覆盖之前的）
   // userStore.setAccountInfo()
 

@@ -124,9 +124,14 @@ const activeMemberId = ref(null)
 const handleClickMember = (id) => {
   activeMemberId.value = activeMemberId.value === id ? null : id
 }
+
+// 聊天记录dialog
+const chatDialog = ref()
+
 const sendMsg = () => {
   router.push('/chat/chatroom')
 }
+
 // 群聊详情
 const props = defineProps({
   groupInfo: Object
@@ -139,7 +144,7 @@ console.log(props.groupInfo.relation_id)
   <!-- {{ groupInfo.relation_id }} -->
   <el-container>
     <el-header>
-      <h1>{{ groupInfo.group_info.name }}（3）</h1>
+      <h1>{{ groupInfo.group_info.name }}（4）</h1>
     </el-header>
     <el-main>
       <el-scrollbar>
@@ -203,7 +208,7 @@ console.log(props.groupInfo.relation_id)
           </div>
         </div>
         <hr />
-        <div class="title">
+        <div class="title" @click="chatDialog.open()">
           <div class="chat-history">
             <span>聊天记录</span>
             <span
@@ -246,7 +251,7 @@ console.log(props.groupInfo.relation_id)
           </div>
         </div>
         <hr />
-        <div class="title">
+        <!-- <div class="title">
           <div class="switch">
             <span>Pin</span>
             <el-switch
@@ -255,7 +260,7 @@ console.log(props.groupInfo.relation_id)
               style="--el-switch-on-color: #13ce66"
             ></el-switch>
           </div>
-        </div>
+        </div> -->
         <hr />
         <!-- 群头像，群名称，群描述 -->
         <div class="title">
@@ -332,6 +337,7 @@ console.log(props.groupInfo.relation_id)
   </el-dialog>
 
   <!-- 聊天记录 -->
+  <chat-history ref="chatDialog"></chat-history>
 
   <!-- 群公告 -->
   <el-dialog v-model="groupNotify" title="群公告"> </el-dialog>

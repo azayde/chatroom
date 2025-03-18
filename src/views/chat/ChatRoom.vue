@@ -1,32 +1,17 @@
 <script setup>
 import GroupDetail from '../group/GroupDetail.vue'
-
-import {
-  Position,
-  MoreFilled,
-  ChatDotRound,
-  Search
-} from '@element-plus/icons-vue'
+// import ChatHistory from '@/components/ChatHistory.vue'
+import { Position, MoreFilled, ChatDotRound } from '@element-plus/icons-vue'
 import { ref } from 'vue'
 const drawer = ref(false)
-const drawer1 = ref(false)
-// 聊天记录搜索框
-const input = ref('')
-const handleFocus = () => {
-  console.log('聚焦')
-  // 渲染搜索到内容
-  // 聊天记录数组替换 ?? TODO
-}
-const handleBlur = () => {
-  console.log('失焦')
-  // 恢复原来的
-}
-
 // 父传子
 const props = defineProps({
   chatInfo: Object
 })
 console.log(props.chatInfo)
+
+// 聊天记录dialog
+const chatDialog = ref()
 </script>
 
 <template>
@@ -87,7 +72,7 @@ console.log(props.chatInfo)
             </el-icon>
           </el-upload>
           <!-- 聊天记录 -->
-          <el-icon class="chat-history" @click="drawer1 = true"
+          <el-icon class="chat-history" @click="chatDialog.open()"
             ><ChatDotRound
           /></el-icon>
         </div>
@@ -114,61 +99,7 @@ console.log(props.chatInfo)
       ></group-detail>
     </el-drawer>
 
-    <!-- 抽屉 or  对话框 ？？ TODO -->
-    <el-dialog v-model="drawer1" title="聊天记录" :with-header="false">
-      <el-input
-        v-model="input"
-        :prefix-icon="Search"
-        placeholder="搜索"
-        class="search"
-        @focus="handleFocus"
-        @blur="handleBlur"
-      >
-      </el-input>
-      <!-- TODO -->
-      <div class="list-item">
-        <div class="left">
-          <el-badge class="item" :value="0" :hidden="true">
-            <div class="avatar">
-              <el-avatar
-                shape="square"
-                src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
-              ></el-avatar>
-            </div>
-          </el-badge>
-        </div>
-        <div class="right">
-          <div class="top">
-            <span class="name">张三</span>
-            <span class="time_now">19:30</span>
-          </div>
-          <span class="message">12344243435gfhghfhgfg65655676676876875</span>
-        </div>
-      </div>
-      <div class="list-item">
-        <div class="left">
-          <el-badge class="item" :value="0" :hidden="true">
-            <div class="avatar">
-              <el-avatar
-                shape="square"
-                src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
-              ></el-avatar>
-            </div>
-          </el-badge>
-        </div>
-        <div class="right">
-          <div class="top">
-            <span class="name">张三</span>
-            <span class="time_now">19:30</span>
-          </div>
-          <span class="message"
-            >12344243435gfhg的广泛认同个人奋斗通过夫人的好帖让的广泛
-            认同个人奋斗通过夫人的好帖让的广泛认同个人奋斗通过夫人的好帖让的广泛认同个人奋斗
-            通过夫人的好帖让个风格和他显然并非好帖让个巴菲特和个人部分hfhgfg65655676676876875</span
-          >
-        </div>
-      </div>
-    </el-dialog>
+    <chat-history ref="chatDialog"></chat-history>
   </el-container>
 </template>
 
@@ -347,62 +278,6 @@ console.log(props.chatInfo)
           margin-right: 20px;
         }
       }
-    }
-  }
-  .el-dialog {
-    .list-item {
-      width: 98%;
-      cursor: pointer;
-      // height: 60px;
-      // border: 1px solid #000;
-      display: flex;
-      // align-items: center;
-      // padding-top: 5px;
-      padding: 5px 0;
-      margin: 5px 0;
-      // border: 1px solid #000;
-      .left {
-        margin: 0 10px;
-      }
-      .right {
-        width: 98%;
-        // width: 660px;
-        // height: 60px;
-        // margin: 10px 0;
-        display: flex;
-        padding: 0 6px;
-        padding-right: 10px;
-        flex-direction: column;
-        justify-content: space-between;
-        // align-items: center;
-        .top {
-          display: flex;
-          justify-content: space-between;
-          // margin: 10px;
-          // padding-top: 10px;
-        }
-        .name {
-          font-size: 13px;
-          color: #999;
-        }
-        .time_now {
-          font-size: 12px;
-          color: #999;
-        }
-        .message {
-          font-size: 16px;
-          margin-bottom: 10px;
-          // color: #c4c4c4;
-          word-break: break-all;
-          white-space: pre-wrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-      }
-    }
-    .list-item:hover {
-      background-color: #f0f0f0;
-      // background-color: #e9e9e9; 点击后颜色
     }
   }
 }

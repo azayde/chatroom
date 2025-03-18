@@ -42,9 +42,13 @@ export const getAccountTokenService = (id) => {
 
 // 删除账号
 export const deleteAccountService = (id) => {
-  return request.delete('/account/delete', id)
+  return request.delete('/account/delete', { data: { account_id: id } })
 }
 
+// 更改账户头像并将其保存在服务器中 multipart/form-data
+export const updateAccountAvatar = (file) => {
+  return request.put('/file/avatar/account', file)
+}
 // 更新账号信息
 export const updateAccountService = ({
   account_id,
@@ -71,5 +75,5 @@ export const searchAccountByName = (name) => {
 
 // 根据ID查找账号信息
 export const getAccountInfoById = (id) => {
-  return request.get('/account/infos/name', { params: { id } })
+  return request.get('/account/infos/name', { account_id: id })
 }
