@@ -1,15 +1,24 @@
 <!-- 群聊详细信息 -->
 <script setup>
 import { Plus, Minus, ArrowRight, Position } from '@element-plus/icons-vue'
-import { ref } from 'vue'
+import { watch, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import {
+  updateShowService,
+  updateDisturbService,
+  updatePinService
+} from '@/api/setting.js'
 const router = useRouter()
-// import { getGroupMemberService } from '@/api/group.js'
 // switch开关 （三个）
 // pin 和 置顶 ？？
 const isPin = ref(false)
 const isShow = ref(false)
 const isNotDisturb = ref(false)
+// const update = ref({
+//   isPin: false,
+//   isShow: false,
+//   isNotDisturb: false
+// })
 
 const dialogFormVisible = ref(false)
 // 点击头像出现名片(点击头像名片消失)  --- 改 TODO:
@@ -121,6 +130,11 @@ const groupList = ref([
 const activeMemberId = ref(null)
 // const popverStates = ref({})
 
+// 群聊详情
+const props = defineProps({
+  groupInfo: Object
+})
+
 const handleClickMember = (id) => {
   activeMemberId.value = activeMemberId.value === id ? null : id
 }
@@ -128,16 +142,44 @@ const handleClickMember = (id) => {
 // 聊天记录dialog
 const chatDialog = ref()
 
+// const handleSwitch1 = () => {
+//   console.log('改变了1')
+// }
+// const handleSwitch2 = () => {
+//   console.log('改变了2')
+// }
+// const handleSwitch3 = () => {
+//   console.log('改变了3')
+// }
+const relation_id = ref(props.groupInfo.relation_id)
+console.log(relation_id.value)
+const handleSwitch = (msg) => {
+  console.log(msg)
+  if (msg === 'isNotDisturb') {
+    // updateDisturbService({
+    //   relation_id: relation_id.value,
+    //   isNotDisturb: isNotDisturb.value
+    // })
+  } else if (msg === 'isPin') {
+    // updatePinService({
+    //   relation_id: relation_id.value,
+    //   isPin: isPin.value
+    // })
+  } else if (msg === 'isShow') {
+    // updateShowService({
+    //   relation_id: relation_id.value,
+    //   isShow: isShow.value
+    // })
+  }
+}
+watch(isNotDisturb, () => handleSwitch('isNotDisturb'))
+watch(isPin, () => handleSwitch('isPin'))
+watch(isShow, () => handleSwitch('isShow'))
+
+// 发消息
 const sendMsg = () => {
   router.push('/chat/chatroom')
 }
-
-// 群聊详情
-const props = defineProps({
-  groupInfo: Object
-})
-
-console.log(props.groupInfo.relation_id)
 </script>
 
 <template>
@@ -261,7 +303,7 @@ console.log(props.groupInfo.relation_id)
             ></el-switch>
           </div>
         </div> -->
-        <hr />
+        <!-- <hr /> -->
         <!-- 群头像，群名称，群描述 -->
         <div class="title">
           <div class="update" @click="dialogFormVisible = true">

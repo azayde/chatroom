@@ -19,3 +19,12 @@ export const getFileByRelationId = (relation_id) => {
 export const getFileByFileId = (file_id) => {
   return request.post('/file/details', file_id)
 }
+
+// 获取当前账号pin的所有好友和群组列表
+export const getChatPinListService = () => {
+  return request.get('/setting/pins')
+}
+// 获取当前账户首页显示的好友和群组列表
+export const getChatShowListService = () => {
+  return request.get('/setting/shows')
+}

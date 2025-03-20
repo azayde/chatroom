@@ -4,6 +4,7 @@
 import { Position, MoreFilled, Delete } from '@element-plus/icons-vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { deleteFriendService } from '@/api/friend.js'
 const router = useRouter()
 // switch开关 （三个）
 const isPin = ref(false)
@@ -11,20 +12,28 @@ const isShow = ref(false)
 const isNotDisturb = ref(false)
 const dialogFormVisible = ref(false)
 
+// 判断是否是好友
+const isFriend = ref(true)
 // 更多（右上角三点）
 const morePopver = ref(null)
 const handleSetNote = () => {
   morePopver.value.hide()
   dialogFormVisible.value = true
 }
+// 发消息
 const sendMsg = () => {
   router.push('/chat/chatroom')
 }
+
 const props = defineProps({
   userInfo: Object
 })
-// console.log(props)
 
+// 删除好友
+const deleteFriend = async () => {
+  // await deleteFriendService(props.userInfo.value.relation_id)
+  ElMessage.success('已删除')
+}
 // 没有数据传输时，怎么处理？？
 // 好友  -  非好友
 </script>
@@ -41,7 +50,7 @@ const props = defineProps({
       </div>
       <div class="right">
         <!-- 点击设置备注 -->
-        <div class="span">
+        <div class="span" v-if="isFriend === true">
           备注：<span>{{ userInfo.friend_info.name }}</span>
         </div>
         <div class="span">
@@ -150,10 +159,15 @@ const props = defineProps({
     </div> -->
     </div>
     <div class="btn">
-      <el-button type="primary" text bg @click="sendMsg"
+      <el-button
+        v-if="isFriend === true"
+        type="primary"
+        text
+        bg
+        @click="sendMsg"
         ><el-icon><Position /></el-icon>发消息</el-button
       >
-      <el-button v-if="true" type="danger" text bg
+      <el-button v-if="isFriend" type="danger" text bg @click="deleteFriend"
         ><el-icon><Delete /></el-icon>删除好友</el-button
       >
       <el-button v-else type="success" text bg

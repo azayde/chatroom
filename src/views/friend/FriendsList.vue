@@ -1,21 +1,37 @@
 <!-- 好友列表 -->
 <script setup>
-import { ref } from 'vue'
+import { watch, ref } from 'vue'
 import { Search, Plus } from '@element-plus/icons-vue'
-import { getFriendListService, createApplicationService } from '@/api/friend.js'
+import {
+  getFriendListService,
+  createApplicationService,
+  searchFriendByName
+} from '@/api/friend.js'
 // 搜索框
 const input = ref('')
 // 搜索列表切换
 const IsSearch = ref(false)
 const handleFocus = () => {
   IsSearch.value = true
+  // if (input.value) {
+  //   searchFriendByName(input.value)
+  //   console.log(11)
+  // }
 }
 const handleBlue = () => {
   // 输入框为空 且 失焦 切换
   if (!input.value) {
     IsSearch.value = false
   }
+  // 查询
+  console.log(22)
+  // searchFriendByName(input.value)
 }
+watch(input, () => {
+  // 一直搜索吗？？ TODO:
+  console.log(11)
+  // searchFriendByName(input.value)
+})
 
 const createApplication = ref(false)
 // 好友列表
@@ -104,10 +120,10 @@ const sendMsg = (obj) => {
 // 发送好友申请
 const form = ref()
 const applicationInfo = ref({
-  // account_id: null,
-  // application_msg: ''
-  account_id: 234546,
-  application_msg: '你好'
+  account_id: null,
+  application_msg: ''
+  // account_id: 234546,
+  // application_msg: '你好'
 })
 const handleCreateApplication = async () => {
   createApplication.value = false

@@ -24,3 +24,17 @@ export const deleteApplicationService = (id) => {
 export const createApplicationService = (data) => {
   return request.post('/application/create', data)
 }
+
+// 通过姓名模糊查询好友（好友姓名或昵称）
+export const searchFriendByName = (params) => {
+  return request.get('/setting/friend/name', { params })
+}
+
+// 删除好友（双向删除）
+export const deleteFriendService = (data) => {
+  return request.delete('/setting/friend/delete', data)
+}
+
+// export const deleteFriendService = (id) => {
+//   return request.delete('/setting/friend/delete', {data: {relation_id: id}})
+// }
