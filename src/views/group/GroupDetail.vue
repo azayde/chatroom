@@ -1,14 +1,23 @@
 <!-- 群聊详细信息 -->
 <script setup>
 import { Plus, Minus, ArrowRight, Position } from '@element-plus/icons-vue'
-import { watch, ref } from 'vue'
+import { watch, ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import {
+  updateNickNameService,
   updateShowService,
   updateDisturbService,
   updatePinService
 } from '@/api/setting.js'
+import {
+  quitGroupService,
+  dissolveGroupService,
+  updateGroupInfoService
+} from '@/api/group.js'
+import { useUserStore } from '@/stores'
+const userStore = useUserStore()
 const router = useRouter()
+
 // switch开关 （三个）
 // pin 和 置顶 ？？
 const isPin = ref(false)
@@ -32,13 +41,13 @@ const groupNotify = ref(false)
 // 群成员列表 (TODO: ) 可以拿到信息： 共有多少人
 const groupList = ref([
   {
-    relation_id: 123,
+    relation_id: 704513048576,
     relation_type: 'friend',
     is_show: true,
     pin_time: '2025-03-06T10:00:00',
     last_show: '2025-03-06T09:55:00',
     friend_info: {
-      account_id: 456,
+      account_id: 704513048576,
       name: 'Alice Smith',
       avatar:
         'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
@@ -102,7 +111,7 @@ const groupList = ref([
 //     is_leader: false
 //   },
 //   {
-//     account_id: 67890,
+//     account_id: 704513048576,
 //     name: 'Bob Johnson',
 //     avatar: 'https://example.com/bob.png',
 //     nickname: 'Bob',
@@ -127,6 +136,10 @@ const groupList = ref([
 // const res = await getGroupMemberService(props.groupInfo.relation_id)
 // console.log(res)
 // 存储user-card的显隐状态
+
+//
+
+// gen'ju
 const activeMemberId = ref(null)
 // const popverStates = ref({})
 
@@ -135,25 +148,56 @@ const props = defineProps({
   groupInfo: Object
 })
 
+// 点击群成员获取当前的id（用于名片）
 const handleClickMember = (id) => {
   activeMemberId.value = activeMemberId.value === id ? null : id
+}
+
+// 修改昵称
+const isEdit = ref(false)
+// const id = groupMember.value.findIndex(
+//   (item) => item.account_id === userStore.accountInfo.id
+// )
+
+const id = groupList.value.findIndex(
+  (item) => item.friend_info.account_id === userStore.accountInfo.id
+)
+
+// const nick_name = ref(groupMember.value[id].nickname)
+const nick_name = ref(groupList.value[id].friend_info.name)
+const inp = ref(null)
+console.log(nick_name.value)
+
+// 双击切换编辑状态
+const handleNickName = () => {
+  isEdit.value = true
+  nick_name.value = groupList.value[id].friend_info.name
+  nextTick(() => {
+    inp.value.focus()
+    inp.value.select()
+  })
+}
+// 提交昵称修改
+const updateNickName = () => {
+  isEdit.value = false
+  // updateNickNameService({
+  //   relation_id: groupList.value.relation_id,
+  //   nick_name: nick_name.value
+  // })
+
+  // 按回车会出现两次，因为 该函数被触发了两次  TODO:
+  if (nick_name.value) {
+    ElMessage.success('修改备注成功')
+  }
 }
 
 // 聊天记录dialog
 const chatDialog = ref()
 
-// const handleSwitch1 = () => {
-//   console.log('改变了1')
-// }
-// const handleSwitch2 = () => {
-//   console.log('改变了2')
-// }
-// const handleSwitch3 = () => {
-//   console.log('改变了3')
-// }
-const relation_id = ref(props.groupInfo.relation_id)
-console.log(relation_id.value)
+// 三个switch
 const handleSwitch = (msg) => {
+  const relation_id = ref(props.groupInfo.relation_id)
+  console.log(relation_id.value)
   console.log(msg)
   if (msg === 'isNotDisturb') {
     // updateDisturbService({
@@ -175,6 +219,30 @@ const handleSwitch = (msg) => {
 watch(isNotDisturb, () => handleSwitch('isNotDisturb'))
 watch(isPin, () => handleSwitch('isPin'))
 watch(isShow, () => handleSwitch('isShow'))
+
+// 修改群聊信息（在这里改（子组件）？？）
+const updateGroupInfo = async () => {
+  dialogFormVisible.value = false
+  // 参数 对 or 错 ？？
+  // await updateGroupInfoService({
+  //   relation_id: props.groupInfo.relation_id,
+  //   group_name: 'group_name',
+  //   description: 'description'
+  // })
+  ElMessage.success('修改成功')
+}
+
+// 退出群聊
+const handleQuit = async () => {
+  // await quitGroupService(props.groupInfo.relation_id)
+  ElMessage.success('已退出')
+}
+
+// 解散群聊
+const handleDissolve = async () => {
+  // await dissolveGroupService(props.groupInfo.relation_id)
+  ElMessage.success('已解散')
+}
 
 // 发消息
 const sendMsg = () => {
@@ -237,7 +305,19 @@ const sendMsg = () => {
         <hr />
         <div class="title">我在本群的昵称</div>
         <!-- 点击可修改 -->
-        <div class="nickname">成员2</div>
+        <div class="nickname">
+          <input
+            v-if="isEdit"
+            type="text"
+            v-model="nick_name"
+            @blur="updateNickName"
+            @keyup.enter="updateNickName"
+            ref="inp"
+          />
+          <div v-else @dblclick="handleNickName">
+            {{ nick_name || '未设置' }}
+          </div>
+        </div>
         <hr />
         <div class="Notify" @click="groupNotify = true">
           <div class="title">群公告</div>
@@ -318,9 +398,9 @@ const sendMsg = () => {
         <!-- <div class="title">清空聊天记录</div> -->
 
         <!-- 不是群主 -->
-        <div class="title exit" v-if="true">退出群聊</div>
+        <div class="title exit" @click="handleQuit" v-if="true">退出群聊</div>
         <!-- 群主 -->
-        <div class="title disband" v-else>解散群聊</div>
+        <div class="title disband" @click="handleDissolve" v-else>解散群聊</div>
         <hr />
         <div class="btn">
           <el-button type="primary" text bg @click="sendMsg"
@@ -360,9 +440,7 @@ const sendMsg = () => {
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取消</el-button>
-        <el-button type="primary" @click="dialogFormVisible = false">
-          确定
-        </el-button>
+        <el-button type="primary" @click="updateGroupInfo"> 确定 </el-button>
       </div>
     </template>
   </el-dialog>

@@ -83,6 +83,8 @@ const chatPinList = ref([
   }
 ])
 console.log(chatPinList.value)
+
+// classs:  pin 的样式(用is_pin判断) ！！！！！！！ TODO
 // 获取置顶列表
 const getChatPinList = async () => {
   // const res = getChatPinListService()
@@ -150,6 +152,7 @@ const handleClick = (obj) => {
     </el-header>
     <!-- 聊天列表 -->
     <el-main v-if="!IsSearch" class="list">
+      <!-- TODO pin 样式 is_pin -->
       <div
         class="list-item"
         v-for="item in chatList"

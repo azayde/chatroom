@@ -5,6 +5,8 @@ import { Position, MoreFilled, Delete } from '@element-plus/icons-vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { deleteFriendService } from '@/api/friend.js'
+import { updateNickNameService } from '@/api/setting.js'
+import { ElMessage } from 'element-plus'
 const router = useRouter()
 // switch开关 （三个）
 const isPin = ref(false)
@@ -29,13 +31,30 @@ const props = defineProps({
   userInfo: Object
 })
 
+console.log(props.userInfo)
+
+// const relation_id = props.userInfo.relation_id
+// console.log(relation_id)
 // 删除好友
 const deleteFriend = async () => {
-  // await deleteFriendService(props.userInfo.value.relation_id)
+  // await deleteFriendService(props.userInfo.relation_id)
   ElMessage.success('已删除')
 }
 // 没有数据传输时，怎么处理？？
 // 好友  -  非好友
+
+// 设置备注
+const nick_name = ref()
+const updateNickName = () => {
+  dialogFormVisible.value = false
+  // updateNickNameService({
+  //   relation_id: props.userInfo.relation_id,
+  //   nick_name: nick_name.value
+  // })
+  if (nick_name.value) {
+    ElMessage.success('修改备注成功')
+  }
+}
 </script>
 
 <template>
@@ -68,6 +87,8 @@ const deleteFriend = async () => {
           >
         </div>
       </div>
+
+      <!-- 更多 -->
       <el-popover ref="morePopver" placement="left" trigger="click">
         <template #reference>
           <el-button :icon="MoreFilled" class="more"></el-button>
@@ -184,15 +205,13 @@ const deleteFriend = async () => {
     >
       <el-form>
         <el-form-item label="备注">
-          <el-input></el-input>
+          <el-input v-model="nick_name"></el-input>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="dialogFormVisible = false">取消</el-button>
-          <el-button type="primary" @click="dialogFormVisible = false">
-            确定
-          </el-button>
+          <el-button type="primary" @click="updateNickName"> 确定 </el-button>
         </div>
       </template>
     </el-dialog>

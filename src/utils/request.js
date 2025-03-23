@@ -5,7 +5,7 @@ import axios from 'axios'
 // const router = useRouter()
 
 // const baseURL = 'http://10.8.233.204:8080'
-const baseURL = 'http://192.168.3.34:8000/api'
+const baseURL = 'http://192.168.0.197:8000/api'
 // const baseURL = 'http://127.0.0.1:8080'
 
 const userStore = useUserStore()
@@ -21,8 +21,8 @@ instance.interceptors.request.use(
   (config) => {
     // TODO 2. 携带token
     if (userStore.token) {
-      // config.headers.Authorization = `Bearer ${userStore.token}`
-      config.headers.AccountToken = `Bearer ${userStore.accountToken}`
+      config.headers.Authorization = `Bearer ${userStore.token}`
+      // config.headers.AccountToken = `Bearer ${userStore.accountToken}`
       // config.headers.Authorization = `Bearer ${}`
       // config.headers.AuthorizationKey = userStore.token
       // console.log(userStore.token)

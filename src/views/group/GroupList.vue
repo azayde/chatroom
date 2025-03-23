@@ -2,7 +2,13 @@
 <script setup>
 import { ref } from 'vue'
 import { Search, Plus } from '@element-plus/icons-vue'
-import { getGroupListService } from '@/api/group.js'
+import {
+  createGroupService,
+  searchGroupByName,
+  getGroupListService
+} from '@/api/group.js'
+// 查询同好友查询一样(还有问题没解决，待定) TODO:
+import { ElMessage } from 'element-plus'
 // 搜索框
 const input = ref('')
 
@@ -19,7 +25,16 @@ const handleBlue = () => {
 }
 
 // 创建群聊
+const groupInfo = ref({
+  name: '',
+  description: ''
+})
 const bools = ref(false)
+const creatrGroup = async () => {
+  bools.value = false
+  // await createGroupService(groupInfo.value)
+  ElMessage.success('群聊创建成功')
+}
 // 群聊列表
 // const groupList = ref([])
 const groupList = ref([
@@ -123,17 +138,17 @@ const sendMsg = (obj) => {
     <el-dialog v-model="bools" title="创建群聊" width="500" class="dialog">
       <el-form>
         <el-form-item label="群聊名称">
-          <el-input></el-input>
+          <el-input v-model="groupInfo.name"></el-input>
         </el-form-item>
         <!-- 可选 -->
         <el-form-item label="群描述">
-          <el-input></el-input>
+          <el-input v-model="groupInfo.description"></el-input>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="bools = false">取消</el-button>
-          <el-button type="primary" @click="bools = false"> 创建 </el-button>
+          <el-button type="primary" @click="creatrGroup"> 创建 </el-button>
         </div>
       </template>
     </el-dialog>
