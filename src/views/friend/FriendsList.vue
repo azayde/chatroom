@@ -172,27 +172,35 @@ const handleCreateApplication = async () => {
       />
     </el-header>
     <el-main v-if="!IsSearch" class="list">
-      <!-- IsNewFriend 判断是否点击了 “新的朋友” -->
-      <div class="list-item" @click="sendMsg({ item: {}, IsNewFriend: true })">
-        <div class="avatar">
-          <el-avatar
-            shape="square"
-            src="https://bpic.51yuansu.com/pic3/cover/01/81/34/596f92ddd06f8_610.jpg"
-          ></el-avatar>
+      <el-scrollbar>
+        <!-- IsNewFriend 判断是否点击了 “新的朋友” -->
+        <div
+          class="list-item"
+          @click="sendMsg({ item: {}, IsNewFriend: true })"
+        >
+          <div class="avatar">
+            <el-avatar
+              shape="square"
+              src="https://bpic.51yuansu.com/pic3/cover/01/81/34/596f92ddd06f8_610.jpg"
+            ></el-avatar>
+          </div>
+          <span class="name">新的朋友</span>
         </div>
-        <span class="name">新的朋友</span>
-      </div>
-      <div
-        class="list-item"
-        v-for="item in friendList"
-        :key="item.relation_id"
-        @click="sendMsg({ item, IsNewFriend: false })"
-      >
-        <div class="avatar">
-          <el-avatar shape="square" :src="item.friend_info.avatar"></el-avatar>
+        <div
+          class="list-item"
+          v-for="item in friendList"
+          :key="item.relation_id"
+          @click="sendMsg({ item, IsNewFriend: false })"
+        >
+          <div class="avatar">
+            <el-avatar
+              shape="square"
+              :src="item.friend_info.avatar"
+            ></el-avatar>
+          </div>
+          <span class="name">{{ item.friend_info.name }}</span>
         </div>
-        <span class="name">{{ item.friend_info.name }}</span>
-      </div>
+      </el-scrollbar>
     </el-main>
     <!-- 搜索结果列表 -->
     <el-main v-else> <search-list></search-list> </el-main>
@@ -232,6 +240,9 @@ const handleCreateApplication = async () => {
 .el-aside {
   width: 215px;
   background-color: #f5f5f5;
+  // height: 94vh;
+  display: flex;
+  flex-direction: column;
   .el-header {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     height: 45px;

@@ -1,6 +1,7 @@
+<!-- eslint-disable no-unused-vars -->
 <script setup>
 import '@/assets/main.scss'
-import { createWebSocket, closeWebSocket } from '@/utils/websocket.js'
+import { createWebSocket } from '@/utils/websocket.js'
 createWebSocket()
 </script>
 

@@ -164,7 +164,8 @@ const id = groupList.value.findIndex(
 )
 
 // const nick_name = ref(groupMember.value[id].nickname)
-const nick_name = ref(groupList.value[id].friend_info.name)
+// const nick_name = ref(groupList.value[id].friend_info.name)
+const nick_name = ref('test')
 const inp = ref(null)
 console.log(nick_name.value)
 

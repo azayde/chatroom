@@ -152,43 +152,45 @@ const handleClick = (obj) => {
     </el-header>
     <!-- 聊天列表 -->
     <el-main v-if="!IsSearch" class="list">
-      <!-- TODO pin 样式 is_pin -->
-      <div
-        class="list-item"
-        v-for="item in chatList"
-        :key="item.relation_id"
-        @click="handleClick(item)"
-        :class="{
-          active: item.relation_id === activeChat.relation_id,
-          pin: item.pin_time
-        }"
-      >
-        <div class="left">
-          <el-badge class="item" :value="0" :hidden="true">
-            <div class="avatar">
-              <el-avatar
-                shape="square"
-                :src="
-                  item.relation_type === 'friend'
-                    ? item.friend_info.avatar
-                    : item.group_info.avatar
-                "
-              ></el-avatar>
-            </div>
-          </el-badge>
-        </div>
-        <div class="right">
-          <div class="top">
-            <span class="name">{{
-              item.relation_type === 'friend'
-                ? item.friend_info.name
-                : item.group_info.name
-            }}</span>
-            <span class="time_now">19:30</span>
+      <el-scrollbar>
+        <!-- TODO pin 样式 is_pin -->
+        <div
+          class="list-item"
+          v-for="item in chatList"
+          :key="item.relation_id"
+          @click="handleClick(item)"
+          :class="{
+            active: item.relation_id === activeChat.relation_id,
+            pin: item.pin_time
+          }"
+        >
+          <div class="left">
+            <el-badge class="item" :value="0" :hidden="true">
+              <div class="avatar">
+                <el-avatar
+                  shape="square"
+                  :src="
+                    item.relation_type === 'friend'
+                      ? item.friend_info.avatar
+                      : item.group_info.avatar
+                  "
+                ></el-avatar>
+              </div>
+            </el-badge>
           </div>
-          <span class="message">1234424343565655676676876875</span>
-        </div>
-      </div>
+          <div class="right">
+            <div class="top">
+              <span class="name">{{
+                item.relation_type === 'friend'
+                  ? item.friend_info.name
+                  : item.group_info.name
+              }}</span>
+              <span class="time_now">19:30</span>
+            </div>
+            <span class="message">1234424343565655676676876875</span>
+          </div>
+        </div></el-scrollbar
+      >
     </el-main>
     <!-- 搜索结果列表 -->
     <el-main v-else> <search-list></search-list></el-main>
@@ -199,6 +201,8 @@ const handleClick = (obj) => {
 .el-aside {
   width: 215px;
   background-color: #f5f5f5;
+  display: flex;
+  flex-direction: column;
   .el-header {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     height: 45px;
@@ -226,7 +230,7 @@ const handleClick = (obj) => {
         height: 60px;
         display: flex;
         padding: 0 6px;
-        padding-right: 10px;
+        padding-right: 15px;
         flex-direction: column;
         justify-content: space-between;
         // align-items: center;

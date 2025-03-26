@@ -1,73 +1,76 @@
-// websocket 连接地址
-// let wsUrl = 'ws://localhost:3000'
-let wsUrl = 'ws://192.168.0.197:8000'
-// let wsUrl = 'ws://192.168.0.197:8000/socket.io/?EIO=4&transport=websocket'
+import io from 'socket.io-client'
 
-// websocket对象
+// WebSocket对象
 let socket = null
 
-// 请求重连 延迟请求
-let rec
-
-// 判断是否已经链接上
+// 链接状态标识，避免重复链接
 let isConnect = false
-// 重新连接
 
-// const token = '你的JWT Token' // 从登录接口获取
-// socket = io('ws://192.168.0.197:8000:', {
-//   path: '/socket.io/',
-//   query: {
-//     //将Token作为查询参数传递
-//     token: token,
-//     EIO: '4',
-//     transport: 'websocket'
-//   }
-// })
+// 延迟请求代码 的存储变量
+let rec
+// 重连函数
 let reConnect = () => {
   console.log('尝试重新连接')
-  if (isConnect) return // 如果已经连接上了，不再重连
+  if (isConnect) return
   rec && clearTimeout(rec)
   rec = setTimeout(() => {
-    // 延迟5秒重连，避免频繁请求重连
     initWebSocket()
   }, 5000)
 }
 
-// 初始化websocket连接函数
+// WebSocket链接地址
+let wsurl = 'ws://192.168.0.197:8000/chat'
+
+// let isConnect = false
+// 这个token目前是注册账号时返回的token
+const token =
+  'v2.local.IkHpwHaqMynwGanhU4rUZ3np5GpilU3K_Dq-K3oAdqLrbQncz2RlIeSNTy76_VfxSg4uGafmWb88EGtA_T7YjnPq6l3mVsB_qh9jBchs7dsv8E9DO24oQlkJKR_-7LIgZVNI6mbyVLQB3igzfWNqiRk13IvIoIyg3ZzVB1LpOS8irpDSvLhLSd9loJ54L04bPAQwsNW9I99m8gOiHy8u2DUcrQ-tWk3i_XhT8qZUudTJ6VCfejWgCoS-79OUwZOKKNm2uMZrwM9TrGMd3O5w1LK2iahtfGPaPBkwbRWfAaA6CRPSF4w3bAB50BCYs0UShLHj84UOYV2f4-E.bnVsbA'
+// 初始化websocket
 let initWebSocket = () => {
   try {
-    // 创建对象
-    socket = new WebSocket(wsUrl)
-    //
-    socket.onmessage = (e) => {
-      console.log('接收消息成功', e)
-    }
+    console.log('初始化WebSocket')
+    socket = io(wsurl)
+    socket.on('connect', (e) => {
+      console.log('Connect:', socket.id)
+      console.log('链接成功', e)
+      isConnect = true
+      // accountToken认证
+      socket.emit('auth', token)
+    })
 
-    socket.onclose = (e) => {
-      console.log('websocket连接关闭', e)
-      isConnect = false // 连接关闭
-    }
+    // 一串串，暂时不知道放哪儿
+    socket.on('read_msg', (e) => {
+      console.log('read_msg', e)
+    })
+    socket.on('send_msg', (e) => {
+      console.log('send_msg', e)
+    })
+    socket.on('test', (e) => {
+      console.log('test', e)
+    })
+    // 以上
 
-    socket.onopen = () => {
-      console.log('websocket连接成功')
-      isConnect = true // 连接成功
-    }
+    socket.on('disconnect', (e) => {
+      console.log('链接关闭', e)
+      isConnect = false // 表示链接断开
+    })
   } catch (e) {
-    console.log('尝试创建连接失败', e)
+    console.log('尝试创建链接失败', e)
     reConnect()
   }
 }
-
 // 创建websocket
-let createWebSocket = () => {
-  // 如果已有websocket服务，关闭
-  if (socket) socket.close()
+const createWebSocket = () => {
+  if (socket) closeWebSocket()
   initWebSocket()
 }
 
-// 关闭websocket
-let closeWebSocket = () => {
-  socket.close()
+// 接收消息
+function onMessage(data) {
+  console.log(data)
 }
-
-export { createWebSocket, closeWebSocket }
+// 关闭链接函数
+let closeWebSocket = () => {
+  socket.disconnect()
+}
+export { createWebSocket, onMessage, closeWebSocket }

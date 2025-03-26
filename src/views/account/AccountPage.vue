@@ -62,6 +62,9 @@ const handleSubmit = async (data) => {
     // 调用接口 - 返回数据 - 放到数组
     const res = await accountRegisterServie(data)
     console.log(res)
+
+    // "v2.local.IkHpwHaqMynwGanhU4rUZ3np5GpilU3K_Dq-K3oAdqLrbQncz2RlIeSNTy76_VfxSg4uGafmWb88EGtA_T7YjnPq6l3mVsB_qh9jBchs7dsv8E9DO24oQlkJKR_-7LIgZVNI6mbyVLQB3igzfWNqiRk13IvIoIyg3ZzVB1LpOS8irpDSvLhLSd9loJ54L04bPAQwsNW9I99m8gOiHy8u2DUcrQ-tWk3i_XhT8qZUudTJ6VCfejWgCoS-79OUwZOKKNm2uMZrwM9TrGMd3O5w1LK2iahtfGPaPBkwbRWfAaA6CRPSF4w3bAB50BCYs0UShLHj84UOYV2f4-E.bnVsbA"
+    //  v2.local.Jj66lGFA74geLWcsRXkJ1Jsuw8Vs8h261lY4IRSdR-5UjfQgLAfTTOtJlcgXlmrt_OQQdVPOkNBNYk61tVjE3eggjwtCIFos6KWXYj5grgvXZ9SfQZJWX_klqNWU4dRRpweRxF7mcf-5CV86X-jYcvzHcYj1yKu1T26-mNGee_hL3_7FgdQdjwNxZZdac8ViWilmGPo9i3ka8BO_H_FB69OfheQ2_g1c4nA8X6yeV_QUIlWVsx-HGDdQzbqSyS-7FV0w_G0knnTxICYP_64zcnULv8kAVAPuT82de4TZgCow5qc.bnVsbA
     // 重新渲染
     getAccountList()
     ElMessage.success('添加成功')

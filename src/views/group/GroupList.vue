@@ -119,17 +119,19 @@ const sendMsg = (obj) => {
       <el-button :icon="Plus" plain size="small" @click="bools = true" />
     </el-header>
     <el-main v-if="!IsSearch" class="list">
-      <div
-        class="list-item"
-        v-for="item in groupList"
-        :key="item.relation_id"
-        @click="sendMsg(item)"
+      <el-scrollbar>
+        <div
+          class="list-item"
+          v-for="item in groupList"
+          :key="item.relation_id"
+          @click="sendMsg(item)"
+        >
+          <div class="avatar">
+            <el-avatar shape="square" :src="item.group_info.avatar"></el-avatar>
+          </div>
+          <span class="name">{{ item.group_info.name }}</span>
+        </div></el-scrollbar
       >
-        <div class="avatar">
-          <el-avatar shape="square" :src="item.group_info.avatar"></el-avatar>
-        </div>
-        <span class="name">{{ item.group_info.name }}</span>
-      </div>
     </el-main>
     <!-- 搜索结果列表 -->
     <el-main v-else> <search-list></search-list></el-main>
@@ -159,6 +161,8 @@ const sendMsg = (obj) => {
 .el-aside {
   width: 215px;
   background-color: #f5f5f5;
+  display: flex;
+  flex-direction: column;
   .el-header {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     height: 45px;
