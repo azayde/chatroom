@@ -5,6 +5,11 @@ export const getFriendListService = () => {
   return request.get('/setting/friend/list')
 }
 
+// 查询所有与该账号有关的好友申请
+export const getApplicationService = () => {
+  return request.get('/application/list')
+}
+
 // 同意好友申请
 export const acceptApplicationService = (id) => {
   return request.put('/application/accept', id)

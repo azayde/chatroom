@@ -5,7 +5,7 @@ import {
   acceptApplicationService,
   refuseApplicationService,
   deleteApplicationService,
-  getFriendListService
+  getApplicationService
 } from '@/api/friend.js'
 
 import { useUserStore } from '@/stores'
@@ -13,66 +13,65 @@ const userStore = useUserStore()
 
 // 获取好友申请列表
 const newFriendList = ref([
-  {
-    account_id_1: 111111111111111,
-    account_id_2: 749899612160,
-    apply_msg: '请求添加你为好友',
-    status: '已申请',
-    create_at: '2025-03-12T10:00:00Z',
-    update_at: '2025-03-12T10:00:00Z',
-    name: '张三',
-    avatar:
-      'https://img.tukuppt.com/ad_preview/00/10/23/5c992ae114e20.jpg!/fw/980'
-  },
-  {
-    account_id_1: 333333333333333,
-    account_id_2: 749899612160,
-    apply_msg: '想加入你的群组',
-    refuse: '群组已满',
-    status: '已拒绝',
-    create_at: '2025-03-13T14:30:00Z',
-    update_at: '2025-03-13T15:00:00Z',
-    name: '李四',
-    avatar: 'https://pic3.zhimg.com/v2-87d78fc44236a144aa52cd8ea18e9da2_r.jpg'
-  },
-  {
-    account_id_1: 555555555555555,
-    account_id_2: 749899612160,
-    apply_msg: '请求访问你的项目',
-    status: '已同意',
-    create_at: '2025-03-14T08:00:00Z',
-    update_at: '2025-03-14T09:00:00Z',
-    name: '王五',
-    avatar: 'https://img.shetu66.com/2023/07/05/1688537701771625.png'
-  },
-  {
-    account_id_1: 777777777777777,
-    account_id_2: 749899612160,
-    apply_msg: '请求成为你的朋友',
-    status: '已申请',
-    create_at: '2025-03-15T16:45:00Z',
-    update_at: '2025-03-15T17:00:00Z',
-    name: '赵六',
-    avatar:
-      'https://img.tukuppt.com/png_preview/02/94/12/HUJ75JzwjF.jpg!/fw/780'
-  },
-  {
-    account_id_1: 749899612160,
-    account_id_2: 888888888888888,
-    apply_msg: '我是成员1',
-    status: '已申请',
-    create_at: '2025-03-15T16:45:00Z',
-    update_at: '2025-03-15T17:00:00Z',
-    name: '申请好友',
-    avatar:
-      'https://tse4-mm.cn.bing.net/th/id/OIP-C.b1-zaQ3huVNNgYL6VYlGhgHaHa?rs=1&pid=ImgDetMain'
-  }
+  // {
+  //   account_id_1: 111111111111111,
+  //   account_id_2: 749899612160,
+  //   apply_msg: '请求添加你为好友',
+  //   status: '已申请',
+  //   create_at: '2025-03-12T10:00:00Z',
+  //   update_at: '2025-03-12T10:00:00Z',
+  //   name: '张三',
+  //   avatar:
+  //     'https://img.tukuppt.com/ad_preview/00/10/23/5c992ae114e20.jpg!/fw/980'
+  // },
+  // {
+  //   account_id_1: 333333333333333,
+  //   account_id_2: 749899612160,
+  //   apply_msg: '想加入你的群组',
+  //   refuse: '群组已满',
+  //   status: '已拒绝',
+  //   create_at: '2025-03-13T14:30:00Z',
+  //   update_at: '2025-03-13T15:00:00Z',
+  //   name: '李四',
+  //   avatar: 'https://pic3.zhimg.com/v2-87d78fc44236a144aa52cd8ea18e9da2_r.jpg'
+  // },
+  // {
+  //   account_id_1: 555555555555555,
+  //   account_id_2: 749899612160,
+  //   apply_msg: '请求访问你的项目',
+  //   status: '已同意',
+  //   create_at: '2025-03-14T08:00:00Z',
+  //   update_at: '2025-03-14T09:00:00Z',
+  //   name: '王五',
+  //   avatar: 'https://img.shetu66.com/2023/07/05/1688537701771625.png'
+  // },
+  // {
+  //   account_id_1: 777777777777777,
+  //   account_id_2: 749899612160,
+  //   apply_msg: '请求成为你的朋友',
+  //   status: '已申请',
+  //   create_at: '2025-03-15T16:45:00Z',
+  //   update_at: '2025-03-15T17:00:00Z',
+  //   name: '赵六',
+  //   avatar:
+  //     'https://img.tukuppt.com/png_preview/02/94/12/HUJ75JzwjF.jpg!/fw/780'
+  // },
+  // {
+  //   account_id_1: 749899612160,
+  //   account_id_2: 888888888888888,
+  //   apply_msg: '我是成员1',
+  //   status: '已申请',
+  //   create_at: '2025-03-15T16:45:00Z',
+  //   update_at: '2025-03-15T17:00:00Z',
+  //   name: '申请好友',
+  //   avatar:
+  //     'https://tse4-mm.cn.bing.net/th/id/OIP-C.b1-zaQ3huVNNgYL6VYlGhgHaHa?rs=1&pid=ImgDetMain'
+  // }
 ])
-// const getNewFriendList = async () => {
-const getNewFriendList = () => {
-  // const res = await getFriendListService()
-  // console.log(res)
-  // newFriendList.value = res.data
+const getNewFriendList = async () => {
+  const res = await getApplicationService()
+  console.log(res.data.data)
+  newFriendList.value = res.data.data
 }
 getNewFriendList()
 
@@ -81,8 +80,8 @@ getNewFriendList()
 // console.log(props.newFriend)
 // if (props.newFriend) {
 //   newFriendList.value.unshift(props.newFriend)
-
 //   // 重新渲染一遍
+//   getNewFriendList()
 // }
 
 // 接受好友申请

@@ -3,6 +3,8 @@ import GroupDetail from '../group/GroupDetail.vue'
 // import ChatHistory from '@/components/ChatHistory.vue'
 import { Position, MoreFilled, ChatDotRound } from '@element-plus/icons-vue'
 import { ref } from 'vue'
+import { useUserStore } from '@/stores'
+const userStore = useUserStore()
 const drawer = ref(false)
 // 父传子
 const props = defineProps({
@@ -12,6 +14,80 @@ console.log(props.chatInfo)
 
 // 聊天记录dialog
 const chatDialog = ref()
+
+// 聊天信息
+const chatMsg = [
+  {
+    id: 0,
+    notify_type: 'common',
+    msg_type: 'text',
+    msg_content: 'common notification content 1',
+    msg_extend: {
+      remind: null
+    },
+    file_id: 1,
+    account_id: 734124834816,
+    relation_id: 200,
+    create_at: '2025-03-27T10:00:00Z',
+    pin_time: '2025-03-27T10:05:00Z',
+    rly_msg: null
+  },
+  {
+    id: 1,
+    notify_type: 'common',
+    msg_type: 'text',
+    msg_content: 'Common message content 2',
+    msg_extend: {
+      remind: null
+    },
+    file_id: 2,
+    account_id: 101,
+    relation_id: 200,
+    create_at: '2025-03-27T10:10:00Z',
+    pin_time: '2025-03-27T10:15:00Z',
+    rly_msg: null
+  },
+  {
+    id: 2,
+    notify_type: 'common',
+    msg_type: 'text',
+    msg_content: 'common notification content 3',
+    msg_extend: {
+      remind: null
+    },
+    file_id: 3,
+    account_id: 101,
+    relation_id: 200,
+    create_at: '2025-03-27T10:20:00Z',
+    pin_time: '2025-03-27T10:25:00Z',
+    rly_msg: null
+  },
+  {
+    id: 3,
+    notify_type: 'common',
+    msg_type: 'text',
+    msg_content: 'Common message content 4',
+    msg_extend: {
+      remind: null
+    },
+    file_id: 4,
+    account_id: 734124834816,
+    relation_id: 200,
+    create_at: '2025-03-27T10:30:00Z',
+    pin_time: '2025-03-27T10:35:00Z',
+    rly_msg: null
+  }
+]
+
+// 根据account_id获取用户信息进行渲染
+
+const inputEditorRef = ref(null)
+const sendMsg = () => {
+  // console.log(data)
+  const content = inputEditorRef.value.getContent()
+  console.log('发送内容', content)
+  console.log('发送消息')
+}
 </script>
 
 <template>
@@ -30,25 +106,22 @@ const chatDialog = ref()
     </el-header>
     <el-main>
       <el-scrollbar>
-        <!-- 左侧消息 -->
-        <div class="chat-item left">
+        <div
+          class="chat-item"
+          v-for="item in chatMsg"
+          :key="item.id"
+          :class="{
+            left: item.account_id === userStore.accountInfo.id,
+            right: item.account_id !== userStore.accountInfo.id
+          }"
+        >
           <div class="user-avatar">
             <el-avatar
               shape="square"
               src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
             ></el-avatar>
           </div>
-          <div class="chat-pao">能帮我看看这个需求怎么实现吗？</div>
-        </div>
-        <!-- 右侧消息 -->
-        <div class="chat-item right">
-          <div class="user-avatar">
-            <el-avatar
-              shape="square"
-              src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
-            ></el-avatar>
-          </div>
-          <div class="chat-pao">当然可以，请描述具体需求</div>
+          <div class="chat-pao">{{ item.msg_content }}</div>
         </div>
       </el-scrollbar>
     </el-main>
@@ -79,11 +152,11 @@ const chatDialog = ref()
         <!-- 富文本输入框 -->
         <div class="textarea">
           <!-- 输入框 -->
-          <input-editor></input-editor>
+          <input-editor ref="inputEditorRef"></input-editor>
         </div>
 
         <div class="footer">
-          <el-button type="primary" text bg
+          <el-button type="primary" text bg @click="sendMsg"
             ><el-icon><Position /></el-icon>发送</el-button
           >
         </div>

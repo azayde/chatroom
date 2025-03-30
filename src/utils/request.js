@@ -5,7 +5,7 @@ import axios from 'axios'
 // const router = useRouter()
 
 // const baseURL = 'http://10.8.233.204:8080'
-const baseURL = 'http://192.168.0.197:8000/api'
+const baseURL = 'http://192.168.0.198:8000/api'
 // const baseURL = 'http://127.0.0.1:8080'
 
 const userStore = useUserStore()
@@ -21,8 +21,10 @@ instance.interceptors.request.use(
   (config) => {
     // TODO 2. 携带token
     if (userStore.token) {
-      config.headers.Authorization = `Bearer ${userStore.token}`
+      // config.headers.Authorization = `Bearer ${userStore.token}`
       // config.headers.AccountToken = `Bearer ${userStore.accountToken}`
+      config.headers.Authorization = `Bearer ${userStore.accountToken}`
+      // config.headers.Authorization = `Bearer v2.local.U8ciVgojLIlO7wZDF1jvj9g0tN8wXf5c2elxonOmBFn-o_OOn0JhGiZVjer66gCHF1AVuf92u3wJskyceyy1kJckl83r8LKW3XphPvPkyqWNZ82EMDlaBLBB8GEqFVNbbFuhIeac2cyOGV3dKsO-pOnrZvHubq84fmcCmbULHfpd11Reav5cRgm1MUrFVfoOoJlU2dvnPIv4E2kIYLAmc65oZY2fCc-lq9F6-BgOfsUesXWW49OPzy-ioouDRzaJ8aSyNxX6svfzuiLFF9RKmT2KepTERFwZ8KlbUlkeX55RWjM.bnVsbA`
       // config.headers.Authorization = `Bearer ${}`
       // config.headers.AuthorizationKey = userStore.token
       // console.log(userStore.token)

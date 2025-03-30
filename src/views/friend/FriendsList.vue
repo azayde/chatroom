@@ -122,16 +122,14 @@ const form = ref()
 const applicationInfo = ref({
   account_id: null,
   application_msg: ''
-  // account_id: 234546,
-  // application_msg: '你好'
 })
 const handleCreateApplication = async () => {
   createApplication.value = false
-  // console.log(applicationInfo.value)
+  console.log(applicationInfo.value)
 
   // 调接口
-  // const res = await createApplicationService(applicationInfo.value)
-  // console.log(res)
+  const res = await createApplicationService(applicationInfo.value)
+  console.log(res)
 
   // const res = {
   //   account_id_1: 111111111111111,
@@ -214,10 +212,7 @@ const handleCreateApplication = async () => {
     >
       <el-form :model="applicationInfo" ref="form">
         <el-form-item label="账号id">
-          <el-input
-            v-model="applicationInfo.account_id"
-            type="number"
-          ></el-input>
+          <el-input v-model.number="applicationInfo.account_id"></el-input>
         </el-form-item>
         <!-- 可选 -->
         <el-form-item label="打招呼">
