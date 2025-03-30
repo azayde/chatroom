@@ -1,5 +1,6 @@
 <script setup>
 import GroupDetail from '../group/GroupDetail.vue'
+import FriendDetail from '@/views/friend/friendDetail.vue'
 // import ChatHistory from '@/components/ChatHistory.vue'
 import { Position, MoreFilled, ChatDotRound } from '@element-plus/icons-vue'
 import { ref } from 'vue'
@@ -170,6 +171,10 @@ const sendMsg = () => {
         v-if="chatInfo.relation_type === 'group'"
         :groupInfo="chatInfo"
       ></group-detail>
+      <friend-detail
+        v-if="chatInfo.relation_type === 'friend'"
+        :frinedInfo="chatInfo"
+      ></friend-detail>
     </el-drawer>
 
     <chat-history ref="chatDialog"></chat-history>

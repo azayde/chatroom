@@ -100,14 +100,15 @@ const activeAccountId = ref(userStore.accountInfo.id)
 // 账号切换
 const handleSwtich = async (id) => {
   // 获取账号的token，存入store
-  console.log(typeof id)
+  console.log(id)
   const res = await getAccountTokenService(id)
+  console.log(res)
   console.log(res.data.data.account_token.token)
   userStore.setAccountToken(res.data.data.account_token.token)
 
-  // //  根据id 获取账号信息
-  // const res1 = getAccountInfoById(id)
-  // console.log(res1)
+  //  根据id 获取账号信息
+  const res1 = getAccountInfoById(id)
+  console.log(res1)
 
   // 账号信息存入store（覆盖之前的）
   // userStore.setAccountInfo()
