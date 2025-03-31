@@ -93,25 +93,34 @@ const handleSubmit = async (data) => {
 }
 
 //  根据id 获取账号信息
-const res1 = getAccountInfoById(1021631791104)
-console.log(res1)
+// const res1 = await getAccountInfoById(1021631791104)
+// console.log(res1)
 // 当前账号id，读取store信息 TODO
 const activeAccountId = ref(userStore.accountInfo.id)
 // 账号切换
 const handleSwtich = async (id) => {
   // 获取账号的token，存入store
   console.log(id)
-  const res = await getAccountTokenService(id)
-  console.log(res)
-  console.log(res.data.data.account_token.token)
-  userStore.setAccountToken(res.data.data.account_token.token)
+  try {
+    const res = await getAccountTokenService(id)
+    console.log(res)
+    console.log(res.data.data.account_token.token)
+    userStore.setAccountToken(res.data.data.account_token.token)
+  } catch (err) {
+    console.log(err)
+  }
 
   //  根据id 获取账号信息
-  const res1 = getAccountInfoById(id)
+  const res1 = await getAccountInfoById(id)
   console.log(res1)
-
+  console.log(res1.data.data)
+  // const accountInfo = {
+  //   ...res1.data.data.info,
+  //   signature: res1.data.data.signature
+  // }
+  // console.log(accountInfo)
   // 账号信息存入store（覆盖之前的）
-  // userStore.setAccountInfo()
+  // userStore.setAccountInfo(accountInfo)
 
   // 防抖，一直点不起作用 TODO:
   console.log(id)

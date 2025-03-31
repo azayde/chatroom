@@ -24,8 +24,7 @@ instance.interceptors.request.use(
       '/account/create',
       '/account/token',
       '/account/infos/account',
-      '/account/update',
-      '/account/infos/ID'
+      '/account/update'
     ]
 
     // 判断使用哪种token
@@ -34,12 +33,6 @@ instance.interceptors.request.use(
     // TODO 2. 携带token
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
-      // config.headers.Authorization = `Bearer ${userStore.token}`
-      // config.headers.AccountToken = `Bearer ${userStore.accountToken}`
-      // config.headers.Authorization = `Bearer ${userStore.accountToken}`
-      // console.log(userStore.token)
-      // console.log(config)
-      // 账号token TODO:
     }
     return config
   },

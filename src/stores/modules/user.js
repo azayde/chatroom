@@ -48,6 +48,7 @@ export const useUserStore = defineStore(
     // 账号信息
     const accountInfo = ref({})
     const setAccountInfo = (obj) => {
+      console.log(obj)
       accountInfo.value = obj
     }
 

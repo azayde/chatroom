@@ -6,6 +6,10 @@ import '@/assets/main.scss'
 </script>
 
 <template>
+  <link
+    rel="stylesheet"
+    href="//at.alicdn.com/t/c/font_4877399_who3uzdgfa.css"
+  />
   <div>
     <router-view></router-view>
   </div>

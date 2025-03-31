@@ -1,8 +1,13 @@
 <script setup>
 import GroupDetail from '../group/GroupDetail.vue'
-import FriendDetail from '@/views/friend/friendDetail.vue'
+import FriendDetail from '@/views/friend/FriendDetail.vue'
 // import ChatHistory from '@/components/ChatHistory.vue'
-import { Position, MoreFilled, ChatDotRound } from '@element-plus/icons-vue'
+import {
+  Position,
+  MoreFilled,
+  ChatDotRound,
+  Delete
+} from '@element-plus/icons-vue'
 import { ref } from 'vue'
 import { useUserStore } from '@/stores'
 const userStore = useUserStore()
@@ -15,6 +20,9 @@ console.log(props.chatInfo)
 
 // 聊天记录dialog
 const chatDialog = ref()
+
+// 发送图片或文件
+const fileDialog = ref(false)
 
 // 聊天信息
 const chatMsg = [
@@ -89,6 +97,64 @@ const sendMsg = () => {
   console.log('发送内容', content)
   console.log('发送消息')
 }
+
+// 上传文件
+// const fileUpdate = [
+//   {
+//     id: 0,
+//     file_type: 'pdf',
+//     file_size: 1024,
+//     url: 'http://example.com/file1.pdf',
+//     create_at: '2025-03-31T10:00:00Z'
+//   },
+//   {
+//     id: 1,
+//     file_type: 'doc',
+//     file_size: 2048,
+//     url: 'http://example.com/file2.doc',
+//     create_at: '2025-03-31T11:00:00Z'
+//   },
+//   {
+//     id: 2,
+//     file_type: 'text',
+//     file_size: 512,
+//     url: 'http://example.com/file3.txt',
+//     create_at: '2025-03-31T12:00:00Z'
+//   },
+//   {
+//     id: 3,
+//     file_type: 'ppt',
+//     file_size: 4096,
+//     url: 'http://example.com/file4.ppt',
+//     create_at: '2025-03-31T13:00:00Z'
+//   }
+// ]
+const fileTypeIcon = {
+  pdf: 'icon-pdf',
+  txt: 'icon-wenbenwendang-txt',
+  ppt: 'icon-yanshiwendang-ppt_pptx',
+  zip: 'icon-yasuowenjian-zip_rar_7z',
+  excel: 'icon-biaoge-xlxs_xls',
+  mp4: 'icon-shipin-mov_mp4_avi',
+  doc: 'icon-wendang-docx_doc',
+  docx: 'icon-wendang-docx_doc'
+}
+const selectFile = ref([])
+const handleFileChange = (file) => {
+  // console.log(URL.createObjectURL(file.raw))
+  selectFile.value = [
+    {
+      id: file.uid,
+      file_type: file.name.split('.').pop(),
+      file_size: (file.size / 1024).toFixed(2) + 'KB',
+      url: URL.createObjectURL(file.raw),
+      create_at: new Date().toISOString()
+    }
+  ]
+  console.log(file)
+  fileDialog.value = true
+  console.log(selectFile.value)
+}
 </script>
 
 <template>
@@ -106,6 +172,7 @@ const sendMsg = () => {
       </div>
     </el-header>
     <el-main>
+      <!-- 聊天信息 -->
       <el-scrollbar>
         <div
           class="chat-item"
@@ -140,7 +207,7 @@ const sendMsg = () => {
             </el-icon>
           </el-upload>
           <!-- 上传文件 -->
-          <el-upload class="doc-uploader">
+          <el-upload class="doc-uploader" :on-change="handleFileChange">
             <el-icon>
               <img ref="emoji" src="@/assets/document.svg" alt="" />
             </el-icon>
@@ -163,7 +230,6 @@ const sendMsg = () => {
         </div>
       </div>
     </el-footer>
-
     <!-- 右上角 三点 -- 聊天对象的详细信息 -->
     <!-- TODO  -->
     <el-drawer v-model="drawer" :with-header="false">
@@ -176,8 +242,63 @@ const sendMsg = () => {
         :frinedInfo="chatInfo"
       ></friend-detail>
     </el-drawer>
-
+    <!-- 聊天记录 -->
     <chat-history ref="chatDialog"></chat-history>
+    <!-- 发送文件或图片 -->
+    <el-dialog v-model="fileDialog" class="file" draggable>
+      <template #header>
+        发送给：
+        <div class="info dialog-header">
+          <div class="avatar">
+            <el-avatar
+              shape="square"
+              :src="
+                chatInfo.relation_type === 'friend'
+                  ? chatInfo.friend_info.avatar
+                  : chatInfo.group_info.avatar
+              "
+            ></el-avatar>
+          </div>
+          <span class="name">{{
+            chatInfo.relation_type === 'friend'
+              ? chatInfo.friend_info.name
+              : chatInfo.group_info.name
+          }}</span>
+        </div>
+        <hr />
+      </template>
+      <div class="file_update">
+        <el-scrollbar class="file_scrollbar">
+          <el-link
+            href="https://element-plus.org"
+            :underline="false"
+            v-for="item in selectFile"
+            :key="item.id"
+          >
+            <div class="item">
+              <i class="iconfont" :class="fileTypeIcon[item.file_type]"></i>
+              <div class="right">
+                <span class="file_name"></span>
+                <span class="file_size">{{ item.file_size }}</span>
+              </div>
+              <el-button class="delete_btn" :icon="Delete" text circle />
+            </div>
+          </el-link>
+        </el-scrollbar>
+      </div>
+
+      <!-- <div class="file-update"></div> -->
+      <template #footer>
+        <div class="dialog-footer">
+          <!-- <el-button type="primary" @click="onSubmit"> 发送 </el-button> -->
+          <!-- <el-button @click="accountEditForm = false">取消</el-button> -->
+          <el-button type="primary" @click="fileDialog = false">
+            发送
+          </el-button>
+          <el-button @click="fileDialog = false">取消</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </el-container>
 </template>
 
@@ -359,4 +480,81 @@ const sendMsg = () => {
     }
   }
 }
+:deep(.file) {
+  width: 25%;
+  .el-dialog__header {
+    padding: 0;
+  }
+  .file_update {
+    display: flex;
+    justify-content: space-between;
+
+    flex-direction: column;
+
+    .file_scrollbar {
+      height: 370px;
+    }
+    .el-link {
+      width: 100%;
+    }
+    .el-link__inner {
+      width: 100%;
+    }
+    .item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      margin: 8px;
+      height: 55px;
+      .iconfont {
+        font-size: 40px;
+        padding-right: 10px;
+      }
+      .right {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        .file_name {
+          font-size: 16px;
+          color: #000;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .file_size {
+          font-size: 12px;
+          color: #c4c4c4;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+      .delete_btn {
+        position: absolute;
+        right: 15px;
+        top: 20px;
+      }
+    }
+  }
+}
+.info {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  .avatar {
+    margin: 0 5px;
+  }
+}
+
+hr {
+  margin: 5px 0;
+  border: none;
+  height: 1px;
+  background-color: #ececec;
+}
+// .box {
+//   width: 100px;
+//   height: 100px;
+//   background-color: #bfa;
+// }
 </style>

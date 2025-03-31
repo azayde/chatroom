@@ -75,5 +75,5 @@ export const searchAccountByName = (name) => {
 
 // 根据ID查找账号信息
 export const getAccountInfoById = (id) => {
-  return request.get('/account/infos/ID', { account_id: id })
+  return request.get('/account/info', { account_id: id })
 }
