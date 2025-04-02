@@ -9,7 +9,6 @@ import {
 } from '@/api/friend.js'
 
 import { useUserStore } from '@/stores'
-import { ElMessage } from 'element-plus'
 const userStore = useUserStore()
 
 const loading = ref(false)
@@ -29,26 +28,15 @@ const getNewFriendList = async () => {
   } finally {
     loading.value = false
   }
-
-  // console.log(newFriendList.value)
 }
 getNewFriendList()
 
-// 创建好友申请
-// const props = defineProps({ newFriend: Object })
-// console.log(props.newFriend)
-// if (props.newFriend) {
-//   newFriendList.value.unshift(props.newFriend)
-//   // 重新渲染一遍
-//   getNewFriendList()
-// }
-
 // 接受好友申请
-// const handleAccept = async (id) => {
-const handleAccept = (id) => {
+const handleAccept = async (id) => {
+  // const handleAccept = (id) => {
   console.log(id)
-  // await acceptApplicationService(id)
-
+  const res = await acceptApplicationService(id)
+  console.log(res)
   // 应该是后端修改了 ???  TODO: 重新获取列表 ??
 
   // const friend = newFriendList.value.find((item) => item.account_id_1 === id)
@@ -58,11 +46,10 @@ const handleAccept = (id) => {
   // newFriendList[id].status = '已同意'
 
   // 重新渲染
-  // getNewFriendList()
+  getNewFriendList()
   ElMessage.success('添加好友成功')
 }
 
-// 拒绝好友申请
 // const handleRefuse = async ({ id, refuse }) => {
 // const handleRefuse = ({ id, refuse }) => {
 //   console.log({ id, refuse })
@@ -76,23 +63,25 @@ const handleAccept = (id) => {
 // }
 
 // 删除好友申请
-// const handleDelete = async (id) => {
-const handleDelete = (id) => {
+const handleDelete = async (id) => {
   console.log(id)
-  // await deleteApplicationService(id)
-
+  const res = await deleteApplicationService(id)
+  console.log(res)
   // 重新渲染
-  // getNewFriendList()
+  getNewFriendList()
   ElMessage.success('删除成功')
 }
 
+// 拒绝好友申请
 const handleRefuse = async (id) => {
   ElMessageBox.prompt('请输入拒绝的留言', {
     confirmButtonText: '确认',
     cancelButtonText: '取消'
   }).then(async (refuse) => {
-    console.log({ id, refuse: refuse.value })
-    // await refuseApplicationService({ id, refuse: refuse.value })
+    console.log({ id, refuse_msg: refuse.value })
+    const res = await refuseApplicationService({ id, refuse_msg: refuse.value })
+    console.log(res)
+    getNewFriendList()
     ElMessage({
       type: 'success',
       message: `已拒绝`

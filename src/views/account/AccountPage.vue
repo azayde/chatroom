@@ -38,16 +38,18 @@ const handleEdit = (row) => {
   accountEditRef.value.open({ row })
 }
 // 删除账号
-const handleDel = async (row) => {
+const handleDel = (row) => {
   // 删除
   console.log(typeof row.id)
-  const res = await deleteAccountService(row.id)
-  // const res = await deleteAccountService(1021631791104)
-  console.log(res)
+
   ElMessageBox.confirm('你确认删除该分类信息吗？', '温馨提示', {
     type: 'warning',
     confirmButtonText: '确认',
     cancelButtonText: '取消'
+  }).then(async () => {
+    const res = await deleteAccountService(row.id)
+    // const res = await deleteAccountService(1021631791104)
+    console.log(res)
   })
   console.log(row)
   // 重新渲染
@@ -92,9 +94,6 @@ const handleSubmit = async (data) => {
   console.log(accountList.value)
 }
 
-//  根据id 获取账号信息
-// const res1 = await getAccountInfoById(1021631791104)
-// console.log(res1)
 // 当前账号id，读取store信息 TODO
 const activeAccountId = ref(userStore.accountInfo.id)
 // 账号切换
@@ -114,13 +113,13 @@ const handleSwtich = async (id) => {
   const res1 = await getAccountInfoById(id)
   console.log(res1)
   console.log(res1.data.data)
-  // const accountInfo = {
-  //   ...res1.data.data.info,
-  //   signature: res1.data.data.signature
-  // }
-  // console.log(accountInfo)
+  const accountInfo = {
+    ...res1.data.data.info,
+    signature: res1.data.data.signature
+  }
+  console.log(accountInfo)
   // 账号信息存入store（覆盖之前的）
-  // userStore.setAccountInfo(accountInfo)
+  userStore.setAccountInfo(accountInfo)
 
   // 防抖，一直点不起作用 TODO:
   console.log(id)
@@ -135,8 +134,6 @@ const handleSearch = () => {
   console.log(name)
   const res = searchAccountByName(name)
   console.log(res)
-
-  // accountList.value = []
 }
 // 搜索重置
 const handleReset = () => {

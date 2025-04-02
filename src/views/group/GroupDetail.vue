@@ -1,6 +1,13 @@
 <!-- 群聊详细信息 -->
 <script setup>
-import { Plus, Minus, ArrowRight, Position } from '@element-plus/icons-vue'
+import {
+  Plus,
+  Minus,
+  ArrowRight,
+  Position,
+  Edit,
+  Delete
+} from '@element-plus/icons-vue'
 import { watch, ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import {
@@ -36,7 +43,7 @@ const dialogFormVisible = ref(false)
 // 添加群成员
 const bools = ref(false)
 
-const groupNotify = ref(false)
+const groupNotify = ref(true)
 
 // 群成员列表 (TODO: ) 可以拿到信息： 共有多少人
 const groupList = ref([
@@ -249,6 +256,108 @@ const handleDissolve = async () => {
 const sendMsg = () => {
   router.push('/chat/chatroom')
 }
+
+const notifyList = [
+  {
+    id: 1,
+    relation_id: 101,
+    msg_content: 'Hello, this is the first message.',
+    msg_extend: {
+      remind: null
+    },
+    account_id: 501,
+    create_at: '2025-04-01T10:00:00Z',
+    read_ids: [2]
+  },
+  {
+    id: 2,
+    relation_id: 102,
+    msg_content: 'This is the second message.',
+    msg_extend: {
+      remind: null
+    },
+    account_id: 502,
+    create_at: '2025-04-01T11:00:00Z',
+    read_ids: [3]
+  },
+  {
+    id: 3,
+    relation_id: 103,
+    msg_content: "Here's the third message.",
+    msg_extend: {
+      remind: null
+    },
+    account_id: 503,
+    create_at: '2025-04-01T12:00:00Z',
+    read_ids: [4]
+  },
+  {
+    id: 4,
+    relation_id: 104,
+    msg_content: 'And this is the fourth message.',
+    msg_extend: {
+      remind: null
+    },
+    account_id: 504,
+    create_at: '2025-04-01T13:00:00Z',
+    read_ids: [5]
+  },
+  {
+    id: 4,
+    relation_id: 104,
+    msg_content: 'And this is the fourth message.',
+    msg_extend: {
+      remind: null
+    },
+    account_id: 504,
+    create_at: '2025-04-01T13:00:00Z',
+    read_ids: [5]
+  },
+  {
+    id: 4,
+    relation_id: 104,
+    msg_content: 'And this is the fourth message.',
+    msg_extend: {
+      remind: null
+    },
+    account_id: 504,
+    create_at: '2025-04-01T13:00:00Z',
+    read_ids: [5]
+  },
+  {
+    id: 4,
+    relation_id: 104,
+    msg_content: 'And this is the fourth message.',
+    msg_extend: {
+      remind: null
+    },
+    account_id: 504,
+    create_at: '2025-04-01T13:00:00Z',
+    read_ids: [5]
+  },
+  {
+    id: 4,
+    relation_id: 104,
+    msg_content: 'And this is the fourth message.',
+    msg_extend: {
+      remind: null
+    },
+    account_id: 504,
+    create_at: '2025-04-01T13:00:00Z',
+    read_ids: [5]
+  },
+  {
+    id: 4,
+    relation_id: 104,
+    msg_content: 'And this is the fourth message.',
+    msg_extend: {
+      remind: null
+    },
+    account_id: 504,
+    create_at: '2025-04-01T13:00:00Z',
+    read_ids: [5]
+  }
+]
 </script>
 
 <template>
@@ -419,7 +528,7 @@ const sendMsg = () => {
     width="500"
     class="dialog"
   >
-    <!-- 不能直接修改父组件传过来的信息 -->
+    <!-- 不能直接修改父组件传过来的信息, 父组件暴露open方法 -->
     <el-form>
       <el-upload
         class="avatar-uploader"
@@ -461,7 +570,46 @@ const sendMsg = () => {
   <chat-history ref="chatDialog"></chat-history>
 
   <!-- 群公告 -->
-  <el-dialog v-model="groupNotify" title="群公告"> </el-dialog>
+  <el-dialog
+    v-model="groupNotify"
+    :title="'\'' + groupInfo.group_info.name + '\' 的群公告'"
+  >
+    <div class="editor">
+      <el-table style="width: 100%" :data="notifyList" max-height="300">
+        <el-table-column label="序号" prop="id" width="55"></el-table-column>
+        <el-table-column label="公告" prop="msg_content"></el-table-column>
+        <el-table-column label="操作" width="150" v-if="true">
+          <template #default="{ row }">
+            <el-button
+              :icon="Edit"
+              circle
+              type="primary"
+              plain
+              @click="handleEdit(row)"
+            ></el-button>
+            <el-button
+              :icon="Delete"
+              circle
+              type="danger"
+              plain
+              @click="handleDel(row)"
+            ></el-button>
+          </template>
+        </el-table-column>
+        <template #empty>
+          <el-empty description="没有账号"></el-empty>
+        </template>
+      </el-table>
+    </div>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="groupNotify = false">取消</el-button>
+        <el-button type="primary" @click="groupNotify = false">
+          确定
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <style lang="scss" scoped>
@@ -615,5 +763,10 @@ const sendMsg = () => {
       }
     }
   }
+}
+
+.editor {
+  // background-color: red;
+  border: 1px solid #000;
 }
 </style>

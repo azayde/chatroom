@@ -82,9 +82,9 @@ const chatPinList = ref([
     }
   }
 ])
-console.log(chatPinList.value)
+// console.log(chatPinList.value)
 
-// classs:  pin 的样式(用is_pin判断) ！！！！！！！ TODO
+// class:  pin 的样式(用is_pin判断) ！！！！！！！ TODO
 // 获取置顶列表
 const getChatPinList = async () => {
   // const res = getChatPinListService()
@@ -102,7 +102,7 @@ const getChatList = async () => {
   // 排序
   // 提取置顶项的 relation_id 集合
   const pinIds = new Set(chatPinList.value.map((item) => item.relation_id))
-  console.log(pinIds)
+  // console.log(pinIds)
   // 分离 chatList 中的置顶项和非置顶项
   const [pinnedItems, nonPinnedItems] = chatList.value.reduce(
     (acc, item) => {

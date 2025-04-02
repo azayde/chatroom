@@ -51,7 +51,6 @@ const onSubmit = () => {
 // 传给父组件的方法
 const open = (obj) => {
   console.log(obj.row)
-
   if (obj.row) {
     // 修改
     formData.value = { ...obj.row }

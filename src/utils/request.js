@@ -5,7 +5,7 @@ import axios from 'axios'
 // const router = useRouter()
 
 // const baseURL = 'http://10.8.233.204:8080'
-const baseURL = 'http://192.168.0.198:8000/api'
+const baseURL = 'http://192.168.3.34:8000/api'
 // const baseURL = 'http://127.0.0.1:8080'
 
 const userStore = useUserStore()
@@ -24,7 +24,8 @@ instance.interceptors.request.use(
       '/account/create',
       '/account/token',
       '/account/infos/account',
-      '/account/update'
+      '/account/update',
+      '/account/delete'
     ]
 
     // 判断使用哪种token

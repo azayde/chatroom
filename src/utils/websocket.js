@@ -19,14 +19,23 @@ let reConnect = () => {
 }
 
 // WebSocket链接地址
-let wsurl = 'ws://192.168.0.197:8000/chat'
+let wsurl = 'ws://192.168.3.34:8000/chat'
 
 // let isConnect = false
 // 这个token目前是注册账号时返回的token
-const token =
-  'v2.local.IkHpwHaqMynwGanhU4rUZ3np5GpilU3K_Dq-K3oAdqLrbQncz2RlIeSNTy76_VfxSg4uGafmWb88EGtA_T7YjnPq6l3mVsB_qh9jBchs7dsv8E9DO24oQlkJKR_-7LIgZVNI6mbyVLQB3igzfWNqiRk13IvIoIyg3ZzVB1LpOS8irpDSvLhLSd9loJ54L04bPAQwsNW9I99m8gOiHy8u2DUcrQ-tWk3i_XhT8qZUudTJ6VCfejWgCoS-79OUwZOKKNm2uMZrwM9TrGMd3O5w1LK2iahtfGPaPBkwbRWfAaA6CRPSF4w3bAB50BCYs0UShLHj84UOYV2f4-E.bnVsbA'
+import { useUserStore } from '@/stores'
+
+let token = ''
 // 初始化websocket
 let initWebSocket = () => {
+  // 如果 userStore 放到函数外面，则会报错，原因：
+  // 在 websocket.js 中，模块加载时立即调用 useUserStore()，而此时 Vue 应用尚未挂载，Pinia 未完成初始化，导致 Store 无法找到活跃的 Pinia 实例。
+  // 解决：
+  // 延迟 Store 的调用时机，确保在 Pinia 初始化完成后使用，
+  // 将 useUserStore 的调用移到函数内部（如 initWebSocket），避免模块加载时立即执行
+  const userStore = useUserStore()
+  token = userStore.accountToken
+  console.log(token)
   try {
     console.log('初始化WebSocket')
     socket = io(wsurl)
@@ -38,13 +47,6 @@ let initWebSocket = () => {
       socket.emit('auth', token)
     })
 
-    // 一串串，暂时不知道放哪儿
-    socket.on('read_msg', (e) => {
-      console.log('read_msg', e)
-    })
-    socket.on('send_msg', (e) => {
-      console.log('send_msg', e)
-    })
     socket.on('test', (e) => {
       console.log('test', e)
     })
@@ -65,12 +67,33 @@ const createWebSocket = () => {
   initWebSocket()
 }
 
+const sendMsg_socket = () => {
+  console.log('发消息')
+  socket.emit(
+    'send_msg',
+    {
+      relation_id: 24,
+      msg_content: 'zzzzzz'
+    },
+    (res) => {
+      console.log(res)
+      // if (res.success) {
+      //   console.log('发送消息成功')
+      // } else {
+      //   console.log('消息发送失败')
+      // }
+    }
+  )
+}
+
 // 接收消息
-function onMessage(data) {
-  console.log(data)
+function onMessage() {
+  socket.on('read_msg', (e) => {
+    console.log('read_msg', e)
+  })
 }
 // 关闭链接函数
 let closeWebSocket = () => {
   socket.disconnect()
 }
-export { createWebSocket, onMessage, closeWebSocket }
+export { createWebSocket, onMessage, closeWebSocket, sendMsg_socket }

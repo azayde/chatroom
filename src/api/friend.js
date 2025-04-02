@@ -11,18 +11,22 @@ export const getApplicationService = () => {
 }
 
 // 同意好友申请
+// export const acceptApplicationService = (id) => {
+//   return request.put('/application/accept', { data: { account_id: id } })
+// }
+
 export const acceptApplicationService = (id) => {
-  return request.put('/application/accept', id)
+  return request.put('/application/accept', { account_id: id })
 }
 
 // 拒绝好友申请
-export const refuseApplicationService = ({ id, refuse }) => {
-  return request.put('/application/refuse', { id, refuse })
+export const refuseApplicationService = ({ id, refuse_msg }) => {
+  return request.put('/application/refuse', { account_id: id, refuse_msg })
 }
 
 // 申请者删除申请
-export const deleteApplicationService = (id) => {
-  return request.delete('/application/delete', id)
+export const deleteApplicationService = (account_id) => {
+  return request.delete('/application/delete', { data: { account_id } })
 }
 
 // 创建申请
@@ -31,8 +35,8 @@ export const createApplicationService = (data) => {
 }
 
 // 通过姓名模糊查询好友（好友姓名或昵称）
-export const searchFriendByName = (params) => {
-  return request.get('/setting/friend/name', { params })
+export const searchFriendByName = (name) => {
+  return request.get('/setting/friend/name', { params: { name } })
 }
 
 // 删除好友（双向删除）

@@ -10,6 +10,7 @@ import {
 } from '@element-plus/icons-vue'
 import { ref } from 'vue'
 import { useUserStore } from '@/stores'
+import { sendMsg_socket } from '@/utils/websocket'
 const userStore = useUserStore()
 const drawer = ref(false)
 // 父传子
@@ -90,12 +91,13 @@ const chatMsg = [
 
 // 根据account_id获取用户信息进行渲染
 
+// 发送消息
 const inputEditorRef = ref(null)
 const sendMsg = () => {
   // console.log(data)
   const content = inputEditorRef.value.getContent()
   console.log('发送内容', content)
-  console.log('发送消息')
+  sendMsg_socket()
 }
 
 // 上传文件

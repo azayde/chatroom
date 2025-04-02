@@ -2,12 +2,15 @@
 <!--头像点击 or 好友界面 -->
 <script setup>
 import { Position, MoreFilled, Delete } from '@element-plus/icons-vue'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { deleteFriendService } from '@/api/friend.js'
 import { updateNickNameService } from '@/api/setting.js'
-import { ElMessage } from 'element-plus'
 const router = useRouter()
+
+const props = defineProps({
+  userInfo: Object
+})
 // switch开关 （三个）
 const isPin = ref(false)
 const isShow = ref(false)
@@ -27,11 +30,44 @@ const sendMsg = () => {
   router.push('/chat/chatroom')
 }
 
-const props = defineProps({
-  userInfo: Object
-})
-
 console.log(props.userInfo)
+watch(
+  () => props.userInfo,
+  (newVal) => {
+    if (newVal !== undefined) {
+      isPin.value = newVal.is_pin
+      isShow.value = newVal.is_show
+      isNotDisturb.value = newVal.is_not_disturb
+    }
+  },
+  { immediate: true }
+)
+
+const handleSwitch = (msg) => {
+  const relation_id = ref(props.userInfo.relation_id)
+  console.log(relation_id.value)
+  console.log(msg)
+  if (msg === 'isNotDisturb') {
+    // updateDisturbService({
+    //   relation_id: relation_id.value,
+    //   isNotDisturb: isNotDisturb.value
+    // })
+    // console.log(111)
+  } else if (msg === 'isPin') {
+    // updatePinService({
+    //   relation_id: relation_id.value,
+    //   isPin: isPin.value
+    // })
+  } else if (msg === 'isShow') {
+    // updateShowService({
+    //   relation_id: relation_id.value,
+    //   isShow: isShow.value
+    // })
+  }
+}
+watch(isNotDisturb, () => handleSwitch('isNotDisturb'))
+watch(isPin, () => handleSwitch('isPin'))
+watch(isShow, () => handleSwitch('isShow'))
 
 // const relation_id = props.userInfo.relation_id
 // console.log(relation_id)
@@ -154,25 +190,6 @@ const updateNickName = () => {
               style="--el-switch-on-color: #13ce66"
             ></el-switch>
           </div>
-          <!-- <hr
-            style="
-              margin: 2px 0;
-              border: none;
-              height: 1px;
-              background-color: #ececec;
-            "
-          />
-          <div
-            class="switch"
-            style="display: flex; justify-content: space-between"
-          >
-            <span>pin</span>
-            <el-switch
-              v-model="isPin"
-              size="small"
-              style="--el-switch-on-color: #13ce66"
-            ></el-switch>
-          </div> -->
         </div>
       </el-popover>
       <!-- <div class="more">

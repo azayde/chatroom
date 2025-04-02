@@ -18,14 +18,15 @@ const handleFocus = () => {
   //   console.log(11)
   // }
 }
-const handleBlue = () => {
+const handleBlue = async () => {
   // 输入框为空 且 失焦 切换
   if (!input.value) {
     IsSearch.value = false
   }
   // 查询
   console.log(22)
-  // searchFriendByName(input.value)
+  const res = await searchFriendByName(input.value)
+  console.log(res)
 }
 watch(input, () => {
   // 一直搜索吗？？ TODO:
@@ -103,11 +104,12 @@ const friendList = ref([
 ])
 
 // 获取好友列表
-// // const getFriendList = async () => {
-// const res = await getFriendListService()
-// friendList.value = res
-// // }
-// // getFriendList()
+const getFriendList = async () => {
+  const res = await getFriendListService()
+  console.log(res.data.data)
+  friendList.value = res.data.data.list
+}
+getFriendList()
 
 // 点击好友 - 显示对应信息
 // 子传父  好友信息传到FriendsPage
@@ -130,23 +132,6 @@ const handleCreateApplication = async () => {
   // 调接口
   const res = await createApplicationService(applicationInfo.value)
   console.log(res)
-
-  // const res = {
-  //   account_id_1: 111111111111111,
-  //   account_id_2: 1111111,
-  //   apply_msg: '请求添加你为好友',
-  //   status: '已申请',
-  //   create_at: '2025-03-12T10:00:00Z',
-  //   update_at: '2025-03-12T10:00:00Z',
-  //   name: '张三',
-  //   avatar:
-  //     'https://img.tukuppt.com/ad_preview/00/10/23/5c992ae114e20.jpg!/fw/980'
-  // }
-  // emit('get-friend-info', {
-  //   // newFriend: applicationInfo.value,
-  //   newFriend: res,
-  //   IsNewFriend: true
-  // })
 }
 </script>
 

@@ -27,8 +27,9 @@ getAccount()
 
 const getAccountId = async (obj) => {
   console.log(typeof obj.id)
-  console.log(obj)
+  console.log(obj.id)
   const res = await getAccountTokenService(obj.id)
+  console.log(res)
   console.log(res.data.data.account_token.token)
 
   // 账号信息存入本地
