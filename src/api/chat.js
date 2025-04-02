@@ -28,3 +28,7 @@ export const getChatPinListService = () => {
 export const getChatShowListService = () => {
   return request.get('/setting/shows')
 }
+
+export const getChatListByLastTime = (relation_id, last_time) => {
+  return request.get('/message/list/time', { relation_id, last_time })
+}

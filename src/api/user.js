@@ -1,5 +1,4 @@
 import request from '@/utils/request'
-import { dateTableEmits } from 'element-plus/es/components/calendar/src/date-table'
 
 // 发送邮箱验证码
 export const sendEmailService = (email) => {
@@ -44,9 +43,6 @@ export const getAccountTokenService = (account_id) => {
     }
   })
 }
-// export const getAccountTokenService = (account_id) => {
-//   return request.get(`/account/token/${account_id}`)
-// }
 
 // 删除账号
 export const deleteAccountService = (id) => {

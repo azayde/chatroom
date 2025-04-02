@@ -20,6 +20,7 @@ const instance = axios.create({
 instance.interceptors.request.use(
   (config) => {
     const urlPath = config.url
+    console.log(urlPath)
     const userTokenPaths = [
       '/account/create',
       '/account/token',

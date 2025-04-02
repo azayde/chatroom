@@ -1,7 +1,6 @@
 <script setup>
 import GroupDetail from '../group/GroupDetail.vue'
 import FriendDetail from '@/views/friend/FriendDetail.vue'
-// import ChatHistory from '@/components/ChatHistory.vue'
 import {
   Position,
   MoreFilled,
@@ -10,6 +9,7 @@ import {
 } from '@element-plus/icons-vue'
 import { ref } from 'vue'
 import { useUserStore } from '@/stores'
+import { getChatListByLastTime } from '@/api/chat.js'
 import { sendMsg_socket } from '@/utils/websocket'
 const userStore = useUserStore()
 const drawer = ref(false)
@@ -90,14 +90,28 @@ const chatMsg = [
 ]
 
 // 根据account_id获取用户信息进行渲染
-
+const last_time = new Date('2026-04-01T00:00:00').getTime()
+console.log(last_time)
+console.log(props.chatInfo.relation_id)
+const getChatList = async () => {
+  await getChatListByLastTime({
+    relation_id: props.chatInfo.relation_id,
+    last_time: last_time
+  })
+}
+getChatList()
 // 发送消息
 const inputEditorRef = ref(null)
 const sendMsg = () => {
   // console.log(data)
   const content = inputEditorRef.value.getContent()
   console.log('发送内容', content)
-  sendMsg_socket()
+  const msg = ref({
+    relation_id: props.chatInfo.relation_id,
+    msg_content: content
+  })
+  sendMsg_socket(JSON.stringify(msg.value))
+  inputEditorRef.value.clearContent()
 }
 
 // 上传文件
@@ -157,6 +171,9 @@ const handleFileChange = (file) => {
   fileDialog.value = true
   console.log(selectFile.value)
 }
+const img = document.querySelector('img')
+console.log(img.naturalWidth)
+console.log(img.naturalHeight)
 </script>
 
 <template>
@@ -191,7 +208,17 @@ const handleFileChange = (file) => {
               src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
             ></el-avatar>
           </div>
-          <div class="chat-pao">{{ item.msg_content }}</div>
+          <!-- 文字类 -->
+          <div class="chat-pao" v-if="true">{{ item.msg_content }}</div>
+          <div class="picture" v-else>
+            <!-- <img class="img" src="@/assets/play.svg" alt="" /> -->
+            <!-- <img class="img" src="@/assets/test2.png" alt="" /> -->
+            <!-- <img
+              class="img"
+              src="https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con"
+              alt=""
+            /> -->
+          </div>
         </div>
       </el-scrollbar>
     </el-main>
@@ -361,6 +388,16 @@ const handleFileChange = (file) => {
         background-color: #e0effb;
         // width: 90%;
         max-width: 60%;
+      }
+      .picture {
+        // width: 250px;
+        // height: 250px;
+        // border: 1px solid #000;
+        margin-right: 10px;
+        .img {
+          width: 100%;
+          height: 100%;
+        }
       }
     }
     // before 是一个小的矩形

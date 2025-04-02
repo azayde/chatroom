@@ -1,7 +1,7 @@
 <script setup>
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 
 // 为什么 TODO ???? ？？？ 富文本样式
 const data = reactive({
@@ -12,17 +12,24 @@ const data = reactive({
     }
   }
 })
-// const handleMsg = () => {
-//   console.log(data.content)
-// }
+const quillRef = ref(null)
+const clearContent = () => {
+  data.content = ''
+  if (quillRef.value) {
+    const quill = quillRef.value.getQuill()
+    quill.root.innerHTML = ''
+  }
+}
 defineExpose({
-  getContent: () => data.content
+  getContent: () => data.content,
+  clearContent
 })
 </script>
 
 <template>
   <div class="input-editor">
     <quill-editor
+      ref="quillRef"
       nextTick
       theme="snow"
       v-model:content="data.content"

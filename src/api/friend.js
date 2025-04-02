@@ -11,10 +11,6 @@ export const getApplicationService = () => {
 }
 
 // 同意好友申请
-// export const acceptApplicationService = (id) => {
-//   return request.put('/application/accept', { data: { account_id: id } })
-// }
-
 export const acceptApplicationService = (id) => {
   return request.put('/application/accept', { account_id: id })
 }

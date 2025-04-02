@@ -47,10 +47,10 @@ let initWebSocket = () => {
       socket.emit('auth', token)
     })
 
-    socket.on('test', (e) => {
-      console.log('test', e)
-    })
-    // 以上
+    // socket.on('test', (e) => {
+    //   console.log('test', e)
+    // })
+    // // 以上
 
     socket.on('disconnect', (e) => {
       console.log('链接关闭', e)
@@ -67,23 +67,20 @@ const createWebSocket = () => {
   initWebSocket()
 }
 
-const sendMsg_socket = () => {
+const sendMsg_socket = (msg) => {
   console.log('发消息')
-  socket.emit(
-    'send_msg',
-    {
-      relation_id: 24,
-      msg_content: 'zzzzzz'
-    },
-    (res) => {
-      console.log(res)
-      // if (res.success) {
-      //   console.log('发送消息成功')
-      // } else {
-      //   console.log('消息发送失败')
-      // }
-    }
-  )
+  if (isConnect === false) {
+    console.log('链接断开，不能发送消息')
+    return
+  }
+  // const message = {
+  //   relation_id: 24,
+  //   msg_content: 'zzzzzz'
+  // }
+  // const msg = JSON.stringify(message)
+  socket.emit('send_msg', msg, (res) => {
+    console.log(res)
+  })
 }
 
 // 接收消息
