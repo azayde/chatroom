@@ -7,11 +7,16 @@ import {
   ChatDotRound,
   Delete
 } from '@element-plus/icons-vue'
-import { ref } from 'vue'
-import { useUserStore } from '@/stores'
+import { ref, watch } from 'vue'
+import { useUserStore, useChatStore } from '@/stores'
+// import { useRoute } from 'vue-router'
 import { getChatListByLastTime } from '@/api/chat.js'
 import { sendMsg_socket } from '@/utils/websocket'
+
 const userStore = useUserStore()
+const chatStore = useChatStore()
+// const route = useRoute()
+
 const drawer = ref(false)
 // 父传子
 const props = defineProps({
@@ -19,6 +24,13 @@ const props = defineProps({
 })
 console.log(props.chatInfo)
 
+watch(
+  () => props.chatInfo,
+  (newVal) => {
+    chatStore.setChatInfo(newVal)
+    console.log(newVal)
+  }
+)
 // 聊天记录dialog
 const chatDialog = ref()
 

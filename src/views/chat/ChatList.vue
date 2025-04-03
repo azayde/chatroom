@@ -3,9 +3,9 @@
 import { ref } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import { getChatPinListService, getChatShowListService } from '@/api/chat.js'
-// import { useRouter, useRoute } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 // const route = useRoute()
-// const router = useRouter()
+const router = useRouter()
 // 搜索框
 const input = ref('')
 
@@ -23,82 +23,82 @@ const handleBlue = () => {
 
 // 聊天列表
 const chatList = ref([
-  // {
-  //   relation_id: 1,
-  //   relation_type: 'friend',
-  //   pin_time: '',
-  //   friend_info: {
-  //     account_id: 101,
-  //     name: 'Alice Smith',
-  //     avatar:
-  //       'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
-  //   }
-  // },
-  // {
-  //   relation_id: 24,
-  //   relation_type: 'group',
-  //   pin_time: '',
-  //   group_info: {
-  //     relation_id: 1212,
-  //     name: '数据分析交流群',
-  //     description: '分享数据分析技巧',
-  //     avatar: 'https://img.shetu66.com/2023/06/28/1687937373741115.png'
-  //   }
-  // },
-  // {
-  //   relation_id: 3,
-  //   relation_type: 'friend',
-  //   pin_time: '2025-03-15T12:00:00Z',
-  //   friend_info: {
-  //     account_id: 103,
-  //     name: 'Charlie',
-  //     avatar:
-  //       'https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con'
-  //   }
-  // },
-  // {
-  //   relation_id: 22,
-  //   relation_type: 'group',
-  //   pin_time: '',
-  //   group_info: {
-  //     relation_id: 1010,
-  //     name: '低代码开发平台',
-  //     description: '探索低代码/零代码开发',
-  //     avatar: 'https://pic.616pic.com/ys_bnew_img/00/02/01/VafZfftlPM.jpg'
-  //   }
-  // }
+  {
+    relation_id: 1,
+    relation_type: 'friend',
+    pin_time: '',
+    friend_info: {
+      account_id: 101,
+      name: 'Alice Smith',
+      avatar:
+        'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
+    }
+  },
+  {
+    relation_id: 24,
+    relation_type: 'group',
+    pin_time: '',
+    group_info: {
+      relation_id: 1212,
+      name: '数据分析交流群',
+      description: '分享数据分析技巧',
+      avatar: 'https://img.shetu66.com/2023/06/28/1687937373741115.png'
+    }
+  },
+  {
+    relation_id: 3,
+    relation_type: 'friend',
+    pin_time: '2025-03-15T12:00:00Z',
+    friend_info: {
+      account_id: 103,
+      name: 'Charlie',
+      avatar:
+        'https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con'
+    }
+  },
+  {
+    relation_id: 22,
+    relation_type: 'group',
+    pin_time: '',
+    group_info: {
+      relation_id: 1010,
+      name: '低代码开发平台',
+      description: '探索低代码/零代码开发',
+      avatar: 'https://pic.616pic.com/ys_bnew_img/00/02/01/VafZfftlPM.jpg'
+    }
+  }
 ])
 
 const chatPinList = ref([
-  // {
-  //   relation_id: 3,
-  //   relation_type: 'friend',
-  //   pin_time: '2025-03-15T12:00:00Z',
-  //   friend_info: {
-  //     account_id: 103,
-  //     name: 'Charlie',
-  //     avatar:
-  //       'https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con'
-  //   }
-  // }
+  {
+    relation_id: 3,
+    relation_type: 'friend',
+    pin_time: '2025-03-15T12:00:00Z',
+    friend_info: {
+      account_id: 103,
+      name: 'Charlie',
+      avatar:
+        'https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con'
+    }
+  }
 ])
 // console.log(chatPinList.value)
 
 // class:  pin 的样式(用is_pin判断) ！！！！！！！ TODO
 // 获取置顶列表
-const getChatPinList = async () => {
-  const res = getChatPinListService()
-  chatPinList.value = res.data.data.list
-  console.log(res)
-}
-getChatPinList()
+// const getChatPinList = async () => {
+//   const res = getChatPinListService()
+//   chatPinList.value = res.data.data.list
+//   console.log(res)
+// }
+// getChatPinList()
 
 // 获取聊天列表（置顶在上，已排序）
 const getChatList = async () => {
   // 获取展示列表
-  const res = await getChatShowListService()
-  console.log(res.data.data.list)
-  chatList.value = res.data.data.list
+  // const res = await getChatShowListService()
+  // console.log(res.data.data.list)
+  // chatList.value = res.data.data.list
 
   // 排序
   // 提取置顶项的 relation_id 集合
@@ -135,6 +135,10 @@ const handleClick = (obj) => {
   activeChat.value = obj
   console.log(obj)
   emit('get-message', obj)
+  router.push({
+    path: '/chat/chatroom',
+    query: { relation_id: obj.relation_id }
+  })
 }
 </script>
 

@@ -1,19 +1,30 @@
 <script setup>
 import ChatList from './ChatList.vue'
 import ChatRoom from './ChatRoom.vue'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+const route = useRoute()
 const chatInfo = ref()
+const chat = ref(false)
+
 const getMsg = (obj) => {
   chatInfo.value = obj
   console.log(chatInfo.value)
 }
+watch(
+  () => route.query.relation_id,
+  (newid) => {
+    chat.value = true
+    console.log(newid)
+  }
+)
 </script>
 
 <template>
   <el-container class="chat-page">
     <chat-list @get-message="getMsg"></chat-list>
     <el-main>
-      <chat-room v-if="chatInfo" :chatInfo="chatInfo"></chat-room>
+      <chat-room v-if="chat" :chatInfo="chatInfo"></chat-room>
     </el-main>
   </el-container>
 </template>
