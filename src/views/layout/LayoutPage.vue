@@ -9,6 +9,10 @@ import {
 import { useRouter, useRoute } from 'vue-router'
 const router = useRouter()
 const route = useRoute()
+import { useChatStore, useFriendStore, useGroupStore } from '@/stores'
+const chatStore = useChatStore()
+const friendStore = useFriendStore()
+const groupStore = useGroupStore()
 
 // 侧边栏高亮
 const chatroom = ref(false)
@@ -64,7 +68,14 @@ const logout = async () => {
         <div
           class="li"
           :class="{ active: chatroom }"
-          @click="router.push('/chat/chatroom')"
+          @click="
+            router.push({
+              path: '/chat/chatroom',
+              query: chatStore.chatInfo
+                ? { relation_id: chatStore.chatInfo.relation_id }
+                : {}
+            })
+          "
         >
           <el-badge :value="0" class="item" :hidden="true" :offset="[0, 0]">
             <el-icon><ChatDotRound /></el-icon>
@@ -73,7 +84,14 @@ const logout = async () => {
         <div
           class="li"
           :class="{ active: friend }"
-          @click="router.push('/chat/friend')"
+          @click="
+            router.push({
+              path: '/chat/friend',
+              query: friendStore.friendInfo
+                ? { relation_id: friendStore.friendInfo.relation_id }
+                : ''
+            })
+          "
         >
           <el-badge :value="0" class="item" :hidden="true">
             <el-icon><UserFilled /></el-icon>
@@ -82,7 +100,16 @@ const logout = async () => {
         <div
           class="li"
           :class="{ active: group }"
-          @click="router.push('/chat/group')"
+          @click="
+            router.push({
+              path: '/chat/group',
+              query: groupStore.groupInfo
+                ? {
+                    relation_id: groupStore.groupInfo.relation_id
+                  }
+                : {}
+            })
+          "
         >
           <el-badge :value="0" class="item" :hidden="true">
             <el-icon>

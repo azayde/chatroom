@@ -7,6 +7,13 @@ import {
   createApplicationService,
   searchFriendByName
 } from '@/api/friend.js'
+
+import { useRouter, useRoute } from 'vue-router'
+import { useFriendStore } from '@/stores'
+const route = useRoute()
+const router = useRouter()
+const friendStore = useFriendStore()
+
 // 搜索框
 const input = ref('')
 // 搜索列表切换
@@ -112,11 +119,17 @@ const getFriendList = async () => {
 getFriendList()
 
 // 点击好友 - 显示对应信息
+const activeFriend = ref(route.query.relation_id ? friendStore.friendInfo : 0)
 // 子传父  好友信息传到FriendsPage
 const emit = defineEmits(['get-friend-info'])
-
 const sendMsg = (obj) => {
+  activeFriend.value = obj.item
   emit('get-friend-info', obj)
+  // console.log(obj.item)
+  router.push({
+    path: '/chat/friend',
+    query: { relation_id: obj.item.relation_id }
+  })
 }
 
 // 发送好友申请
@@ -174,6 +187,7 @@ const handleCreateApplication = async () => {
           v-for="item in friendList"
           :key="item.relation_id"
           @click="sendMsg({ item, IsNewFriend: false })"
+          :class="{ active: item.relation_id === activeFriend.relation_id }"
         >
           <div class="avatar">
             <el-avatar
@@ -254,6 +268,9 @@ const handleCreateApplication = async () => {
     .list-item:hover {
       background-color: #f0f0f0;
       // background-color: #e9e9e9; 点击后颜色
+    }
+    .active {
+      background-color: #d6d6d6 !important; //点击后颜色
     }
   }
 }

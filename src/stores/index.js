@@ -9,3 +9,5 @@ export default pinia
 // 接收并导出所有模块
 export * from './modules/user'
 export * from './modules/chat'
+export * from './modules/group'
+export * from './modules/friend'

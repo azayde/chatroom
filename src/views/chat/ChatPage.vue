@@ -3,19 +3,36 @@ import ChatList from './ChatList.vue'
 import ChatRoom from './ChatRoom.vue'
 import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useChatStore } from '@/stores'
+
+const chatStore = useChatStore()
+
 const route = useRoute()
-const chatInfo = ref()
-const chat = ref(false)
+
+const chatInfo = ref(chatStore.chatInfo)
+const chatShow = ref(false)
 
 const getMsg = (obj) => {
   chatInfo.value = obj
   console.log(chatInfo.value)
 }
+if (route.query.relation_id) {
+  chatShow.value = true
+}
 watch(
   () => route.query.relation_id,
   (newid) => {
-    chat.value = true
+    chatShow.value = true
+    chatInfo.value = chatStore.chatInfo
     console.log(newid)
+  }
+)
+watch(
+  () => chatInfo.value,
+  (newVal) => {
+    console.log(newVal)
+    chatStore.setChatInfo(newVal)
+    chatInfo.value = newVal
   }
 )
 </script>
@@ -24,7 +41,7 @@ watch(
   <el-container class="chat-page">
     <chat-list @get-message="getMsg"></chat-list>
     <el-main>
-      <chat-room v-if="chat" :chatInfo="chatInfo"></chat-room>
+      <chat-room v-if="chatShow" :chatInfo="chatInfo"></chat-room>
     </el-main>
   </el-container>
 </template>

@@ -23,12 +23,15 @@ const props = defineProps({
   chatInfo: Object
 })
 console.log(props.chatInfo)
-
+// 当前聊天相关信息
+const activeChatInfo = ref(props.chatInfo)
+activeChatInfo.value = props.chatInfo ? props.chatInfo : chatStore.chatInfo
+console.log(activeChatInfo.value)
 watch(
   () => props.chatInfo,
   (newVal) => {
-    chatStore.setChatInfo(newVal)
     console.log(newVal)
+    activeChatInfo.value = newVal
   }
 )
 // 聊天记录dialog
@@ -183,9 +186,9 @@ const handleFileChange = (file) => {
   fileDialog.value = true
   console.log(selectFile.value)
 }
-const img = document.querySelector('img')
-console.log(img.naturalWidth)
-console.log(img.naturalHeight)
+// const img = document.querySelector('img')
+// console.log(img.naturalWidth)
+// console.log(img.naturalHeight)
 </script>
 
 <template>
@@ -193,10 +196,10 @@ console.log(img.naturalHeight)
     <el-header>
       <h1>
         {{
-          chatInfo.relation_type === 'friend'
-            ? chatInfo.friend_info.name
-            : chatInfo.group_info.name
-        }}{{ chatInfo.relation_type === 'group' ? '（4）' : '' }}
+          activeChatInfo.relation_type === 'friend'
+            ? activeChatInfo.friend_info.name
+            : activeChatInfo.group_info.name
+        }}{{ activeChatInfo.relation_type === 'group' ? '（4）' : '' }}
       </h1>
       <div class="more" @click="drawer = true">
         <el-icon><MoreFilled /></el-icon>
@@ -275,12 +278,12 @@ console.log(img.naturalHeight)
     <!-- TODO  -->
     <el-drawer v-model="drawer" :with-header="false">
       <group-detail
-        v-if="chatInfo.relation_type === 'group'"
-        :groupInfo="chatInfo"
+        v-if="activeChatInfo.relation_type === 'group'"
+        :groupInfo="activeChatInfo"
       ></group-detail>
       <friend-detail
-        v-if="chatInfo.relation_type === 'friend'"
-        :frinedInfo="chatInfo"
+        v-if="activeChatInfo.relation_type === 'friend'"
+        :frinedInfo="activeChatInfo"
       ></friend-detail>
     </el-drawer>
     <!-- 聊天记录 -->
@@ -294,16 +297,16 @@ console.log(img.naturalHeight)
             <el-avatar
               shape="square"
               :src="
-                chatInfo.relation_type === 'friend'
-                  ? chatInfo.friend_info.avatar
-                  : chatInfo.group_info.avatar
+                activeChatInfo.relation_type === 'friend'
+                  ? activeChatInfo.friend_info.avatar
+                  : activeChatInfo.group_info.avatar
               "
             ></el-avatar>
           </div>
           <span class="name">{{
-            chatInfo.relation_type === 'friend'
-              ? chatInfo.friend_info.name
-              : chatInfo.group_info.name
+            activeChatInfo.relation_type === 'friend'
+              ? activeChatInfo.friend_info.name
+              : activeChatInfo.group_info.name
           }}</span>
         </div>
         <hr />

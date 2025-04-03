@@ -8,7 +8,11 @@ import {
   getGroupListService
 } from '@/api/group.js'
 // 查询同好友查询一样(还有问题没解决，待定) TODO:
-import { ElMessage } from 'element-plus'
+import { useRoute, useRouter } from 'vue-router'
+import { useGroupStore } from '@/stores'
+const route = useRoute()
+const router = useRouter()
+const groupStore = useGroupStore()
 // 搜索框
 const input = ref('')
 
@@ -98,10 +102,20 @@ const groupList = ref([
 // const res = await getGroupListService()
 // groupList.value = res
 
+const activeGroup = ref(route.query.relation_id ? groupStore.groupInfo : 0)
+// const activeGroup = ref(0)
+
 // 子传父 群聊详细信息传到GroupPage
 const emit = defineEmits(['get-group-info'])
 const sendMsg = (obj) => {
+  activeGroup.value = obj
+  console.log(obj)
   emit('get-group-info', obj)
+  console.log(obj)
+  router.push({
+    path: '/chat/group',
+    query: { relation_id: obj.relation_id }
+  })
 }
 </script>
 <template>
@@ -125,6 +139,7 @@ const sendMsg = (obj) => {
           v-for="item in groupList"
           :key="item.relation_id"
           @click="sendMsg(item)"
+          :class="{ active: item.relation_id === activeGroup.relation_id }"
         >
           <div class="avatar">
             <el-avatar shape="square" :src="item.group_info.avatar"></el-avatar>
@@ -194,6 +209,9 @@ const sendMsg = (obj) => {
     .list-item:hover {
       background-color: #f0f0f0;
       // background-color: #e9e9e9; 点击后颜色
+    }
+    .active {
+      background-color: #d6d6d6 !important; //点击后颜色
     }
   }
 }

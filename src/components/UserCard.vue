@@ -6,6 +6,11 @@ import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { deleteFriendService } from '@/api/friend.js'
 import { updateNickNameService } from '@/api/setting.js'
+import { useChatStore, useFriendStore } from '@/stores'
+
+const chatStore = useChatStore()
+const friendStore = useFriendStore()
+
 const router = useRouter()
 
 const props = defineProps({
@@ -27,10 +32,17 @@ const handleSetNote = () => {
 }
 // 发消息
 const sendMsg = () => {
-  router.push('/chat/chatroom')
+  router.push({
+    path: '/chat/chatroom',
+    query: { relation_id: props.userInfo.relation_id }
+  })
+  chatStore.setChatInfo(props.userInfo)
 }
 
 console.log(props.userInfo)
+
+const activeFiendInfo = ref(props.userInfo)
+activeFiendInfo.value = props.userInfo ? props.userInfo : friendStore.friendInfo
 watch(
   () => props.userInfo,
   (newVal) => {
@@ -38,6 +50,7 @@ watch(
       isPin.value = newVal.is_pin
       isShow.value = newVal.is_show
       isNotDisturb.value = newVal.is_not_disturb
+      activeFiendInfo.value = newVal
     }
   },
   { immediate: true }
@@ -100,22 +113,22 @@ const updateNickName = () => {
         <el-avatar
           size="large"
           shape="square"
-          :src="userInfo.friend_info.avatar"
+          :src="activeFiendInfo.friend_info.avatar"
         ></el-avatar>
       </div>
       <div class="right">
         <!-- 点击设置备注 -->
         <div class="span" v-if="isFriend === true">
-          备注：<span>{{ userInfo.friend_info.name }}</span>
+          备注：<span>{{ activeFiendInfo.friend_info.name }}</span>
         </div>
         <div class="span">
-          昵称：<span>{{ userInfo.friend_info.name }}</span>
+          昵称：<span>{{ activeFiendInfo.friend_info.name }}</span>
         </div>
         <div class="span">
-          性别：<span>{{ userInfo.friend_info.gender }}</span>
+          性别：<span>{{ activeFiendInfo.friend_info.gender }}</span>
         </div>
         <div class="span">
-          账号：<span>{{ userInfo.friend_info.account_id }}</span>
+          账号：<span>{{ activeFiendInfo.friend_info.account_id }}</span>
         </div>
         <div class="span">
           个性签名：<span

@@ -21,8 +21,12 @@ import {
   dissolveGroupService,
   updateGroupInfoService
 } from '@/api/group.js'
-import { useUserStore } from '@/stores'
+import { useUserStore, useChatStore, useGroupStore } from '@/stores'
+
 const userStore = useUserStore()
+const chatStore = useChatStore()
+const groupStore = useGroupStore()
+
 const router = useRouter()
 
 // switch开关 （三个）
@@ -43,7 +47,7 @@ const dialogFormVisible = ref(false)
 // 添加群成员
 const bools = ref(false)
 
-const groupNotify = ref(true)
+const groupNotify = ref(false)
 
 // 群成员列表 (TODO: ) 可以拿到信息： 共有多少人
 const groupList = ref([
@@ -155,6 +159,17 @@ const props = defineProps({
   groupInfo: Object
 })
 
+// 当前群聊
+const activeGroup = ref(props.groupInfo)
+console.log(activeGroup.value)
+activeGroup.value = props.groupInfo ? props.groupInfo : groupStore.groupInfo
+
+watch(
+  () => props.groupInfo,
+  (newVal) => {
+    activeGroup.value = newVal
+  }
+)
 // 点击群成员获取当前的id（用于名片）
 const handleClickMember = (id) => {
   activeMemberId.value = activeMemberId.value === id ? null : id
@@ -254,7 +269,11 @@ const handleDissolve = async () => {
 
 // 发消息
 const sendMsg = () => {
-  router.push('/chat/chatroom')
+  router.push({
+    path: '/chat/chatroom',
+    query: { relation_id: props.groupInfo.relation_id }
+  })
+  chatStore.setChatInfo(props.groupInfo)
 }
 
 const notifyList = [
@@ -364,12 +383,12 @@ const notifyList = [
   <!-- {{ groupInfo.relation_id }} -->
   <el-container>
     <el-header>
-      <h1>{{ groupInfo.group_info.name }}（4）</h1>
+      <h1>{{ activeGroup.group_info.name }}（4）</h1>
     </el-header>
     <el-main>
       <el-scrollbar>
         <div class="title">群描述</div>
-        <div class="description">{{ groupInfo.group_info.description }}</div>
+        <div class="description">{{ activeGroup.group_info.description }}</div>
         <hr />
         <div class="title">群成员</div>
         <div class="member">
@@ -572,7 +591,7 @@ const notifyList = [
   <!-- 群公告 -->
   <el-dialog
     v-model="groupNotify"
-    :title="'\'' + groupInfo.group_info.name + '\' 的群公告'"
+    :title="'\'' + activeGroup.group_info.name + '\' 的群公告'"
   >
     <div class="editor">
       <el-table style="width: 100%" :data="notifyList" max-height="300">

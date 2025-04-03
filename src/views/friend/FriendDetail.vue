@@ -1,4 +1,4 @@
-<!-- 群聊详细信息 -->
+<!-- 好友详细信息 -->
 <script setup>
 import { Plus, ArrowRight } from '@element-plus/icons-vue'
 import { watch, ref } from 'vue'

@@ -4,8 +4,11 @@ import { ref } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import { getChatPinListService, getChatShowListService } from '@/api/chat.js'
 import { useRouter, useRoute } from 'vue-router'
-// const route = useRoute()
+import { useChatStore } from '@/stores'
+const route = useRoute()
 const router = useRouter()
+const chatStore = useChatStore()
+
 // 搜索框
 const input = ref('')
 
@@ -129,7 +132,9 @@ getChatList()
 //   router.push('/chat/chatroom')
 // }
 // 当前聊天页
-const activeChat = ref(0)
+
+// console.log()
+const activeChat = ref(route.query.relation_id ? chatStore.chatInfo : 0)
 const emit = defineEmits(['get-message'])
 const handleClick = (obj) => {
   activeChat.value = obj

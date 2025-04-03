@@ -3,7 +3,14 @@
 import FriendsList from './FriendsList.vue'
 import NewFriend from './NewFriend.vue'
 
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { useFriendStore } from '@/stores'
+
+const friendStore = useFriendStore()
+
+const route = useRoute()
+
 // 父传子 or  子传父 ？？？
 // TODO
 
@@ -15,7 +22,8 @@ const IsNewFriend = ref(false)
 // const newFriend = ref()
 
 // 好友信息
-const friendInfo = ref()
+const friendInfo = ref(friendStore.friendInfo)
+const friendShow = ref(false)
 const getFriendInfo = (obj) => {
   // newFriend.value = obj.newFriend
   // console.log(newFriend.value)
@@ -24,6 +32,25 @@ const getFriendInfo = (obj) => {
   friendInfo.value = obj.item
   console.log(friendInfo.value)
 }
+if (route.query.relation_id) {
+  friendShow.value = true
+}
+watch(
+  () => route.query.relation_id,
+  (newid) => {
+    friendShow.value = true
+    friendInfo.value = friendStore.friendInfo
+    console.log(newid)
+  }
+)
+watch(
+  () => friendInfo.value,
+  (newVal) => {
+    console.log(newVal)
+    friendStore.setFriendInfo(newVal)
+    friendInfo.value = newVal
+  }
+)
 </script>
 
 <template>
@@ -34,7 +61,7 @@ const getFriendInfo = (obj) => {
       <new-friend v-if="IsNewFriend"></new-friend>
       <!-- friendInfo 不为空时，展示 -->
       <user-card
-        v-else-if="friendInfo"
+        v-else-if="friendShow"
         :userInfo="friendInfo"
         class="user-card"
       ></user-card>
