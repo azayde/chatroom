@@ -34,9 +34,6 @@ const getAccountId = async (obj) => {
 
   // 账号信息存入本地
   userStore.setAccountInfo(obj)
-
-  // console.log(obj)
-  // console.log(res)
   ElMessage.success('登录成功')
 
   router.push('/')

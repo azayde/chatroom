@@ -89,19 +89,20 @@ const chatPinList = ref([
 
 // class:  pin 的样式(用is_pin判断) ！！！！！！！ TODO
 // 获取置顶列表
-// const getChatPinList = async () => {
-//   const res = getChatPinListService()
-//   chatPinList.value = res.data.data.list
-//   console.log(res)
-// }
-// getChatPinList()
+const getChatPinList = async () => {
+  // const res = getChatPinListService()
+  // // console.log(res)
+  // chatPinList.value = res.data.data.list
+}
+getChatPinList()
 
 // 获取聊天列表（置顶在上，已排序）
 const getChatList = async () => {
   // 获取展示列表
-  // const res = await getChatShowListService()
+  const res = await getChatShowListService()
+  console.log(res)
   // console.log(res.data.data.list)
-  // chatList.value = res.data.data.list
+  chatList.value = res.data.data.list
 
   // 排序
   // 提取置顶项的 relation_id 集合
@@ -138,7 +139,7 @@ const activeChat = ref(route.query.relation_id ? chatStore.chatInfo : 0)
 const emit = defineEmits(['get-message'])
 const handleClick = (obj) => {
   activeChat.value = obj
-  console.log(obj)
+  // console.log(obj)
   emit('get-message', obj)
   router.push({
     path: '/chat/chatroom',

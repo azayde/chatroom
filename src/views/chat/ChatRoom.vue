@@ -11,12 +11,13 @@ import { ref, watch } from 'vue'
 import { useUserStore, useChatStore } from '@/stores'
 // import { useRoute } from 'vue-router'
 import { getChatListByLastTime } from '@/api/chat.js'
-import { sendMsg_socket } from '@/utils/websocket'
+import { sendMsg_socket, onMessage } from '@/utils/websocket'
 
 const userStore = useUserStore()
 const chatStore = useChatStore()
 // const route = useRoute()
-
+const res = onMessage()
+console.log(res)
 const drawer = ref(false)
 // 父传子
 const props = defineProps({
@@ -30,7 +31,7 @@ console.log(activeChatInfo.value)
 watch(
   () => props.chatInfo,
   (newVal) => {
-    console.log(newVal)
+    // console.log(newVal)
     activeChatInfo.value = newVal
   }
 )
@@ -41,92 +42,112 @@ const chatDialog = ref()
 const fileDialog = ref(false)
 
 // 聊天信息
-const chatMsg = [
-  {
-    id: 0,
-    notify_type: 'common',
-    msg_type: 'text',
-    msg_content: 'common notification content 1',
-    msg_extend: {
-      remind: null
-    },
-    file_id: 1,
-    account_id: 734124834816,
-    relation_id: 200,
-    create_at: '2025-03-27T10:00:00Z',
-    pin_time: '2025-03-27T10:05:00Z',
-    rly_msg: null
-  },
-  {
-    id: 1,
-    notify_type: 'common',
-    msg_type: 'text',
-    msg_content: 'Common message content 2',
-    msg_extend: {
-      remind: null
-    },
-    file_id: 2,
-    account_id: 101,
-    relation_id: 200,
-    create_at: '2025-03-27T10:10:00Z',
-    pin_time: '2025-03-27T10:15:00Z',
-    rly_msg: null
-  },
-  {
-    id: 2,
-    notify_type: 'common',
-    msg_type: 'text',
-    msg_content: 'common notification content 3',
-    msg_extend: {
-      remind: null
-    },
-    file_id: 3,
-    account_id: 101,
-    relation_id: 200,
-    create_at: '2025-03-27T10:20:00Z',
-    pin_time: '2025-03-27T10:25:00Z',
-    rly_msg: null
-  },
-  {
-    id: 3,
-    notify_type: 'common',
-    msg_type: 'text',
-    msg_content: 'Common message content 4',
-    msg_extend: {
-      remind: null
-    },
-    file_id: 4,
-    account_id: 734124834816,
-    relation_id: 200,
-    create_at: '2025-03-27T10:30:00Z',
-    pin_time: '2025-03-27T10:35:00Z',
-    rly_msg: null
-  }
-]
+const chatMsg = ref([
+  // {
+  //   id: 0,
+  //   notify_type: 'common',
+  //   msg_type: 'text',
+  //   msg_content: 'common notification content 1',
+  //   msg_extend: {
+  //     remind: null
+  //   },
+  //   file_id: 1,
+  //   account_id: 734124834816,
+  //   relation_id: 200,
+  //   create_at: '2025-03-27T10:00:00Z',
+  //   pin_time: '2025-03-27T10:05:00Z',
+  //   rly_msg: null
+  // },
+  // {
+  //   id: 1,
+  //   notify_type: 'common',
+  //   msg_type: 'text',
+  //   msg_content: 'Common message content 2',
+  //   msg_extend: {
+  //     remind: null
+  //   },
+  //   file_id: 2,
+  //   account_id: 101,
+  //   relation_id: 200,
+  //   create_at: '2025-03-27T10:10:00Z',
+  //   pin_time: '2025-03-27T10:15:00Z',
+  //   rly_msg: null
+  // },
+  // {
+  //   id: 2,
+  //   notify_type: 'common',
+  //   msg_type: 'text',
+  //   msg_content: 'common notification content 3',
+  //   msg_extend: {
+  //     remind: null
+  //   },
+  //   file_id: 3,
+  //   account_id: 101,
+  //   relation_id: 200,
+  //   create_at: '2025-03-27T10:20:00Z',
+  //   pin_time: '2025-03-27T10:25:00Z',
+  //   rly_msg: null
+  // },
+  // {
+  //   id: 3,
+  //   notify_type: 'common',
+  //   msg_type: 'text',
+  //   msg_content: 'Common message content 4',
+  //   msg_extend: {
+  //     remind: null
+  //   },
+  //   file_id: 4,
+  //   account_id: 734124834816,
+  //   relation_id: 200,
+  //   create_at: '2025-03-27T10:30:00Z',
+  //   pin_time: '2025-03-27T10:35:00Z',
+  //   rly_msg: null
+  // }
+])
 
 // 根据account_id获取用户信息进行渲染
-const last_time = new Date('2026-04-01T00:00:00').getTime()
-console.log(last_time)
-console.log(props.chatInfo.relation_id)
+const last_time = new Date('2026-04-01T00:00:00').getTime() / 1000
 const getChatList = async () => {
-  await getChatListByLastTime({
+  // const res = await getChatListByLastTime(props.chatInfo.relation_id, last_time)
+  const res = await getChatListByLastTime({
     relation_id: props.chatInfo.relation_id,
-    last_time: last_time
+    last_time: last_time,
+    page: 1,
+    page_size: 100
   })
+  console.log(res.data.data.list)
+  chatMsg.value = res.data.data.list.filter((item) => item !== null)
+  console.log(chatMsg.value)
 }
 getChatList()
 // 发送消息
 const inputEditorRef = ref(null)
+const htmlToPlainText = (html) => {
+  const tempDiv = document.createElement('div') // 创建一个临时 div 元素
+  tempDiv.innerHTML = html // 将 HTML 设置为该 div 的内容
+  return tempDiv.innerText // 返回普通文本
+}
+
 const sendMsg = () => {
   // console.log(data)
   const content = inputEditorRef.value.getContent()
   console.log('发送内容', content)
+  const plainText = htmlToPlainText(content) // 获取纯文本
+  // 将纯文本编码为 UTF-8
+  const encoder = new TextEncoder() // 创建 TextEncoder 实例
+  const encodedMessage = encoder.encode(plainText) // 编码为 UTF-8
+  // 发送时首先将其转换为字符串格式（如 base64 或 hex）可选步骤
+  const byteArray = new Uint8Array(encodedMessage)
+  const base64Message = btoa(String.fromCharCode(...byteArray)) // 转换为 Base64 字符串（示例）
+  console.log(base64Message)
   const msg = ref({
     relation_id: props.chatInfo.relation_id,
-    msg_content: content
+    msg_content: base64Message
   })
+  // try {
   sendMsg_socket(JSON.stringify(msg.value))
   inputEditorRef.value.clearContent()
+  getChatList()
 }
 
 // 上传文件
@@ -187,8 +208,17 @@ const handleFileChange = (file) => {
   console.log(selectFile.value)
 }
 // const img = document.querySelector('img')
+// console.log(img.naturalHeight)
 // console.log(img.naturalWidth)
 // console.log(img.naturalHeight)
+watch(
+  () => props.chatInfo,
+  (newVal) => {
+    // console.log(newVal)
+    activeChatInfo.value = newVal
+    getChatList()
+  }
+)
 </script>
 
 <template>
@@ -213,21 +243,21 @@ const handleFileChange = (file) => {
           v-for="item in chatMsg"
           :key="item.id"
           :class="{
-            left: item.account_id === userStore.accountInfo.id,
-            right: item.account_id !== userStore.accountInfo.id
+            left: item.account_id !== userStore.accountInfo.id,
+            right: item.account_id === userStore.accountInfo.id
           }"
         >
           <div class="user-avatar">
             <el-avatar
               shape="square"
-              src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
+              :src="userStore.accountInfo.avatar"
             ></el-avatar>
           </div>
           <!-- 文字类 -->
           <div class="chat-pao" v-if="true">{{ item.msg_content }}</div>
           <div class="picture" v-else>
             <!-- <img class="img" src="@/assets/play.svg" alt="" /> -->
-            <!-- <img class="img" src="@/assets/test2.png" alt="" /> -->
+            <img class="img" src="@/assets/test1.png" alt="" />
             <!-- <img
               class="img"
               src="https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con"
@@ -405,13 +435,17 @@ const handleFileChange = (file) => {
         max-width: 60%;
       }
       .picture {
-        // width: 250px;
-        // height: 250px;
-        // border: 1px solid #000;
-        margin-right: 10px;
+        max-width: 60%; // 与文字消息保持一致
+        margin: 0 15px; // 保持与文字相同的边距
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         .img {
           width: 100%;
-          height: 100%;
+          height: auto; // 高度自动按比例缩放
+          display: block; // 去除图片底部间隙
+          max-height: 300px; // 防止过高图片
+          object-fit: contain; // 保持比例完整显示
         }
       }
     }
@@ -440,6 +474,9 @@ const handleFileChange = (file) => {
           border-left: none;
           border-bottom: none;
         }
+      }
+      .picture {
+        margin-right: 10px;
       }
     }
     .chat-item.left {

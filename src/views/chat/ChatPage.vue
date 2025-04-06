@@ -30,7 +30,7 @@ watch(
 watch(
   () => chatInfo.value,
   (newVal) => {
-    console.log(newVal)
+    // console.log(newVal)
     chatStore.setChatInfo(newVal)
     chatInfo.value = newVal
   }

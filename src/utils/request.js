@@ -1,12 +1,10 @@
-// import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
 import axios from 'axios'
-// import { ElMessage } from 'element-plus'
-// const router = useRouter()
+const router = useRouter()
 
-// const baseURL = 'http://10.8.233.204:8080'
 const baseURL = 'http://192.168.3.34:8000/api'
-// const baseURL = 'http://127.0.0.1:8080'
+// const baseURL = 'http://192.168.1.122:8000/api'
 
 const userStore = useUserStore()
 

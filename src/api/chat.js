@@ -29,6 +29,9 @@ export const getChatShowListService = () => {
   return request.get('/setting/shows')
 }
 
-export const getChatListByLastTime = (relation_id, last_time) => {
-  return request.get('/message/list/time', { relation_id, last_time })
+// 获取指定关系指定时间戳之前的消息
+export const getChatListByLastTime = (params) => {
+  return request.get('/message/list/time', {
+    params
+  })
 }

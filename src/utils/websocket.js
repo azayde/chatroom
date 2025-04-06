@@ -39,6 +39,11 @@ let initWebSocket = () => {
   try {
     console.log('初始化WebSocket')
     socket = io(wsurl)
+    // socket = io(wsurl, {
+    //   query: {
+    //     encoding: 'UTF-8'
+    //   }
+    // })
     socket.on('connect', (e) => {
       console.log('Connect:', socket.id)
       console.log('链接成功', e)
@@ -85,8 +90,9 @@ const sendMsg_socket = (msg) => {
 
 // 接收消息
 function onMessage() {
-  socket.on('read_msg', (e) => {
-    console.log('read_msg', e)
+  socket.on('send_msg', (msg) => {
+    console.log('收到消息:', msg) // 打印收到的消息
+    return msg
   })
 }
 // 关闭链接函数
