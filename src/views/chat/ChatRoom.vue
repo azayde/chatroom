@@ -27,11 +27,11 @@ const drawer = ref(false)
 const props = defineProps({
   chatInfo: Object
 })
-console.log(props.chatInfo)
+// console.log(props.chatInfo)
 // 当前聊天相关信息
 const activeChatInfo = ref(props.chatInfo)
 activeChatInfo.value = props.chatInfo ? props.chatInfo : chatStore.chatInfo
-console.log(activeChatInfo.value)
+// console.log(activeChatInfo.value)
 
 // 聊天记录dialog
 const chatDialog = ref()
@@ -39,85 +39,6 @@ const chatDialog = ref()
 // 发送图片或文件
 const fileDialog = ref(false)
 
-// 聊天信息
-const chatMsg = ref([
-  {
-    id: 0,
-    notify_type: 'common',
-    msg_type: 'text',
-    msg_content: 'common notification content 1',
-    msg_extend: {
-      remind: null
-    },
-    file_id: 1,
-    account_id: 734124834816,
-    relation_id: 200,
-    create_at: '2025-03-27T10:00:00Z',
-    pin_time: '2025-03-27T10:05:00Z',
-    rly_msg: null
-  },
-  {
-    id: 1,
-    notify_type: 'common',
-    msg_type: 'text',
-    msg_content: 'Common message content 2',
-    msg_extend: {
-      remind: null
-    },
-    file_id: 2,
-    account_id: 101,
-    relation_id: 200,
-    create_at: '2025-03-27T10:10:00Z',
-    pin_time: '2025-03-27T10:15:00Z',
-    rly_msg: null
-  },
-  {
-    id: 2,
-    notify_type: 'common',
-    msg_type: 'text',
-    msg_content: 'common notification content 3',
-    msg_extend: {
-      remind: null
-    },
-    file_id: 3,
-    account_id: 101,
-    relation_id: 200,
-    create_at: '2025-03-27T10:20:00Z',
-    pin_time: '2025-03-27T10:25:00Z',
-    rly_msg: null
-  },
-  {
-    id: 3,
-    notify_type: 'common',
-    msg_type: 'text',
-    msg_content: 'Common message content 4',
-    msg_extend: {
-      remind: null
-    },
-    file_id: 4,
-    account_id: 734124834816,
-    relation_id: 200,
-    create_at: '2025-03-27T10:30:00Z',
-    pin_time: '2025-03-27T10:35:00Z',
-    rly_msg: null
-  }
-])
-
-// 根据account_id获取用户信息进行渲染
-const last_time = new Date('2026-04-01T00:00:00').getTime() / 1000
-const getChatList = async () => {
-  const res = await getChatListByLastTime({
-    relation_id: props.chatInfo.relation_id,
-    last_time: last_time,
-    page: 1,
-    page_size: 100
-  })
-  // console.log(res.data.data.list)
-  chatMsg.value = res.data.data.list.filter((item) => item !== null)
-  // console.log(chatMsg.value)
-  chatStore.setChatMsg(chatMsg.value)
-}
-getChatList()
 // 发送消息
 const inputEditorRef = ref(null)
 const htmlToPlainText = (html) => {
@@ -127,10 +48,11 @@ const htmlToPlainText = (html) => {
 }
 
 const sendMsg = () => {
+  // console.log(1111)
   // 发送内容
   const content = inputEditorRef.value.getContent()
   // 如果内容为空，不发送
-  if (content.trim()) return
+  // if (content.trim()) return
   // console.log('发送内容', content)
   // 获取纯文本
   const plainText = htmlToPlainText(content)
@@ -148,8 +70,8 @@ const sendMsg = () => {
     // rly_msg: null,
     relation_id: props.chatInfo.relation_id,
     temp_id: Date.now().toString(), // 临时ID
-    isTemp: true, // 标记为临时消息
-    sending: true // 添加发送状态
+    isTemp: true // 标记为临时消息
+    // sending: true // 添加发送状态
   }
   console.log(tempMsg)
   // 将临时消息添加到聊天列表
@@ -171,87 +93,48 @@ const sendMsg = () => {
     msg_content: base64Message
   })
 
-  // const messageElement = document.createElement('div')
-  // const div = document.querySelector('.chat-msg .list')
-  // console.log(div)
-  // messageElement.html = `
-  //     <div class="chat-item right">
-  //       <div class="user-avatar">
-  //         <el-avatar
-  //           shape="square"
-  //           :src="userStore.accountInfo.avatar"
-  //         ></el-avatar>
-  //       </div>
-  //       <div class="chat-pao" v-if="true">${tempMsg.msg_content}</div>
-  //     </div>
-  // `
-  // div.appendChild(messageElement)
-  // chatStore.addChatMsg(tempMsg)
-  // 滚动到最新消息
-  // nextTick(() => {
-  //   scrollToBottom()
-  // })
-
   // 发送到服务器
   const sendSuccess = sendMsg_socket(JSON.stringify(msg.value))
   console.log(sendSuccess)
 
   // 发送消息失败
-  if (!sendSuccess) {
-    chatStore.updateMessageStatus(tempMsg.temp_id, false)
-    ElMessage.danger('发送失败')
-  }
+  // if (!sendSuccess) {
+  //   chatStore.updateMessageStatus(tempMsg.temp_id, false)
+  //   ElMessage.danger('发送失败')
+  // }
 
   // 清除输入框
   inputEditorRef.value.clearContent()
 }
 
-onMounted(() => {
-  scrollToBottom(true)
-  setMessageCallback((newMessage) => {
-    // 如果是自己发送的消息且是临时消息，则替换为服务器确认的消息
-    if (newMessage.temp_id) {
-      chatStore.updateTempMessage(newMessage.temp_id, newMessage)
-    } else {
-      chatStore.addChatMsg(newMessage)
-    }
-  })
-  onMessage()
-})
+// const scrollbarRef = ref(null)
+// const scrollToBottom = (force = false) => {
+//   console.log('滑动')
+//   nextTick(() => {
+//     const scrollContainer = scrollbarRef.value?.$el.querySelector(
+//       '.el-scrollbar__wrap'
+//     )
+//     if (!scrollContainer) return
 
-onUnmounted(() => {
-  // 清理回调
-  setMessageCallback(null)
-})
+//     // 计算是否需要滚动（距离底部50px内视为已到底部）
+//     const shouldScroll =
+//       force ||
+//       scrollContainer.scrollHeight -
+//         scrollContainer.scrollTop -
+//         scrollContainer.clientHeight <
+//         50
 
-const scrollbarRef = ref(null)
-const scrollToBottom = (force = false) => {
-  console.log('滑动')
-  nextTick(() => {
-    const scrollContainer = scrollbarRef.value?.$el.querySelector(
-      '.el-scrollbar__wrap'
-    )
-    if (!scrollContainer) return
-
-    // 计算是否需要滚动（距离底部50px内视为已到底部）
-    const shouldScroll =
-      force ||
-      scrollContainer.scrollHeight -
-        scrollContainer.scrollTop -
-        scrollContainer.clientHeight <
-        50
-
-    if (shouldScroll) {
-      // scrollContainer.scrollTop = scrollContainer.scrollHeight
-      // 备用方案：平滑滚动
-      scrollContainer.scrollTo({
-        top: scrollContainer.scrollHeight,
-        behavior: 'smooth'
-      })
-    }
-  })
-}
-scrollToBottom(true)
+//     if (shouldScroll) {
+//       // scrollContainer.scrollTop = scrollContainer.scrollHeight
+//       // 备用方案：平滑滚动
+//       scrollContainer.scrollTo({
+//         top: scrollContainer.scrollHeight,
+//         behavior: 'smooth'
+//       })
+//     }
+//   })
+// }
+// scrollToBottom(true)
 
 // 上传文件
 // const fileUpdate = [
@@ -314,9 +197,8 @@ const handleFileChange = (file) => {
 watch(
   () => props.chatInfo,
   (newVal) => {
-    // console.log(newVal)
+    console.log(newVal)
     activeChatInfo.value = newVal
-    getChatList()
   }
 )
 </script>
@@ -346,56 +228,11 @@ watch(
       </div>
     </el-header>
     <el-main>
-      <!-- 聊天信息 -->
-      <el-scrollbar ref="scrollbarRef" class="chat-msg">
-        <div class="list">
-          <div
-            class="chat-item"
-            v-for="item in chatStore.chatMsg"
-            :key="item.id"
-            :class="{
-              left: item.account_id !== userStore.accountInfo.id,
-              right: item.account_id === userStore.accountInfo.id
-            }"
-          >
-            <div class="user-avatar">
-              <el-avatar
-                shape="square"
-                :src="
-                  item.account_id === userStore.accountInfo.id
-                    ? userStore.accountInfo.avatar
-                    : activeChatInfo.relation_type === 'friend'
-                      ? activeChatInfo.friend_info.avatar
-                      : activeChatInfo.group_info.avatar
-                "
-              ></el-avatar>
-            </div>
-            <!-- 文字类 -->
-            <div class="chat-pao" v-if="true">{{ item.msg_content }}</div>
-            <!-- <div class="chat-pao" v-if="true">{{ item.msg_content }}</div> -->
-            <div class="picture" v-else>
-              <!-- <img class="img" src="@/assets/play.svg" alt="" /> -->
-              <!-- <img class="img" src="@/assets/test1.png" alt="" /> -->
-              <!-- <img
-              class="img"
-              src="https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con"
-              alt=""
-            /> -->
-            </div>
-            <!-- <div class="file">
-            <el-link href="https://element-plus.org" :underline="false">
-              <div class="item">
-                <div class="right">
-                  <span class="file_name">文件1</span>
-                  <span class="file_size">1090024</span>
-                </div>
-                <i class="iconfont icon-pdf pdf"></i>
-              </div>
-            </el-link>
-          </div> -->
-          </div>
-        </div>
-      </el-scrollbar>
+      <!-- 聊天窗口  -->
+      <chat-message-item
+        :chatInfo="activeChatInfo"
+        :key="activeChatInfo.relation_id"
+      ></chat-message-item>
     </el-main>
     <el-footer>
       <div class="Ibox">
@@ -687,11 +524,6 @@ watch(
       width: 100%;
       // height: 27%;
       border-top: 1px solid #c7c7c7;
-      // box-sizing: border-box;
-
-      // display: flex;
-      // flex-wrap: wrap;
-      // align-items: flex-end;
       .fun {
         width: 100%;
         display: flex;
@@ -724,20 +556,9 @@ watch(
       // 复制
       .textarea {
         height: 80px;
-        // border: none;
-        // font-size: 20px;
         background-color: #f3f3f3;
 
         padding: 0;
-        // resize: none;
-        // outline: none;
-        // padding: 10px 30px;
-        // box-sizing: border-box;
-        // margin: 0;
-        // -webkit-appearance: none;
-        // -moz-appearance: none;
-        // appearance: none;
-        // background-image: none;
       }
       .footer {
         // height: 23%;

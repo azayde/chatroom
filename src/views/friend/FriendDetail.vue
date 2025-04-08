@@ -3,15 +3,15 @@
 import { Plus, ArrowRight } from '@element-plus/icons-vue'
 import { watch, ref } from 'vue'
 // import { useRouter } from 'vue-router'
-// import { useUserStore } from '@/stores'
-// const userStore = useUserStore()
+import { useChatStore } from '@/stores'
+const chatStore = useChatStore()
 // const router = useRouter()
 
 // switch开关 （三个）
 // pin 和 置顶 ？？
-const isPin = ref(false)
-const isShow = ref(false)
-const isNotDisturb = ref(false)
+const isPin = ref(chatStore.chatInfo.is_pin)
+const isShow = ref(chatStore.chatInfo.is_show)
+const isNotDisturb = ref(chatStore.chatInfo.is_not_disturb)
 
 // 点击头像出现名片(点击头像名片消失)  --- 改 TODO:
 // const userCardVisible = ref(false)
@@ -41,6 +41,7 @@ const handleSwitch = (msg) => {
   const relation_id = ref(props.frinedInfo.relation_id)
   console.log(relation_id.value)
   console.log(msg)
+  console.log(isShow.value)
   if (msg === 'isNotDisturb') {
     // updateDisturbService({
     //   relation_id: relation_id.value,

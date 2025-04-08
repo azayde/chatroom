@@ -37,27 +37,17 @@ let initWebSocket = () => {
   // 将 useUserStore 的调用移到函数内部（如 initWebSocket），避免模块加载时立即执行
   const userStore = useUserStore()
   token = userStore.accountToken
-  console.log(token)
+  // console.log(token)
   try {
-    console.log('初始化WebSocket')
+    // console.log('初始化WebSocket')
     socket = io(wsurl)
-    // socket = io(wsurl, {
-    //   query: {
-    //     encoding: 'UTF-8'
-    //   }
-    // })
     socket.on('connect', (e) => {
-      console.log('Connect:', socket.id)
+      // console.log('Connect:', socket.id)
       console.log('链接成功', e)
       isConnect = true
       // accountToken认证
       socket.emit('auth', token)
     })
-
-    // socket.on('test', (e) => {
-    //   console.log('test', e)
-    // })
-    // // 以上
 
     socket.on('disconnect', (e) => {
       console.log('链接关闭', e)
@@ -96,11 +86,12 @@ const sendMsg_socket = (msg) => {
     console.log('服务器响应:', res)
   })
 
-  return true // 表示发送成功
+  return true
 }
 
 // 接收消息
-function onMessage() {
+const onMessage = () => {
+  console.log('监听……')
   socket.on('send_msg', (data) => {
     console.log('收到消息:', data)
     if (messageCallback) {
@@ -108,6 +99,7 @@ function onMessage() {
     }
   })
 }
+
 // 设置消息回调函数
 const setMessageCallback = (callback) => {
   messageCallback = callback
