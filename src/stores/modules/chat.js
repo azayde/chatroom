@@ -1,46 +1,66 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-// 聊天模块
 export const useChatStore = defineStore(
   'chat-chat',
   () => {
-    // 聊天对象
-    const chatInfo = ref()
-    const setChatInfo = (value) => {
-      chatInfo.value = value
+    // 当前聊天对象信息
+    const chatInfo = ref(null)
+
+    // 聊天消息列表（保持响应式）
+    const chatMsg = ref([])
+
+    // 操作方法
+    const setChatInfo = (info) => {
+      chatInfo.value = info
     }
-    // 当前聊天对象的聊天记录
-    const chatMsg = ref()
-    // 设置消息列表
-    const setChatMsg = (value) => {
-      chatMsg.value = value
+
+    const setChatMsg = (messages) => {
+      chatMsg.value = messages.filter((msg) => msg !== null)
     }
-    // 添加新消息
+
     const addChatMsg = (message) => {
-      chatMsg.value.push(message)
+      chatMsg.value = [...chatMsg.value, message]
     }
-    // 更新临时消息
-    const updateTempMessage = (tempId, serverMessage) => {
+
+    // 更新临时消息状态（发送成功时）
+    const replaceTempMessage = (tempId, serverMsg) => {
       const index = chatMsg.value.findIndex((msg) => msg.temp_id === tempId)
-      if (index !== -1) {
-        // 保留除isTemp外的其他属性
-        const { isTemp, ...rest } = serverMessage
-        console.let(serverMessage)
-        chatMsg.value[index] = rest
-        console.let(isTemp)
+      if (index === -1) return
+
+      chatMsg.value.splice(index, 1, {
+        ...serverMsg,
+        // 保留临时消息的客户端生成时间
+        create_at: chatMsg.value[index].create_at
+      })
+    }
+
+    // 更新消息发送状态（失败时）
+    const updateMessageStatus = (tempId, success) => {
+      const index = chatMsg.value.findIndex((msg) => msg.temp_id === tempId)
+      if (index === -1) return
+
+      chatMsg.value[index] = {
+        ...chatMsg.value[index],
+        sending: false,
+        failed: !success
       }
     }
+
     return {
       chatInfo,
       chatMsg,
       setChatInfo,
       setChatMsg,
       addChatMsg,
-      updateTempMessage
+      replaceTempMessage,
+      updateMessageStatus
     }
   },
   {
-    persist: true
+    persist:
+      // key: 'chat-store',
+      // paths: ['chatInfo'] // 只持久化聊天对象信息
+      true
   }
 )

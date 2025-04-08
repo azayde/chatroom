@@ -99,10 +99,10 @@ getChatPinList()
 // 获取聊天列表（置顶在上，已排序）
 const getChatList = async () => {
   // 获取展示列表
-  const res = await getChatShowListService()
-  console.log(res)
-  // console.log(res.data.data.list)
-  chatList.value = res.data.data.list
+  // const res = await getChatShowListService()
+  // console.log(res)
+  // // console.log(res.data.data.list)
+  // chatList.value = res.data.data.list
 
   // 排序
   // 提取置顶项的 relation_id 集合

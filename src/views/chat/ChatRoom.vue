@@ -8,7 +8,7 @@ import {
   Delete,
   Star
 } from '@element-plus/icons-vue'
-import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, watch, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import { useUserStore, useChatStore } from '@/stores'
 // import { useRoute } from 'vue-router'
 import { getChatListByLastTime } from '@/api/chat.js'
@@ -106,7 +106,6 @@ const chatMsg = ref([
 // 根据account_id获取用户信息进行渲染
 const last_time = new Date('2026-04-01T00:00:00').getTime() / 1000
 const getChatList = async () => {
-  // const res = await getChatListByLastTime(props.chatInfo.relation_id, last_time)
   const res = await getChatListByLastTime({
     relation_id: props.chatInfo.relation_id,
     last_time: last_time,
@@ -128,10 +127,34 @@ const htmlToPlainText = (html) => {
 }
 
 const sendMsg = () => {
-  // console.log(data)
+  // 发送内容
   const content = inputEditorRef.value.getContent()
-  console.log('发送内容', content)
-  const plainText = htmlToPlainText(content) // 获取纯文本
+  // 如果内容为空，不发送
+  if (content.trim()) return
+  // console.log('发送内容', content)
+  // 获取纯文本
+  const plainText = htmlToPlainText(content)
+
+  // 创建临时消息对象
+  const tempMsg = {
+    account_id: userStore.accountInfo.id,
+    create_at: new Date().toISOString(),
+    // file_id: 0,
+    msg_content: plainText,
+    // msg_extend: null,
+    // msg_type: 'text',
+    // notify_type: 'common',
+    // pin_time: 0,
+    // rly_msg: null,
+    relation_id: props.chatInfo.relation_id,
+    temp_id: Date.now().toString(), // 临时ID
+    isTemp: true, // 标记为临时消息
+    sending: true // 添加发送状态
+  }
+  console.log(tempMsg)
+  // 将临时消息添加到聊天列表
+  chatStore.addChatMsg(tempMsg)
+
   // 将纯文本编码为 UTF-8
   // 创建 TextEncoder 实例
   const encoder = new TextEncoder()
@@ -141,71 +164,50 @@ const sendMsg = () => {
   const byteArray = new Uint8Array(encodedMessage)
   // 转换为 Base64 字符串（示例）
   const base64Message = btoa(String.fromCharCode(...byteArray))
+
+  // 发送消息
   const msg = ref({
     relation_id: props.chatInfo.relation_id,
     msg_content: base64Message
   })
-  // 创建临时消息对象
-  const tempMsg = {
-    account_id: userStore.accountInfo.id,
-    create_at: new Date().toISOString(),
-    // file_id: 0,
-    msg_content: base64Message,
-    // msg_extend: null,
-    // msg_type: 'text',
-    // notify_type: 'common',
-    // pin_time: 0,
-    // rly_msg: null,
-    relation_id: props.chatInfo.relation_id,
-    temp_id: Date.now().toString(), // 临时ID
-    isTemp: true // 标记为临时消息
-  }
-  console.log(tempMsg)
 
-  const messageElement = document.createElement('div')
-  const div = document.querySelector('.chat-msg .list')
-  console.log(div)
-  messageElement.html = `
-      <div class="chat-item right">
-        <div class="user-avatar">
-          <el-avatar
-            shape="square"
-            :src="userStore.accountInfo.avatar"
-          ></el-avatar>
-        </div>
-        <div class="chat-pao" v-if="true">${tempMsg.msg_content}</div>
-      </div>
-  `
-  div.appendChild(messageElement)
+  // const messageElement = document.createElement('div')
+  // const div = document.querySelector('.chat-msg .list')
+  // console.log(div)
+  // messageElement.html = `
+  //     <div class="chat-item right">
+  //       <div class="user-avatar">
+  //         <el-avatar
+  //           shape="square"
+  //           :src="userStore.accountInfo.avatar"
+  //         ></el-avatar>
+  //       </div>
+  //       <div class="chat-pao" v-if="true">${tempMsg.msg_content}</div>
+  //     </div>
+  // `
+  // div.appendChild(messageElement)
   // chatStore.addChatMsg(tempMsg)
   // 滚动到最新消息
-  nextTick(() => {
-    scrollToBottom()
-  })
-  // 发送到服务器
+  // nextTick(() => {
+  //   scrollToBottom()
+  // })
 
+  // 发送到服务器
   const sendSuccess = sendMsg_socket(JSON.stringify(msg.value))
   console.log(sendSuccess)
 
   // 发送消息失败
-  // if (!sendSuccess) {
-  //   ElMessage.danger('发送失败')
-  // }
+  if (!sendSuccess) {
+    chatStore.updateMessageStatus(tempMsg.temp_id, false)
+    ElMessage.danger('发送失败')
+  }
 
   // 清除输入框
   inputEditorRef.value.clearContent()
-  // getChatList()
-
-  // // 接收消息并渲染
-  // const res = onMessage()
-  // console.log(res)
-  // // 新发送的消息添加到消息队列里
-  // chatMsg.value.push(res)
 }
 
 onMounted(() => {
-  console.log(11)
-  scrollToBottom()
+  scrollToBottom(true)
   setMessageCallback((newMessage) => {
     // 如果是自己发送的消息且是临时消息，则替换为服务器确认的消息
     if (newMessage.temp_id) {
@@ -221,24 +223,35 @@ onUnmounted(() => {
   // 清理回调
   setMessageCallback(null)
 })
+
 const scrollbarRef = ref(null)
-const scrollToBottom = () => {
-  // const scrollbar =
-  // console.log(scrollbar)
-  // if (scrollbar) {
-  //   scrollbar.scrollTop = scrollbar.scrollHeight
-  // }
+const scrollToBottom = (force = false) => {
+  console.log('滑动')
   nextTick(() => {
-    if (scrollbarRef.value) {
-      const scrollContainer = document.querySelector('.chat-msg .list')
-      console.log(scrollContainer.scrollHeight)
-      console.log(scrollContainer.scrollTop)
-      scrollContainer.scrollTop = scrollContainer.scrollHeight
-      console.log(scrollContainer.scrollTop)
+    const scrollContainer = scrollbarRef.value?.$el.querySelector(
+      '.el-scrollbar__wrap'
+    )
+    if (!scrollContainer) return
+
+    // 计算是否需要滚动（距离底部50px内视为已到底部）
+    const shouldScroll =
+      force ||
+      scrollContainer.scrollHeight -
+        scrollContainer.scrollTop -
+        scrollContainer.clientHeight <
+        50
+
+    if (shouldScroll) {
+      // scrollContainer.scrollTop = scrollContainer.scrollHeight
+      // 备用方案：平滑滚动
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollHeight,
+        behavior: 'smooth'
+      })
     }
   })
 }
-scrollToBottom()
+scrollToBottom(true)
 
 // 上传文件
 // const fileUpdate = [
@@ -348,7 +361,13 @@ watch(
             <div class="user-avatar">
               <el-avatar
                 shape="square"
-                :src="userStore.accountInfo.avatar"
+                :src="
+                  item.account_id === userStore.accountInfo.id
+                    ? userStore.accountInfo.avatar
+                    : activeChatInfo.relation_type === 'friend'
+                      ? activeChatInfo.friend_info.avatar
+                      : activeChatInfo.group_info.avatar
+                "
               ></el-avatar>
             </div>
             <!-- 文字类 -->
@@ -531,6 +550,7 @@ watch(
     background-color: #f5f5f5;
     .el-scrollbar {
       width: 100%;
+      // overflow: hidden;
     }
     .chat-item {
       display: flex;
