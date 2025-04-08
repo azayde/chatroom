@@ -1,4 +1,5 @@
 import io from 'socket.io-client'
+import { useUserStore } from '@/stores'
 
 // WebSocket对象
 let socket = null
@@ -21,9 +22,10 @@ let reConnect = () => {
 // WebSocket链接地址
 let wsurl = 'ws://192.168.3.34:8000/chat'
 
+// 消息回调函数
+let messageCallback = null
 // let isConnect = false
 // 这个token目前是注册账号时返回的token
-import { useUserStore } from '@/stores'
 
 let token = ''
 // 初始化websocket
@@ -72,31 +74,63 @@ const createWebSocket = () => {
   initWebSocket()
 }
 
+// const sendMsg_socket = (msg) => {
+//   console.log('发消息')
+//   if (isConnect === false) {
+//     console.log('链接断开，不能发送消息')
+//     return
+//   }
+//   socket.emit('send_msg', msg, (res) => {
+//     console.log(res)
+//   })
+// }
+
 const sendMsg_socket = (msg) => {
-  console.log('发消息')
   if (isConnect === false) {
     console.log('链接断开，不能发送消息')
-    return
+    return false
   }
-  // const message = {
-  //   relation_id: 24,
-  //   msg_content: 'zzzzzz'
-  // }
-  // const msg = JSON.stringify(message)
+
+  // 发送消息到服务器
   socket.emit('send_msg', msg, (res) => {
-    console.log(res)
+    console.log('服务器响应:', res)
   })
+
+  return true // 表示发送成功
 }
 
 // 接收消息
 function onMessage() {
-  socket.on('send_msg', (msg) => {
-    console.log('收到消息:', msg) // 打印收到的消息
-    return msg
+  socket.on('send_msg', (data) => {
+    console.log('收到消息:', data)
+    if (messageCallback) {
+      messageCallback(data) // 通过回调传递消息
+    }
   })
 }
+// 设置消息回调函数
+const setMessageCallback = (callback) => {
+  messageCallback = callback
+}
+
+// 接收消息
+// function onMessage() {
+//   socket.on('send_msg', (data) => {
+//     console.log('收到消息:', data) // 打印收到的消息
+//     if (messageCallback) {
+//       messageCallback(data)
+//     }
+//   })
+// }
+
 // 关闭链接函数
 let closeWebSocket = () => {
   socket.disconnect()
 }
-export { createWebSocket, onMessage, closeWebSocket, sendMsg_socket }
+export {
+  createWebSocket,
+  onMessage,
+  closeWebSocket,
+  sendMsg_socket,
+  setMessageCallback
+}

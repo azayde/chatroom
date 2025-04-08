@@ -7,7 +7,7 @@ import {
   createApplicationService,
   searchFriendByName
 } from '@/api/friend.js'
-
+import { getAccountInfoById } from '@/api/user.js'
 import { useRouter, useRoute } from 'vue-router'
 import { useFriendStore } from '@/stores'
 const route = useRoute()
@@ -114,6 +114,19 @@ const friendList = ref([
 const getFriendList = async () => {
   const res = await getFriendListService()
   console.log(res.data.data)
+  // 根据id获取账号信息
+  // res.data.data.list.forEach((item) => {})
+  // for (let item of res.data.data.list) {
+  //   console.log(item.friend_info.account_id)
+  //   // const res1 = await getAccountInfoById(item.account_id)
+  // }
+  // console.log(res1)
+  // const info = {
+  //   ...res1.data.data.info,
+  //   signature: res1.data.data.signature
+  // }
+  // console.log(info)
+  // res.data.data.list.friend_info = info
   friendList.value = res.data.data.list
 }
 getFriendList()

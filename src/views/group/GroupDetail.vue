@@ -380,7 +380,6 @@ const notifyList = [
 </script>
 
 <template>
-  <!-- {{ groupInfo.relation_id }} -->
   <el-container>
     <el-header>
       <h1>{{ activeGroup.group_info.name }}（4）</h1>

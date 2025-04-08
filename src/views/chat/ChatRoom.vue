@@ -5,19 +5,23 @@ import {
   Position,
   MoreFilled,
   ChatDotRound,
-  Delete
+  Delete,
+  Star
 } from '@element-plus/icons-vue'
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useUserStore, useChatStore } from '@/stores'
 // import { useRoute } from 'vue-router'
 import { getChatListByLastTime } from '@/api/chat.js'
-import { sendMsg_socket, onMessage } from '@/utils/websocket'
+import {
+  sendMsg_socket,
+  onMessage,
+  setMessageCallback
+} from '@/utils/websocket'
 
 const userStore = useUserStore()
 const chatStore = useChatStore()
 // const route = useRoute()
-const res = onMessage()
-console.log(res)
+
 const drawer = ref(false)
 // 父传子
 const props = defineProps({
@@ -28,13 +32,7 @@ console.log(props.chatInfo)
 const activeChatInfo = ref(props.chatInfo)
 activeChatInfo.value = props.chatInfo ? props.chatInfo : chatStore.chatInfo
 console.log(activeChatInfo.value)
-watch(
-  () => props.chatInfo,
-  (newVal) => {
-    // console.log(newVal)
-    activeChatInfo.value = newVal
-  }
-)
+
 // 聊天记录dialog
 const chatDialog = ref()
 
@@ -43,66 +41,66 @@ const fileDialog = ref(false)
 
 // 聊天信息
 const chatMsg = ref([
-  // {
-  //   id: 0,
-  //   notify_type: 'common',
-  //   msg_type: 'text',
-  //   msg_content: 'common notification content 1',
-  //   msg_extend: {
-  //     remind: null
-  //   },
-  //   file_id: 1,
-  //   account_id: 734124834816,
-  //   relation_id: 200,
-  //   create_at: '2025-03-27T10:00:00Z',
-  //   pin_time: '2025-03-27T10:05:00Z',
-  //   rly_msg: null
-  // },
-  // {
-  //   id: 1,
-  //   notify_type: 'common',
-  //   msg_type: 'text',
-  //   msg_content: 'Common message content 2',
-  //   msg_extend: {
-  //     remind: null
-  //   },
-  //   file_id: 2,
-  //   account_id: 101,
-  //   relation_id: 200,
-  //   create_at: '2025-03-27T10:10:00Z',
-  //   pin_time: '2025-03-27T10:15:00Z',
-  //   rly_msg: null
-  // },
-  // {
-  //   id: 2,
-  //   notify_type: 'common',
-  //   msg_type: 'text',
-  //   msg_content: 'common notification content 3',
-  //   msg_extend: {
-  //     remind: null
-  //   },
-  //   file_id: 3,
-  //   account_id: 101,
-  //   relation_id: 200,
-  //   create_at: '2025-03-27T10:20:00Z',
-  //   pin_time: '2025-03-27T10:25:00Z',
-  //   rly_msg: null
-  // },
-  // {
-  //   id: 3,
-  //   notify_type: 'common',
-  //   msg_type: 'text',
-  //   msg_content: 'Common message content 4',
-  //   msg_extend: {
-  //     remind: null
-  //   },
-  //   file_id: 4,
-  //   account_id: 734124834816,
-  //   relation_id: 200,
-  //   create_at: '2025-03-27T10:30:00Z',
-  //   pin_time: '2025-03-27T10:35:00Z',
-  //   rly_msg: null
-  // }
+  {
+    id: 0,
+    notify_type: 'common',
+    msg_type: 'text',
+    msg_content: 'common notification content 1',
+    msg_extend: {
+      remind: null
+    },
+    file_id: 1,
+    account_id: 734124834816,
+    relation_id: 200,
+    create_at: '2025-03-27T10:00:00Z',
+    pin_time: '2025-03-27T10:05:00Z',
+    rly_msg: null
+  },
+  {
+    id: 1,
+    notify_type: 'common',
+    msg_type: 'text',
+    msg_content: 'Common message content 2',
+    msg_extend: {
+      remind: null
+    },
+    file_id: 2,
+    account_id: 101,
+    relation_id: 200,
+    create_at: '2025-03-27T10:10:00Z',
+    pin_time: '2025-03-27T10:15:00Z',
+    rly_msg: null
+  },
+  {
+    id: 2,
+    notify_type: 'common',
+    msg_type: 'text',
+    msg_content: 'common notification content 3',
+    msg_extend: {
+      remind: null
+    },
+    file_id: 3,
+    account_id: 101,
+    relation_id: 200,
+    create_at: '2025-03-27T10:20:00Z',
+    pin_time: '2025-03-27T10:25:00Z',
+    rly_msg: null
+  },
+  {
+    id: 3,
+    notify_type: 'common',
+    msg_type: 'text',
+    msg_content: 'Common message content 4',
+    msg_extend: {
+      remind: null
+    },
+    file_id: 4,
+    account_id: 734124834816,
+    relation_id: 200,
+    create_at: '2025-03-27T10:30:00Z',
+    pin_time: '2025-03-27T10:35:00Z',
+    rly_msg: null
+  }
 ])
 
 // 根据account_id获取用户信息进行渲染
@@ -115,9 +113,10 @@ const getChatList = async () => {
     page: 1,
     page_size: 100
   })
-  console.log(res.data.data.list)
+  // console.log(res.data.data.list)
   chatMsg.value = res.data.data.list.filter((item) => item !== null)
-  console.log(chatMsg.value)
+  // console.log(chatMsg.value)
+  chatStore.setChatMsg(chatMsg.value)
 }
 getChatList()
 // 发送消息
@@ -134,21 +133,112 @@ const sendMsg = () => {
   console.log('发送内容', content)
   const plainText = htmlToPlainText(content) // 获取纯文本
   // 将纯文本编码为 UTF-8
-  const encoder = new TextEncoder() // 创建 TextEncoder 实例
-  const encodedMessage = encoder.encode(plainText) // 编码为 UTF-8
-  // 发送时首先将其转换为字符串格式（如 base64 或 hex）可选步骤
+  // 创建 TextEncoder 实例
+  const encoder = new TextEncoder()
+  // 编码为 UTF-8
+  const encodedMessage = encoder.encode(plainText)
+  // 发送时首先将其转换为字符串格式base64
   const byteArray = new Uint8Array(encodedMessage)
-  const base64Message = btoa(String.fromCharCode(...byteArray)) // 转换为 Base64 字符串（示例）
-  console.log(base64Message)
+  // 转换为 Base64 字符串（示例）
+  const base64Message = btoa(String.fromCharCode(...byteArray))
   const msg = ref({
     relation_id: props.chatInfo.relation_id,
     msg_content: base64Message
   })
-  // try {
-  sendMsg_socket(JSON.stringify(msg.value))
+  // 创建临时消息对象
+  const tempMsg = {
+    account_id: userStore.accountInfo.id,
+    create_at: new Date().toISOString(),
+    // file_id: 0,
+    msg_content: base64Message,
+    // msg_extend: null,
+    // msg_type: 'text',
+    // notify_type: 'common',
+    // pin_time: 0,
+    // rly_msg: null,
+    relation_id: props.chatInfo.relation_id,
+    temp_id: Date.now().toString(), // 临时ID
+    isTemp: true // 标记为临时消息
+  }
+  console.log(tempMsg)
+
+  const messageElement = document.createElement('div')
+  const div = document.querySelector('.chat-msg .list')
+  console.log(div)
+  messageElement.html = `
+      <div class="chat-item right">
+        <div class="user-avatar">
+          <el-avatar
+            shape="square"
+            :src="userStore.accountInfo.avatar"
+          ></el-avatar>
+        </div>
+        <div class="chat-pao" v-if="true">${tempMsg.msg_content}</div>
+      </div>
+  `
+  div.appendChild(messageElement)
+  // chatStore.addChatMsg(tempMsg)
+  // 滚动到最新消息
+  nextTick(() => {
+    scrollToBottom()
+  })
+  // 发送到服务器
+
+  const sendSuccess = sendMsg_socket(JSON.stringify(msg.value))
+  console.log(sendSuccess)
+
+  // 发送消息失败
+  // if (!sendSuccess) {
+  //   ElMessage.danger('发送失败')
+  // }
+
+  // 清除输入框
   inputEditorRef.value.clearContent()
-  getChatList()
+  // getChatList()
+
+  // // 接收消息并渲染
+  // const res = onMessage()
+  // console.log(res)
+  // // 新发送的消息添加到消息队列里
+  // chatMsg.value.push(res)
 }
+
+onMounted(() => {
+  console.log(11)
+  scrollToBottom()
+  setMessageCallback((newMessage) => {
+    // 如果是自己发送的消息且是临时消息，则替换为服务器确认的消息
+    if (newMessage.temp_id) {
+      chatStore.updateTempMessage(newMessage.temp_id, newMessage)
+    } else {
+      chatStore.addChatMsg(newMessage)
+    }
+  })
+  onMessage()
+})
+
+onUnmounted(() => {
+  // 清理回调
+  setMessageCallback(null)
+})
+const scrollbarRef = ref(null)
+const scrollToBottom = () => {
+  // const scrollbar =
+  // console.log(scrollbar)
+  // if (scrollbar) {
+  //   scrollbar.scrollTop = scrollbar.scrollHeight
+  // }
+  nextTick(() => {
+    if (scrollbarRef.value) {
+      const scrollContainer = document.querySelector('.chat-msg .list')
+      console.log(scrollContainer.scrollHeight)
+      console.log(scrollContainer.scrollTop)
+      scrollContainer.scrollTop = scrollContainer.scrollHeight
+      console.log(scrollContainer.scrollTop)
+    }
+  })
+}
+scrollToBottom()
 
 // 上传文件
 // const fileUpdate = [
@@ -207,10 +297,7 @@ const handleFileChange = (file) => {
   fileDialog.value = true
   console.log(selectFile.value)
 }
-// const img = document.querySelector('img')
-// console.log(img.naturalHeight)
-// console.log(img.naturalWidth)
-// console.log(img.naturalHeight)
+
 watch(
   () => props.chatInfo,
   (newVal) => {
@@ -224,45 +311,69 @@ watch(
 <template>
   <el-container class="chat-room">
     <el-header>
-      <h1>
-        {{
-          activeChatInfo.relation_type === 'friend'
-            ? activeChatInfo.friend_info.name
-            : activeChatInfo.group_info.name
-        }}{{ activeChatInfo.relation_type === 'group' ? '（4）' : '' }}
-      </h1>
-      <div class="more" @click="drawer = true">
-        <el-icon><MoreFilled /></el-icon>
+      <div class="top">
+        <h1>
+          {{
+            activeChatInfo.relation_type === 'friend'
+              ? activeChatInfo.friend_info.name
+              : activeChatInfo.group_info.name
+          }}{{ activeChatInfo.relation_type === 'group' ? '（4）' : '' }}
+        </h1>
+        <div class="more" @click="drawer = true">
+          <el-icon><MoreFilled /></el-icon>
+        </div>
+      </div>
+      <!-- 有置顶或有pin时展示 -->
+      <div class="bottom" v-if="true">
+        <el-button text class="is_top">置顶</el-button>
+        <el-button text class="is_pin">
+          <el-icon><Star /></el-icon>
+          Pin
+        </el-button>
       </div>
     </el-header>
     <el-main>
       <!-- 聊天信息 -->
-      <el-scrollbar>
-        <div
-          class="chat-item"
-          v-for="item in chatMsg"
-          :key="item.id"
-          :class="{
-            left: item.account_id !== userStore.accountInfo.id,
-            right: item.account_id === userStore.accountInfo.id
-          }"
-        >
-          <div class="user-avatar">
-            <el-avatar
-              shape="square"
-              :src="userStore.accountInfo.avatar"
-            ></el-avatar>
-          </div>
-          <!-- 文字类 -->
-          <div class="chat-pao" v-if="true">{{ item.msg_content }}</div>
-          <div class="picture" v-else>
-            <!-- <img class="img" src="@/assets/play.svg" alt="" /> -->
-            <img class="img" src="@/assets/test1.png" alt="" />
-            <!-- <img
+      <el-scrollbar ref="scrollbarRef" class="chat-msg">
+        <div class="list">
+          <div
+            class="chat-item"
+            v-for="item in chatStore.chatMsg"
+            :key="item.id"
+            :class="{
+              left: item.account_id !== userStore.accountInfo.id,
+              right: item.account_id === userStore.accountInfo.id
+            }"
+          >
+            <div class="user-avatar">
+              <el-avatar
+                shape="square"
+                :src="userStore.accountInfo.avatar"
+              ></el-avatar>
+            </div>
+            <!-- 文字类 -->
+            <div class="chat-pao" v-if="true">{{ item.msg_content }}</div>
+            <!-- <div class="chat-pao" v-if="true">{{ item.msg_content }}</div> -->
+            <div class="picture" v-else>
+              <!-- <img class="img" src="@/assets/play.svg" alt="" /> -->
+              <!-- <img class="img" src="@/assets/test1.png" alt="" /> -->
+              <!-- <img
               class="img"
               src="https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con"
               alt=""
             /> -->
+            </div>
+            <!-- <div class="file">
+            <el-link href="https://element-plus.org" :underline="false">
+              <div class="item">
+                <div class="right">
+                  <span class="file_name">文件1</span>
+                  <span class="file_size">1090024</span>
+                </div>
+                <i class="iconfont icon-pdf pdf"></i>
+              </div>
+            </el-link>
+          </div> -->
           </div>
         </div>
       </el-scrollbar>
@@ -360,7 +471,6 @@ watch(
           </el-link>
         </el-scrollbar>
       </div>
-
       <!-- <div class="file-update"></div> -->
       <template #footer>
         <div class="dialog-footer">
@@ -378,16 +488,22 @@ watch(
 
 <style lang="scss" scoped>
 .el-container {
-  // height: 94vh;
-  // height: 70vh;
-  // border: 1px solid #000;
-  // background-color: #bfa;
   .el-header {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    height: 45px;
-    line-height: 45px;
+    position: relative;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    min-height: 45px;
+    height: auto;
+    .top {
+      display: flex;
+      justify-content: space-between;
+      height: 45px;
+      line-height: 45px;
+    }
+    .bottom {
+      display: flex;
+    }
     h1 {
       margin: 0;
       font-size: 22px;
@@ -417,7 +533,6 @@ watch(
       width: 100%;
     }
     .chat-item {
-      // width: 95%;
       display: flex;
       align-items: center;
       margin: 8px 30px;
@@ -425,6 +540,7 @@ watch(
         width: 40px;
         height: 40px;
       }
+      // 文字
       .chat-pao {
         position: relative;
         padding: 5px;
@@ -434,6 +550,7 @@ watch(
         // width: 90%;
         max-width: 60%;
       }
+      // 图片
       .picture {
         max-width: 60%; // 与文字消息保持一致
         margin: 0 15px; // 保持与文字相同的边距
@@ -446,6 +563,52 @@ watch(
           display: block; // 去除图片底部间隙
           max-height: 300px; // 防止过高图片
           object-fit: contain; // 保持比例完整显示
+        }
+      }
+      // 文件类
+      .el-link {
+        width: 100%;
+      }
+      .el-link__inner {
+        width: 100%;
+        background-color: #fff;
+      }
+      .file {
+        width: 200px;
+        .item {
+          width: 200px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin: 8px;
+          height: 55px;
+          background-color: #fff;
+          padding-left: 15px;
+          .iconfont {
+            font-size: 40px;
+            padding-right: 10px;
+          }
+          .right {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            .file_name {
+              font-size: 16px;
+              max-width: 100px;
+              color: #000;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+            .file_size {
+              font-size: 12px;
+              max-width: 50px;
+              color: #c4c4c4;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+          }
         }
       }
     }
@@ -489,6 +652,9 @@ watch(
           left: -5px;
           transform: rotate(-45deg);
         }
+      }
+      .picture {
+        margin-left: 10px;
       }
     }
   }
@@ -643,9 +809,4 @@ hr {
   height: 1px;
   background-color: #ececec;
 }
-// .box {
-//   width: 100px;
-//   height: 100px;
-//   background-color: #bfa;
-// }
 </style>

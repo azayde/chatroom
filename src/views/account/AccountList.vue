@@ -31,7 +31,7 @@ const getAccountId = async (obj) => {
   const res = await getAccountTokenService(obj.id)
   console.log(res)
   console.log(res.data.data.account_token.token)
-
+  userStore.setAccountToken(res.data.data.account_token.token)
   // 账号信息存入本地
   userStore.setAccountInfo(obj)
   ElMessage.success('登录成功')

@@ -5,11 +5,40 @@ import { ref } from 'vue'
 export const useChatStore = defineStore(
   'chat-chat',
   () => {
+    // 聊天对象
     const chatInfo = ref()
     const setChatInfo = (value) => {
       chatInfo.value = value
     }
-    return { chatInfo, setChatInfo }
+    // 当前聊天对象的聊天记录
+    const chatMsg = ref()
+    // 设置消息列表
+    const setChatMsg = (value) => {
+      chatMsg.value = value
+    }
+    // 添加新消息
+    const addChatMsg = (message) => {
+      chatMsg.value.push(message)
+    }
+    // 更新临时消息
+    const updateTempMessage = (tempId, serverMessage) => {
+      const index = chatMsg.value.findIndex((msg) => msg.temp_id === tempId)
+      if (index !== -1) {
+        // 保留除isTemp外的其他属性
+        const { isTemp, ...rest } = serverMessage
+        console.let(serverMessage)
+        chatMsg.value[index] = rest
+        console.let(isTemp)
+      }
+    }
+    return {
+      chatInfo,
+      chatMsg,
+      setChatInfo,
+      setChatMsg,
+      addChatMsg,
+      updateTempMessage
+    }
   },
   {
     persist: true

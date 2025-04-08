@@ -3,9 +3,6 @@
 import '@/assets/main.scss'
 import { createWebSocket } from '@/utils/websocket.js'
 createWebSocket()
-// import { useFriendStore } from './stores'
-// const friendStore = useFriendStore()
-// console.log(friendStore.setFriendtInfo('ttt'))
 </script>
 
 <template>
