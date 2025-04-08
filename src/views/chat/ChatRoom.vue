@@ -8,15 +8,11 @@ import {
   Delete,
   Star
 } from '@element-plus/icons-vue'
-import { ref, watch, onMounted, onUnmounted, nextTick, computed } from 'vue'
+import { ref, watch } from 'vue'
 import { useUserStore, useChatStore } from '@/stores'
 // import { useRoute } from 'vue-router'
-import { getChatListByLastTime } from '@/api/chat.js'
-import {
-  sendMsg_socket,
-  onMessage,
-  setMessageCallback
-} from '@/utils/websocket'
+// import { getChatListByLastTime } from '@/api/chat.js'
+import { sendMsg_socket } from '@/utils/websocket'
 
 const userStore = useUserStore()
 const chatStore = useChatStore()
@@ -58,24 +54,24 @@ const sendMsg = () => {
   const plainText = htmlToPlainText(content)
 
   // 创建临时消息对象
-  const tempMsg = {
-    account_id: userStore.accountInfo.id,
-    create_at: new Date().toISOString(),
-    // file_id: 0,
-    msg_content: plainText,
-    // msg_extend: null,
-    // msg_type: 'text',
-    // notify_type: 'common',
-    // pin_time: 0,
-    // rly_msg: null,
-    relation_id: props.chatInfo.relation_id,
-    temp_id: Date.now().toString(), // 临时ID
-    isTemp: true // 标记为临时消息
-    // sending: true // 添加发送状态
-  }
-  console.log(tempMsg)
+  // const tempMsg = {
+  //   account_id: userStore.accountInfo.id,
+  //   create_at: new Date().toISOString(),
+  //   // file_id: 0,
+  //   msg_content: plainText,
+  //   // msg_extend: null,
+  //   // msg_type: 'text',
+  //   // notify_type: 'common',
+  //   // pin_time: 0,
+  //   // rly_msg: null,
+  //   relation_id: props.chatInfo.relation_id,
+  //   temp_id: Date.now().toString(), // 临时ID
+  //   isTemp: true // 标记为临时消息
+  //   // sending: true // 添加发送状态
+  // }
+  // console.log(tempMsg)
   // 将临时消息添加到聊天列表
-  chatStore.addChatMsg(tempMsg)
+  // chatStore.addChatMsg(tempMsg)
 
   // 将纯文本编码为 UTF-8
   // 创建 TextEncoder 实例
@@ -385,135 +381,6 @@ watch(
     // padding: 0 10px;
     // margin: 0 10px;
     background-color: #f5f5f5;
-    .el-scrollbar {
-      width: 100%;
-      // overflow: hidden;
-    }
-    .chat-item {
-      display: flex;
-      align-items: center;
-      margin: 8px 30px;
-      .user-avatar {
-        width: 40px;
-        height: 40px;
-      }
-      // 文字
-      .chat-pao {
-        position: relative;
-        padding: 5px;
-        border-radius: 6px;
-        // border: 1px solid #c2d9ea;
-        background-color: #e0effb;
-        // width: 90%;
-        max-width: 60%;
-      }
-      // 图片
-      .picture {
-        max-width: 60%; // 与文字消息保持一致
-        margin: 0 15px; // 保持与文字相同的边距
-        border-radius: 6px;
-        overflow: hidden;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        .img {
-          width: 100%;
-          height: auto; // 高度自动按比例缩放
-          display: block; // 去除图片底部间隙
-          max-height: 300px; // 防止过高图片
-          object-fit: contain; // 保持比例完整显示
-        }
-      }
-      // 文件类
-      .el-link {
-        width: 100%;
-      }
-      .el-link__inner {
-        width: 100%;
-        background-color: #fff;
-      }
-      .file {
-        width: 200px;
-        .item {
-          width: 200px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin: 8px;
-          height: 55px;
-          background-color: #fff;
-          padding-left: 15px;
-          .iconfont {
-            font-size: 40px;
-            padding-right: 10px;
-          }
-          .right {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            .file_name {
-              font-size: 16px;
-              max-width: 100px;
-              color: #000;
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-            }
-            .file_size {
-              font-size: 12px;
-              max-width: 50px;
-              color: #c4c4c4;
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-            }
-          }
-        }
-      }
-    }
-    // before 是一个小的矩形
-    .chat-pao::before {
-      content: '';
-      width: 10px;
-      height: 10px;
-      position: absolute;
-      top: 10px;
-      border: inherit;
-      background: inherit;
-      transform: rotate(45deg);
-    }
-    // 设置两个小矩形的位置和角度旋转
-    .chat-item.right {
-      flex-direction: row-reverse;
-      .chat-pao {
-        // margin-left: 0;
-        margin-right: 15px;
-        background-color: #95ec69;
-        // border-color: #99c2ff;
-        // &引用上一层选择器
-        &::before {
-          right: -5px;
-          border-left: none;
-          border-bottom: none;
-        }
-      }
-      .picture {
-        margin-right: 10px;
-      }
-    }
-    .chat-item.left {
-      .chat-pao {
-        margin-left: 15px;
-        background-color: #fff;
-        &::before {
-          border-right: none;
-          border-bottom: none;
-          left: -5px;
-          transform: rotate(-45deg);
-        }
-      }
-      .picture {
-        margin-left: 10px;
-      }
-    }
   }
   .el-footer {
     // border: 1px solid #000;

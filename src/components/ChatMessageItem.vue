@@ -23,7 +23,7 @@ const getChatList = async () => {
     relation_id: props.chatInfo.relation_id,
     last_time: last_time,
     page: 1,
-    page_size: 100
+    page_size: 1000
   })
   chatMsg.value = res.data.data.list.filter((item) => item !== null)
   chatStore.setChatMsg(chatMsg.value)
@@ -58,44 +58,51 @@ const scrollToBottom = (force = false) => {
   })
 }
 scrollToBottom(true)
+
+const handleNewMessage = (newMessage) => {
+  chatStore.addChatMsg(newMessage)
+  scrollToBottom(true)
+  console.log(newMessage)
+}
 // onMounted(() => {
 // })
 onMounted(() => {
   console.log(props.chatInfo)
   scrollToBottom(true)
+  setMessageCallback(handleNewMessage)
 
-  setMessageCallback((newMessage) => {
-    console.log('处理消息', newMessage)
-    const msg = document.querySelector('.chat-msg .list')
-    console.log(msg)
-    const item = document.createElement('div')
-    item.innerHTML = `
-      <div class="chat-item"
-        :class="{
-          left: ${msg.account_id !== userStore.accountInfo.id},
-          right: ${msg.account_id === userStore.accountInfo.id}
-        }"
-      >
-        <div class="user-avatar">
-          <el-avatar
-            shape="square"
-            :src="${
-              msg.account_id === userStore.accountInfo.id
-                ? userStore.accountInfo.avatar
-                : props.chatInfo.relation_type === 'friend'
-                  ? props.chatInfo.friend_info.avatar
-                  : props.chatInfo.group_info.avatar
-            }
+  // setMessageCallback((newMessage) => {
+  //   console.log('处理消息', newMessage)
+  //   const msg = document.querySelector('.chat-msg .list')
+  //   console.log(msg)
+  //   const item = document.createElement('div')
+  //   item.innerHTML = `
+  //     <div class="chat-item"
+  //       :class="{
+  //         left: ${msg.account_id !== userStore.accountInfo.id},
+  //         right: ${msg.account_id === userStore.accountInfo.id}
+  //       }"
+  //     >
+  //       <div class="user-avatar">
+  //         <el-avatar
+  //           shape="square"
+  //           :src="${
+  //             msg.account_id === userStore.accountInfo.id
+  //               ? userStore.accountInfo.avatar
+  //               : props.chatInfo.relation_type === 'friend'
+  //                 ? props.chatInfo.friend_info.avatar
+  //                 : props.chatInfo.group_info.avatar
+  //           }
 
-            "
-          ></el-avatar>
-        </div>
-        <div class="chat-pao" v-if="true">${msg.msg_content}</div>
-      </div>
-    `
-    console.log(item)
-    msg.appendChild(item)
-  })
+  //           "
+  //         ></el-avatar>
+  //       </div>
+  //       <div class="chat-pao" v-if="true">${msg.msg_content}</div>
+  //     </div>
+  //   `
+  //   console.log(item)
+  //   msg.appendChild(item)
+  // })
   // 启动消息监听
   onMessage()
 })
@@ -117,7 +124,7 @@ watch(
       <div
         class="chat-item"
         v-for="item in chatStore.chatMsg"
-        :key="item.id"
+        :key="item?.id || 0"
         :class="{
           left: item.account_id !== userStore.accountInfo.id,
           right: item.account_id === userStore.accountInfo.id
