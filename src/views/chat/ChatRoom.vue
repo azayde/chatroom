@@ -8,10 +8,10 @@ import {
   Delete,
   Star
 } from '@element-plus/icons-vue'
-import { ref, watch } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
 import { useUserStore, useChatStore } from '@/stores'
 // import { useRoute } from 'vue-router'
-// import { getChatListByLastTime } from '@/api/chat.js'
+import { publishFileSerivce } from '@/api/chat.js'
 import { sendMsg_socket } from '@/utils/websocket'
 
 const userStore = useUserStore()
@@ -43,95 +43,70 @@ const htmlToPlainText = (html) => {
   return tempDiv.innerText // 返回普通文本
 }
 
+// 是否正在发送中
+const isSending = ref(false)
 const sendMsg = () => {
   // console.log(1111)
   // 发送内容
-  const content = inputEditorRef.value.getContent()
-  // 如果内容为空，不发送
-  // if (content.trim()) return
-  // console.log('发送内容', content)
-  // 获取纯文本
-  const plainText = htmlToPlainText(content)
+  if (isSending.value) return
+  isSending.value = true
+  try {
+    const content = inputEditorRef.value.getContent()
+    // 如果内容为空，不发送
+    // const content = inputEditorRef.value.getContent()
+    // console.log(content)
+    // if (content) {
+    //   console.log(11)
+    //   return
+    // }
+    // console.log('发送内容', content)
+    // 获取纯文本
+    const plainText = htmlToPlainText(content)
 
-  // 创建临时消息对象
-  // const tempMsg = {
-  //   account_id: userStore.accountInfo.id,
-  //   create_at: new Date().toISOString(),
-  //   // file_id: 0,
-  //   msg_content: plainText,
-  //   // msg_extend: null,
-  //   // msg_type: 'text',
-  //   // notify_type: 'common',
-  //   // pin_time: 0,
-  //   // rly_msg: null,
-  //   relation_id: props.chatInfo.relation_id,
-  //   temp_id: Date.now().toString(), // 临时ID
-  //   isTemp: true // 标记为临时消息
-  //   // sending: true // 添加发送状态
-  // }
-  // console.log(tempMsg)
-  // 将临时消息添加到聊天列表
-  // chatStore.addChatMsg(tempMsg)
+    // 将纯文本编码为 UTF-8
+    // 创建 TextEncoder 实例
+    const encoder = new TextEncoder()
+    // 编码为 UTF-8
+    const encodedMessage = encoder.encode(plainText)
+    // 发送时首先将其转换为字符串格式base64
+    const byteArray = new Uint8Array(encodedMessage)
+    // 转换为 Base64 字符串（示例）
+    const base64Message = btoa(String.fromCharCode(...byteArray))
 
-  // 将纯文本编码为 UTF-8
-  // 创建 TextEncoder 实例
-  const encoder = new TextEncoder()
-  // 编码为 UTF-8
-  const encodedMessage = encoder.encode(plainText)
-  // 发送时首先将其转换为字符串格式base64
-  const byteArray = new Uint8Array(encodedMessage)
-  // 转换为 Base64 字符串（示例）
-  const base64Message = btoa(String.fromCharCode(...byteArray))
+    // 发送消息
+    const msg = ref({
+      relation_id: props.chatInfo.relation_id,
+      msg_content: base64Message
+    })
 
-  // 发送消息
-  const msg = ref({
-    relation_id: props.chatInfo.relation_id,
-    msg_content: base64Message
-  })
+    // 发送到服务器
+    const sendSuccess = sendMsg_socket(JSON.stringify(msg.value))
+    console.log(sendSuccess)
 
-  // 发送到服务器
-  const sendSuccess = sendMsg_socket(JSON.stringify(msg.value))
-  console.log(sendSuccess)
+    // // 发送消息失败
+    // if (!sendSuccess) {
+    //   // chatStore.updateMessageStatus(tempMsg.temp_id, false)
+    //   ElMessage.danger('发送失败')
+    // }
 
-  // 发送消息失败
-  // if (!sendSuccess) {
-  //   chatStore.updateMessageStatus(tempMsg.temp_id, false)
-  //   ElMessage.danger('发送失败')
-  // }
-
-  // 清除输入框
-  inputEditorRef.value.clearContent()
+    // 清除输入框
+    inputEditorRef.value.clearContent()
+  } finally {
+    isSending.value = false
+  }
 }
 
-// const scrollbarRef = ref(null)
-// const scrollToBottom = (force = false) => {
-//   console.log('滑动')
-//   nextTick(() => {
-//     const scrollContainer = scrollbarRef.value?.$el.querySelector(
-//       '.el-scrollbar__wrap'
-//     )
-//     if (!scrollContainer) return
-
-//     // 计算是否需要滚动（距离底部50px内视为已到底部）
-//     const shouldScroll =
-//       force ||
-//       scrollContainer.scrollHeight -
-//         scrollContainer.scrollTop -
-//         scrollContainer.clientHeight <
-//         50
-
-//     if (shouldScroll) {
-//       // scrollContainer.scrollTop = scrollContainer.scrollHeight
-//       // 备用方案：平滑滚动
-//       scrollContainer.scrollTo({
-//         top: scrollContainer.scrollHeight,
-//         behavior: 'smooth'
-//       })
-//     }
-//   })
-// }
-// scrollToBottom(true)
-
+const handleKeyDown = (e) => {
+  // console.log(e.shiftKey)
+  if (e.key === 'Enter') {
+    if (e.shiftKey) {
+      return
+    } else {
+      e.preventDefault()
+      sendMsg()
+    }
+  }
+}
 // 上传文件
 // const fileUpdate = [
 //   {
@@ -174,29 +149,44 @@ const fileTypeIcon = {
   docx: 'icon-wendang-docx_doc'
 }
 const selectFile = ref([])
-const handleFileChange = (file) => {
-  // console.log(URL.createObjectURL(file.raw))
+const handleFileChange = async (file) => {
+  console.log(URL.createObjectURL(file.raw))
+  console.log(file.name)
+
+  const formData = new FormData()
+  formData.append('file', URL.createObjectURL(file.raw))
+  formData.append('relation_id', props.chatInfo.relation_id)
+  formData.append('account_id', userStore.accountInfo.id)
   selectFile.value = [
     {
       id: file.uid,
+      file_name: file.name,
       file_type: file.name.split('.').pop(),
       file_size: (file.size / 1024).toFixed(2) + 'KB',
       url: URL.createObjectURL(file.raw),
       create_at: new Date().toISOString()
     }
   ]
-  console.log(file)
   fileDialog.value = true
   console.log(selectFile.value)
+  const res = await publishFileSerivce(file)
+  console.log(res)
 }
 
+const cleanup = () => {
+  chatStore.cleanChatMsg()
+}
 watch(
   () => props.chatInfo,
   (newVal) => {
     console.log(newVal)
+    cleanup()
     activeChatInfo.value = newVal
   }
 )
+onUnmounted(() => {
+  cleanup()
+})
 </script>
 
 <template>
@@ -257,11 +247,19 @@ watch(
         <!-- 富文本输入框 -->
         <div class="textarea">
           <!-- 输入框 -->
-          <input-editor ref="inputEditorRef"></input-editor>
+          <input-editor
+            ref="inputEditorRef"
+            @keydown="handleKeyDown"
+          ></input-editor>
         </div>
 
         <div class="footer">
-          <el-button type="primary" text bg @click="sendMsg"
+          <el-button
+            type="primary"
+            text
+            bg
+            @click="sendMsg"
+            :disabled="isSending"
             ><el-icon><Position /></el-icon>发送</el-button
           >
         </div>
@@ -315,7 +313,7 @@ watch(
             <div class="item">
               <i class="iconfont" :class="fileTypeIcon[item.file_type]"></i>
               <div class="right">
-                <span class="file_name"></span>
+                <span class="file_name">{{ item.file_name }}</span>
                 <span class="file_size">{{ item.file_size }}</span>
               </div>
               <el-button class="delete_btn" :icon="Delete" text circle />

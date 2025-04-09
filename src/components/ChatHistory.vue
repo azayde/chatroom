@@ -1,6 +1,10 @@
 <script setup>
 import { ref } from 'vue'
 import { Search } from '@element-plus/icons-vue'
+import { useChatStore } from '@/stores'
+import { getChatListByLastTime } from '@/api/chat.js'
+
+const chatStore = useChatStore()
 // 聊天记录搜索框
 const input = ref('')
 const handleFocus = () => {
@@ -17,7 +21,25 @@ const handleBlur = () => {
 const activeName = ref('')
 // console.log(activeName.value)
 
+// 日期
 const value1 = ref('')
+
+// const last_time = new Date('2026-04-01T00:00:00').getTime() / 1000
+// const getChatList = async () => {
+//   const res = await getChatListByLastTime({
+//     relation_id: props.chatInfo.relation_id,
+//     last_time: last_time,
+//     page: 1,
+//     page_size: 1000
+//   })
+//   // chatMsg.value = res.data.data.list.filter((item) => item !== null)
+//   // chatStore.setChatMsg(chatMsg.value)
+
+//   // await nextTick() // 等待 DOM 更新
+//   // scrollToBottom(true) // 确保数据渲染后滚动
+// }
+// getChatList()
+
 // 弹层是否出现
 const dialog = ref(false)
 const open = () => {

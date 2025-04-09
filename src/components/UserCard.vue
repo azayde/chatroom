@@ -56,15 +56,15 @@ watch(
   { immediate: true }
 )
 
-const handleSwitch = (msg) => {
+const handleSwitch = async (msg) => {
   const relation_id = ref(props.userInfo.relation_id)
   console.log(relation_id.value)
   console.log(msg)
   if (msg === 'isNotDisturb') {
-    // updateDisturbService({
-    //   relation_id: relation_id.value,
-    //   isNotDisturb: isNotDisturb.value
-    // })
+     await updateDisturbService({
+      relation_id: relation_id.value,
+      isNotDisturb: isNotDisturb.value
+    })
     // console.log(111)
   } else if (msg === 'isPin') {
     // updatePinService({
@@ -128,12 +128,10 @@ const updateNickName = () => {
           性别：<span>{{ activeFiendInfo.friend_info.gender }}</span>
         </div>
         <div class="span">
-          账号：<span>{{ activeFiendInfo.friend_info.account_id }}</span>
+          账号：<span>{{ activeFiendInfo.friend_info.id }}</span>
         </div>
         <div class="span">
-          个性签名：<span
-            >他人很好购房合同如果还突然韩国发都让它发挥通过夫人的aaaaffggyy！！！！！！！！！</span
-          >
+          个性签名：<span>{{ activeFiendInfo.friend_info.signature }}</span>
         </div>
       </div>
 

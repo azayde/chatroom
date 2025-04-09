@@ -11,6 +11,7 @@ import {
   getAccountInfoById
 } from '@/api/user.js'
 import { useUserStore } from '@/stores'
+import { closeWebSocket, createWebSocket } from '@/utils/websocket.js'
 const userStore = useUserStore()
 // 搜索框
 const inputInfo = ref('')
@@ -120,7 +121,8 @@ const handleSwtich = async (id) => {
   console.log(accountInfo)
   // 账号信息存入store（覆盖之前的）
   userStore.setAccountInfo(accountInfo)
-
+  closeWebSocket()
+  createWebSocket()
   // 防抖，一直点不起作用 TODO:
   console.log(id)
   activeAccountId.value = id

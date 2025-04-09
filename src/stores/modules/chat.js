@@ -33,13 +33,17 @@ export const useChatStore = defineStore(
         console.let(isTemp)
       }
     }
+    const cleanChatMsg = () => {
+      chatMsg.value = ''
+    }
     return {
       chatInfo,
       chatMsg,
       setChatInfo,
       setChatMsg,
       addChatMsg,
-      updateTempMessage
+      updateTempMessage,
+      cleanChatMsg
     }
   },
   {

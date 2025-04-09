@@ -1,9 +1,9 @@
 <!-- 聊天窗 -->
 <script setup>
-import { ref, watch, nextTick, onMounted } from 'vue'
+import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useUserStore, useChatStore } from '@/stores'
 import { getChatListByLastTime } from '@/api/chat.js'
-import { onMessage, setMessageCallback } from '@/utils/websocket'
+import { onMessage, offMessage, setMessageCallback } from '@/utils/websocket'
 
 const userStore = useUserStore()
 const chatStore = useChatStore()
@@ -15,24 +15,9 @@ const props = defineProps({
 
 // 聊天信息
 const chatMsg = ref([])
-
-// 根据account_id获取用户信息进行渲染
-const last_time = new Date('2026-04-01T00:00:00').getTime() / 1000
-const getChatList = async () => {
-  const res = await getChatListByLastTime({
-    relation_id: props.chatInfo.relation_id,
-    last_time: last_time,
-    page: 1,
-    page_size: 1000
-  })
-  chatMsg.value = res.data.data.list.filter((item) => item !== null)
-  chatStore.setChatMsg(chatMsg.value)
-}
-getChatList()
-
 const scrollbarRef = ref(null)
 const scrollToBottom = (force = false) => {
-  // console.log('滑动')
+  console.log('滑动')
   nextTick(() => {
     const scrollContainer = scrollbarRef.value?.$el.querySelector(
       '.el-scrollbar__wrap'
@@ -40,12 +25,19 @@ const scrollToBottom = (force = false) => {
     if (!scrollContainer) return
 
     // 计算是否需要滚动（距离底部50px内视为已到底部）
+    if (force) {
+      scrollContainer.scrollTop = scrollContainer.scrollHeight
+      // scrollContainer.scrollTo({
+      //   top: scrollContainer.scrollHeight,
+      //   behavior: 'smooth'
+      // })
+    }
+
     const shouldScroll =
-      force ||
       scrollContainer.scrollHeight -
         scrollContainer.scrollTop -
         scrollContainer.clientHeight <
-        50
+      50
 
     if (shouldScroll) {
       scrollContainer.scrollTop = scrollContainer.scrollHeight
@@ -57,11 +49,29 @@ const scrollToBottom = (force = false) => {
     }
   })
 }
-scrollToBottom(true)
+// scrollToBottom(true)
+// 根据account_id获取用户信息进行渲染
+const last_time = new Date('2026-04-01T00:00:00').getTime() / 1000
+const getChatList = async () => {
+  const res = await getChatListByLastTime({
+    relation_id: props.chatInfo.relation_id,
+    last_time: last_time,
+    page: 1,
+    page_size: 200
+  })
+  chatMsg.value = res.data.data.list.filter((item) => item !== null)
+  chatStore.setChatMsg(chatMsg.value)
+
+  await nextTick() // 等待 DOM 更新
+  scrollToBottom(true) // 确保数据渲染后滚动
+}
 
 const handleNewMessage = (newMessage) => {
-  chatStore.addChatMsg(newMessage)
-  scrollToBottom(true)
+  if (newMessage.relation_id === props.chatInfo.relation_id) {
+    chatStore.addChatMsg(newMessage)
+    scrollToBottom(true)
+  }
+
   console.log(newMessage)
 }
 // onMounted(() => {
@@ -70,41 +80,12 @@ onMounted(() => {
   console.log(props.chatInfo)
   scrollToBottom(true)
   setMessageCallback(handleNewMessage)
-
-  // setMessageCallback((newMessage) => {
-  //   console.log('处理消息', newMessage)
-  //   const msg = document.querySelector('.chat-msg .list')
-  //   console.log(msg)
-  //   const item = document.createElement('div')
-  //   item.innerHTML = `
-  //     <div class="chat-item"
-  //       :class="{
-  //         left: ${msg.account_id !== userStore.accountInfo.id},
-  //         right: ${msg.account_id === userStore.accountInfo.id}
-  //       }"
-  //     >
-  //       <div class="user-avatar">
-  //         <el-avatar
-  //           shape="square"
-  //           :src="${
-  //             msg.account_id === userStore.accountInfo.id
-  //               ? userStore.accountInfo.avatar
-  //               : props.chatInfo.relation_type === 'friend'
-  //                 ? props.chatInfo.friend_info.avatar
-  //                 : props.chatInfo.group_info.avatar
-  //           }
-
-  //           "
-  //         ></el-avatar>
-  //       </div>
-  //       <div class="chat-pao" v-if="true">${msg.msg_content}</div>
-  //     </div>
-  //   `
-  //   console.log(item)
-  //   msg.appendChild(item)
-  // })
   // 启动消息监听
   onMessage()
+})
+onUnmounted(() => {
+  offMessage()
+  setMessageCallback(null)
 })
 watch(
   () => props.chatInfo,

@@ -2,6 +2,11 @@
 <script setup>
 import { Plus, ArrowRight } from '@element-plus/icons-vue'
 import { watch, ref } from 'vue'
+import {
+  updateShowService,
+  updateDisturbService,
+  updatePinService
+} from '@/api/setting.js'
 // import { useRouter } from 'vue-router'
 import { useChatStore } from '@/stores'
 const chatStore = useChatStore()
@@ -37,26 +42,29 @@ const handleClickMember = (id) => {
 const chatDialog = ref()
 
 // 三个switch
-const handleSwitch = (msg) => {
+const handleSwitch = async (msg) => {
   const relation_id = ref(props.frinedInfo.relation_id)
   console.log(relation_id.value)
   console.log(msg)
   console.log(isShow.value)
   if (msg === 'isNotDisturb') {
-    // updateDisturbService({
+    // const res = await updateDisturbService({
     //   relation_id: relation_id.value,
     //   isNotDisturb: isNotDisturb.value
     // })
+    // console.log(res)
   } else if (msg === 'isPin') {
-    // updatePinService({
-    //   relation_id: relation_id.value,
-    //   isPin: isPin.value
-    // })
+    const res = await updatePinService({
+      relation_id: relation_id.value,
+      isPin: isPin.value
+    })
+    console.log(res)
   } else if (msg === 'isShow') {
-    // updateShowService({
+    // const res = await updateShowService({
     //   relation_id: relation_id.value,
     //   isShow: isShow.value
     // })
+    // console.log(res)
   }
 }
 watch(isNotDisturb, () => handleSwitch('isNotDisturb'))
