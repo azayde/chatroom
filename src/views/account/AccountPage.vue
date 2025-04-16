@@ -65,13 +65,11 @@ const handleSubmit = async (data) => {
     // 调用接口 - 返回数据 - 放到数组
     const res = await accountRegisterServie(data)
     console.log(res)
-
-    // "v2.local.IkHpwHaqMynwGanhU4rUZ3np5GpilU3K_Dq-K3oAdqLrbQncz2RlIeSNTy76_VfxSg4uGafmWb88EGtA_T7YjnPq6l3mVsB_qh9jBchs7dsv8E9DO24oQlkJKR_-7LIgZVNI6mbyVLQB3igzfWNqiRk13IvIoIyg3ZzVB1LpOS8irpDSvLhLSd9loJ54L04bPAQwsNW9I99m8gOiHy8u2DUcrQ-tWk3i_XhT8qZUudTJ6VCfejWgCoS-79OUwZOKKNm2uMZrwM9TrGMd3O5w1LK2iahtfGPaPBkwbRWfAaA6CRPSF4w3bAB50BCYs0UShLHj84UOYV2f4-E.bnVsbA"
-    //  v2.local.Jj66lGFA74geLWcsRXkJ1Jsuw8Vs8h261lY4IRSdR-5UjfQgLAfTTOtJlcgXlmrt_OQQdVPOkNBNYk61tVjE3eggjwtCIFos6KWXYj5grgvXZ9SfQZJWX_klqNWU4dRRpweRxF7mcf-5CV86X-jYcvzHcYj1yKu1T26-mNGee_hL3_7FgdQdjwNxZZdac8ViWilmGPo9i3ka8BO_H_FB69OfheQ2_g1c4nA8X6yeV_QUIlWVsx-HGDdQzbqSyS-7FV0w_G0knnTxICYP_64zcnULv8kAVAPuT82de4TZgCow5qc.bnVsbA
     // 重新渲染
     getAccountList()
     ElMessage.success('添加成功')
   } else {
+    accountEditRef.value.updateAvatar()
     // 更新现有账号
     console.log(data)
     const res = await updateAccountService({
@@ -100,11 +98,11 @@ const activeAccountId = ref(userStore.accountInfo.id)
 // 账号切换
 const handleSwtich = async (id) => {
   // 获取账号的token，存入store
-  console.log(id)
+  // console.log(id)
   try {
     const res = await getAccountTokenService(id)
-    console.log(res)
-    console.log(res.data.data.account_token.token)
+    // console.log(res)
+    // console.log(res.data.data.account_token.token)
     userStore.setAccountToken(res.data.data.account_token.token)
   } catch (err) {
     console.log(err)
@@ -113,33 +111,35 @@ const handleSwtich = async (id) => {
   //  根据id 获取账号信息
   const res1 = await getAccountInfoById(id)
   console.log(res1)
-  console.log(res1.data.data)
+  // console.log(res1.data.data)
   const accountInfo = {
     ...res1.data.data.info,
     signature: res1.data.data.signature
   }
-  console.log(accountInfo)
+  // console.log(accountInfo)
   // 账号信息存入store（覆盖之前的）
   userStore.setAccountInfo(accountInfo)
   closeWebSocket()
   createWebSocket()
   // 防抖，一直点不起作用 TODO:
-  console.log(id)
+  // console.log(id)
   activeAccountId.value = id
   ElMessage.success('切换成功')
 }
 
 // 账号搜索
-const handleSearch = () => {
+const handleSearch = async () => {
   // 搜索接口
   const name = inputInfo.value
   console.log(name)
-  const res = searchAccountByName(name)
+  const res = await searchAccountByName(name)
   console.log(res)
+  accountList.value = res.data.data.list
 }
 // 搜索重置
 const handleReset = () => {
   inputInfo.value = ''
+  getAccountList()
 }
 </script>
 
@@ -196,18 +196,19 @@ const handleReset = () => {
                 @click="handleSwtich(row.id)"
               ></el-button>
               <el-button
-                :icon="Edit"
-                circle
-                type="primary"
-                plain
-                @click="handleEdit(row)"
-              ></el-button>
-              <el-button
                 :icon="Delete"
                 circle
                 type="danger"
                 plain
                 @click="handleDel(row)"
+              ></el-button>
+              <el-button
+                v-if="row.id === activeAccountId"
+                :icon="Edit"
+                circle
+                type="primary"
+                plain
+                @click="handleEdit(row)"
               ></el-button>
             </template>
           </el-table-column>

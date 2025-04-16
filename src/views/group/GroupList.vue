@@ -1,6 +1,6 @@
 <!-- 群聊列表 -->
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { Search, Plus } from '@element-plus/icons-vue'
 import {
   createGroupService,
@@ -15,18 +15,30 @@ const router = useRouter()
 const groupStore = useGroupStore()
 // 搜索框
 const input = ref('')
-
 // 搜索列表切换
 const IsSearch = ref(false)
 const handleFocus = () => {
   IsSearch.value = true
+  // if (input.value) {
+  //   searchFriendByName(input.value)
+  //   console.log(11)
+  // }
 }
-const handleBlue = () => {
+const handleBlue = async () => {
   // 输入框为空 且 失焦 切换
   if (!input.value) {
     IsSearch.value = false
   }
+  // 查询
+  console.log(22)
+  // const res = await searchGroupByName(input.value)
+  // console.log(res)
 }
+watch(input, () => {
+  // 一直搜索吗？？ TODO:
+  console.log(11)
+  // searchFriendByName(input.value)
+})
 
 // 创建群聊
 const groupInfo = ref({
@@ -36,8 +48,9 @@ const groupInfo = ref({
 const bools = ref(false)
 const creatrGroup = async () => {
   bools.value = false
-  // await createGroupService(groupInfo.value)
-  ElMessage.success('群聊创建成功')
+  const res = await createGroupService(groupInfo.value)
+  console.log(res)
+  // ElMessage.success('群聊创建成功')
 }
 // 群聊列表
 // const groupList = ref([])
@@ -99,9 +112,12 @@ const groupList = ref([
 ])
 
 // 获取群聊列表
-// const res = await getGroupListService()
-// groupList.value = res
-
+const getGroupList = async () => {
+  const res = await getGroupListService()
+  console.log(res.data.data.List)
+  groupList.value = res.data.data.List
+}
+getGroupList()
 const activeGroup = ref(route.query.relation_id ? groupStore.groupInfo : 0)
 // const activeGroup = ref(0)
 

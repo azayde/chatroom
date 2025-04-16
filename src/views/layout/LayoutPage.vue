@@ -9,7 +9,13 @@ import {
 import { useRouter, useRoute } from 'vue-router'
 const router = useRouter()
 const route = useRoute()
-import { useChatStore, useFriendStore, useGroupStore } from '@/stores'
+import {
+  useUserStore,
+  useChatStore,
+  useFriendStore,
+  useGroupStore
+} from '@/stores'
+const userStore = useUserStore()
 const chatStore = useChatStore()
 const friendStore = useFriendStore()
 const groupStore = useGroupStore()
@@ -63,7 +69,7 @@ const logout = async () => {
       <!-- 最左侧 -->
       <el-aside class="left-nav">
         <div class="avatar" @click="router.push('/chat/user')">
-          <img src="@/assets/avatar.jpg" alt="" />
+          <img :src="userStore.accountInfo.avatar" alt="" />
         </div>
         <div
           class="li"
@@ -135,10 +141,11 @@ const logout = async () => {
   height: 100vh;
   width: 100vw;
   .el-container {
+    // margin-top: 20px;
     height: 94vh;
     width: 70vw;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    margin: 0 auto;
+    margin: 20px auto;
     .el-aside {
       overflow: hidden;
       width: 50px;
@@ -151,6 +158,7 @@ const logout = async () => {
       }
       img {
         width: 100%;
+        height: 100%;
         margin-top: 5px;
         border-radius: 50%;
       }

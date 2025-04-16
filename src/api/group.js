@@ -6,8 +6,8 @@ export const getGroupListService = () => {
 }
 
 // 获取群聊中所有成员的信息
-export const getGroupMemberService = (id) => {
-  return request.get('/group/members', { params: { id } })
+export const getGroupMemberService = (relation_id) => {
+  return request.get('/group/members', { params: { relation_id } })
 }
 
 // 创建群聊
@@ -36,6 +36,9 @@ export const quitGroupService = (relation_id) => {
 }
 
 // 根据名称模糊查找本账号加入的群聊
-export const searchGroupByName = (params) => {
-  return request.get('/group/name', { params })
+// export const searchGroupByName = (params) => {
+//   return request.get('/group/name', { params })
+// }
+export const searchGroupByName = (name) => {
+  return request.get('/group/name', { params: { name } })
 }

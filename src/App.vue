@@ -2,6 +2,9 @@
 import '@/assets/main.scss'
 import { createWebSocket } from '@/utils/websocket.js'
 createWebSocket()
+document.addEventListener('contextmenu', (e) => {
+  e.preventDefault()
+})
 </script>
 
 <template>

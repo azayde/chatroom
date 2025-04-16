@@ -1,6 +1,6 @@
 <!-- 聊天列表 -->
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import { getChatPinListService, getChatShowListService } from '@/api/chat.js'
 import { useRouter, useRoute } from 'vue-router'
@@ -73,58 +73,73 @@ const chatList = ref([
 ])
 
 const chatPinList = ref([
-  {
-    relation_id: 3,
-    relation_type: 'friend',
-    pin_time: '2025-03-15T12:00:00Z',
-    friend_info: {
-      account_id: 103,
-      name: 'Charlie',
-      avatar:
-        'https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con'
-    }
-  }
+  // {
+  //   relation_id: 3,
+  //   relation_type: 'friend',
+  //   pin_time: '2025-03-15T12:00:00Z',
+  //   friend_info: {
+  //     account_id: 103,
+  //     name: 'Charlie',
+  //     avatar:
+  //       'https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con'
+  //   }
+  // }
 ])
 // console.log(chatPinList.value)
 
 // class:  pin 的样式(用is_pin判断) ！！！！！！！ TODO
 // 获取置顶列表
 const getChatPinList = async () => {
-  // const res = getChatPinListService()
-  // // console.log(res)
-  // chatPinList.value = res.data.data.list
+  const res = await getChatPinListService()
+  console.log(res)
+  chatPinList.value = res.data.data.list
 }
-getChatPinList()
 
 // 获取聊天列表（置顶在上，已排序）
 const getChatList = async () => {
+  // 先获取到置顶列表
+  await getChatPinList()
+
   // 获取展示列表
   const res = await getChatShowListService()
   console.log(res)
-  // console.log(res.data.data.list)
+
   chatList.value = res.data.data.list
+  console.log(chatPinList.value)
+  // 然后再进行排序
+  const pinOrderMap = new Map()
+  chatPinList.value.forEach((item, index) => {
+    pinOrderMap.set(item.relation_id, index)
+  })
 
-  // 排序
-  // 提取置顶项的 relation_id 集合
-  const pinIds = new Set(chatPinList.value.map((item) => item.relation_id))
-  // console.log(pinIds)
-  // 分离 chatList 中的置顶项和非置顶项
-  const [pinnedItems, nonPinnedItems] = chatList.value.reduce(
-    (acc, item) => {
-      // 若当前项的 relation_id 在置顶集合中，归入 pinnedItems，否则归入 nonPinnedItems
-      pinIds.has(item.relation_id) ? acc[0].push(item) : acc[1].push(item)
-      return acc
-    },
-    [[], []] // 初始值
-  )
-  // 合并：置顶项按 chatPinList 顺序 + 原非置顶项
-  const sortedList = [
-    ...chatPinList.value,
-    ...nonPinnedItems.filter((item) => !pinIds.has(item.relation_id))
-  ]
-
-  // 更新 chatList
-  chatList.value = sortedList
+  chatList.value.sort((a, b) => {
+    const aIsPinned = pinOrderMap.has(a.relation_id)
+    const bIsPinned = pinOrderMap.has(b.relation_id)
+    // a,b都是置顶项 - 按chatPinList中的顺序排序
+    if (aIsPinned && bIsPinned) {
+      return pinOrderMap.get(a.relation_id) - pinOrderMap.get(b.relation_id)
+    }
+    // a是置顶项，a排前面
+    if (aIsPinned) {
+      return -1
+    }
+    // b是置顶项，b排前面
+    if (bIsPinned) {
+      return 1
+    }
+    return 0
+  })
+  console.log(chatList.value)
+  chatList.value.forEach((item) => {
+    const time = new Date(item.create_at)
+    console.log(time)
+    console.log(time.getHours())
+    console.log(time.getMinutes())
+  })
+  // pinOrderMap.forEach((value, key) => {
+  //   console.log(`Key: ${key}, Value: ${value}`)
+  // })
+  console.log(pinOrderMap)
 }
 // 渲染列表
 getChatList()
@@ -146,6 +161,17 @@ const handleClick = (obj) => {
     query: { relation_id: obj.relation_id }
   })
 }
+watch(
+  () => route.query.relation_id,
+  () => {
+    getChatList()
+  }
+  // (newid) => {
+  //   chatShow.value = true
+  //   chatInfo.value = chatStore.chatInfo
+  //   console.log(newid)
+  // }
+)
 </script>
 
 <template>
@@ -172,7 +198,7 @@ const handleClick = (obj) => {
           @click="handleClick(item)"
           :class="{
             active: item.relation_id === activeChat.relation_id,
-            pin: item.pin_time
+            pin: item.is_pin === true
           }"
         >
           <div class="left">
@@ -198,7 +224,9 @@ const handleClick = (obj) => {
               }}</span>
               <span class="time_now">19:30</span>
             </div>
-            <span class="message">1234424343565655676676876875</span>
+            <span class="message">
+              {{ item.msg_type === 'text' ? item.msg_content : '[文件]' }}
+            </span>
           </div>
         </div></el-scrollbar
       >
@@ -258,13 +286,13 @@ const handleClick = (obj) => {
         }
         .time_now {
           font-size: 12px;
-          color: #c4c4c4;
+          color: #b8b5b5;
         }
         .message {
           width: 120px;
           font-size: 12px;
           margin-bottom: 10px;
-          color: #c4c4c4;
+          color: #b8b5b5;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;

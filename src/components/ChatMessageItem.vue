@@ -11,7 +11,6 @@ const chatStore = useChatStore()
 const props = defineProps({
   chatInfo: Object
 })
-// console.log(props.chatInfo)
 
 // 聊天信息
 const chatMsg = ref([])
@@ -49,7 +48,6 @@ const scrollToBottom = (force = false) => {
     }
   })
 }
-// scrollToBottom(true)
 // 根据account_id获取用户信息进行渲染
 const last_time = new Date('2026-04-01T00:00:00').getTime() / 1000
 const getChatList = async () => {
@@ -71,11 +69,8 @@ const handleNewMessage = (newMessage) => {
     chatStore.addChatMsg(newMessage)
     scrollToBottom(true)
   }
-
   console.log(newMessage)
 }
-// onMounted(() => {
-// })
 onMounted(() => {
   console.log(props.chatInfo)
   scrollToBottom(true)
@@ -97,6 +92,34 @@ watch(
   },
   { deep: true, immediate: true }
 )
+
+const menu = ref(false)
+const menuTop = ref(0)
+const menuLeft = ref(0)
+document.addEventListener('contextmenu', (e) => {
+  console.log(e.target)
+  const mouseX = e.clientX
+  const mouseY = e.clientY
+
+  if (e.target.className === 'chat-pao') {
+    console.log(1111)
+    menu.value = true
+
+    const rightMenu = document.querySelector('.contextMenu')
+    console.log(rightMenu)
+    menuTop.value = mouseY
+    menuLeft.value = mouseX
+
+    // 右键全选文字
+    // console.log(document.querySelector('.contextMenu'))
+  }
+  menu.value = false
+
+  // console.log(listRef.value)
+})
+window.addEventListener('click', function () {
+  menu.value = false
+})
 </script>
 
 <template>
@@ -123,17 +146,13 @@ watch(
             "
           ></el-avatar>
         </div>
-        <div class="chat-pao" v-if="true">{{ item.msg_content }}</div>
-        <!-- <div class="picture" v-else>
-          <img class="img" src="@/assets/play.svg" alt="" />
-          <img class="img" src="@/assets/test1.png" alt="" />
-          <img
-            class="img"
-            src="https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con"
-            alt=""
-          />
+        <div class="chat-pao" v-if="item.msg_type === 'text'">
+          {{ item.msg_content }}
         </div>
-        <div class="file">
+        <div class="picture" v-else-if="item.msg_type === 'file'">
+          <img class="img" :src="item.msg_content" alt="" />
+        </div>
+        <!-- <div class="file">
           <el-link href="https://element-plus.org" :underline="false">
             <div class="item">
               <div class="right">
@@ -147,6 +166,11 @@ watch(
       </div>
     </div>
   </el-scrollbar>
+  <context-menu
+    v-if="menu"
+    class="contextMenu"
+    :style="{ top: menuTop + 'px', left: menuLeft + 'px' }"
+  ></context-menu>
 </template>
 <style lang="scss" scoped>
 .el-scrollbar {
@@ -277,5 +301,10 @@ watch(
   .picture {
     margin-left: 10px;
   }
+}
+.contextMenu {
+  position: absolute;
+  // top: 154px;
+  // left: 752px;
 }
 </style>

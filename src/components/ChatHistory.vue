@@ -173,7 +173,7 @@ defineExpose({
               v-model="value1"
               type="date"
               placeholder="日期"
-              :size="small"
+              size="small"
             />
           </div>
         </template>

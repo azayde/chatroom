@@ -61,10 +61,10 @@ const handleSwitch = async (msg) => {
   console.log(relation_id.value)
   console.log(msg)
   if (msg === 'isNotDisturb') {
-     await updateDisturbService({
-      relation_id: relation_id.value,
-      isNotDisturb: isNotDisturb.value
-    })
+    // await updateDisturbService({
+    //   relation_id: relation_id.value,
+    //   isNotDisturb: isNotDisturb.value
+    // })
     // console.log(111)
   } else if (msg === 'isPin') {
     // updatePinService({
@@ -96,10 +96,10 @@ const deleteFriend = async () => {
 const nick_name = ref()
 const updateNickName = () => {
   dialogFormVisible.value = false
-  // updateNickNameService({
-  //   relation_id: props.userInfo.relation_id,
-  //   nick_name: nick_name.value
-  // })
+  updateNickNameService({
+    relation_id: props.userInfo.relation_id,
+    nick_name: nick_name.value
+  })
   if (nick_name.value) {
     ElMessage.success('修改备注成功')
   }
@@ -317,4 +317,15 @@ const updateNickName = () => {
     // justify-content: center;
   }
 }
+// :deep(.more_div) {
+//   .more-content {
+//     background-color: #bfa;
+//   }
+//   .split {
+//     margin: 2px 0;
+//     border: none;
+//     height: 1px;
+//     background-color: #ececec;
+//   }
+// }
 </style>

@@ -20,19 +20,19 @@ export const useChatStore = defineStore(
     const addChatMsg = (message) => {
       chatMsg.value.push(message)
     }
-    // 更新临时消息
-    const updateTempMessage = (tempId, serverMessage) => {
-      // const index = chatMsg.value.findIndex((msg) => msg.temp_id === tempId)
-      const index = chatMsg.value.findIndex((msg) => msg?.isTemp === true)
-      console.log(index)
-      if (index !== -1) {
-        // 保留除isTemp外的其他属性
-        const { isTemp, ...rest } = serverMessage
-        console.let(serverMessage)
-        chatMsg.value[index] = rest
-        console.let(isTemp)
-      }
-    }
+    // // 更新临时消息
+    // const updateTempMessage = (tempId, serverMessage) => {
+    //   // const index = chatMsg.value.findIndex((msg) => msg.temp_id === tempId)
+    //   const index = chatMsg.value.findIndex((msg) => msg?.isTemp === true)
+    //   console.log(index)
+    //   if (index !== -1) {
+    //     // 保留除isTemp外的其他属性
+    //     const { isTemp, ...rest } = serverMessage
+    //     console.let(serverMessage)
+    //     chatMsg.value[index] = rest
+    //     console.let(isTemp)
+    //   }
+    // }
     const cleanChatMsg = () => {
       chatMsg.value = ''
     }
@@ -42,7 +42,7 @@ export const useChatStore = defineStore(
       setChatInfo,
       setChatMsg,
       addChatMsg,
-      updateTempMessage,
+      // updateTempMessage,
       cleanChatMsg
     }
   },

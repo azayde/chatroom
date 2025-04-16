@@ -20,6 +20,10 @@ export const getFileByFileId = (file_id) => {
   return request.post('/file/details', file_id)
 }
 
+// 发送文件类消息 传入数据的格式multipart/form-data
+export const sendFileService = (formData) => {
+  return request.post('/message/file', formData)
+}
 // 获取当前账号pin的所有好友和群组列表
 export const getChatPinListService = () => {
   return request.get('/setting/pins')
@@ -35,3 +39,6 @@ export const getChatListByLastTime = (params) => {
     params
   })
 }
+
+// 获取所有关系指定时间戳之后的信息
+// export const getOfferChatListBy

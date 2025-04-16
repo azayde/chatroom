@@ -2,6 +2,36 @@ body{
   margin: 0;
   padding: 0;
   background-color: #e8f2ff;
+  height: 100vh;
+  overflow: hidden;
+
+  // background-size: 300% 300%;
+  // background: radial-gradient(
+  //     circle at 60% 90%,
+  //     rgba(46, 103, 161, 1),
+  //     transparent 60%
+  //   ),
+  //   radial-gradient(
+  //     circle at 20px 20px,
+  //     rgba(46, 103, 161, 0.8),
+  //     transparent 25%
+  //   ),
+  //   #182336;
+
+  // background: linear-gradient(60deg, #f36868, #24a9ca);
+  // animation: gradient 5s ease infinite;
+  // background-size: 300% 300%;
+  // @keyframes gradient {
+  //   0% {
+  //       background-position: 0% 50%;
+  //   }
+  //   50% {
+  //       background-position: 100% 50%;
+  //   }
+  //   100% {
+  //       background-position: 0% 50%;
+  //   }
+  // }
   .el-main{
     padding: 0;
   }

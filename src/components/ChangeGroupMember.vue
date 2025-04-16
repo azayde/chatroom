@@ -1,72 +1,233 @@
-<script lang="ts" setup>
-import { ref } from 'vue'
-import {
-  TransferDirection,
-  TransferKey,
-  renderContent,
-} from 'element-plus'
-interface Option {
-  key: number
-  label: string
-  disabled: boolean
+<!-- 添加新成员 -->
+<script setup>
+import { ref, watch } from 'vue'
+import { Search } from '@element-plus/icons-vue'
+// import FriendsList from '@/views/friend/FriendsList.vue'
+import { getFriendListService } from '@/api/friend.js'
+import { inviteMemberService } from '@/api/group.js'
+import { useGroupStore } from '@/stores'
+const groupStore = useGroupStore()
+// 搜索框
+const input = ref('')
+// 搜索列表切换
+const IsSearch = ref(false)
+const handleFocus = () => {
+  IsSearch.value = true
+  // if (input.value) {
+  //   searchFriendByName(input.value)
+  //   console.log(11)
+  // }
 }
-
-const generateData = (): Option[] => {
-  const data: Option[] = []
-  for (let i = 1; i <= 15; i++) {
-    data.push({
-      key: i,
-      label: `Option ${i}`,
-      disabled: i % 4 === 0,
-    })
+const handleBlue = async () => {
+  // 输入框为空 且 失焦 切换
+  if (!input.value) {
+    IsSearch.value = false
   }
-  return data
+  // 查询
+  console.log(22)
+  // const res = await searchFriendByName(input.value)
+  // console.log(res)
 }
-
-const data = ref(generateData())
-const rightValue = ref([1])
-const leftValue = ref([1])
-
-const renderFunc: renderContent = (h, option) => h('span', null, option.label)
-
-const handleChange = (
-  value: TransferKey[],
-  direction: TransferDirection,
-  movedKeys: TransferKey[]
-) => {
-  console.log(value, direction, movedKeys)
+watch(input, () => {
+  // 一直搜索吗？？ TODO:
+  console.log(11)
+  // searchFriendByName(input.value)
+})
+const checked = ref([])
+const inviteFriend = ref(false)
+const friendList = ref([
+  {
+    relation_id: 1,
+    relation_type: 'friend',
+    is_show: true,
+    pin_time: '2025-03-06T10:00:00',
+    last_show: '2025-03-06T09:55:00',
+    friend_info: {
+      account_id: 101,
+      name: 'Alice Smith',
+      gender: '女',
+      avatar:
+        'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
+    },
+    is_not_disturb: false,
+    is_pin: true
+  },
+  {
+    relation_id: 456,
+    relation_type: 'friend',
+    is_show: true,
+    pin_time: '2025-03-05T18:00:00',
+    last_show: '2025-03-06T10:05:00',
+    friend_info: {
+      account_id: 789,
+      name: 'Tech Enthusiasts',
+      gender: '男',
+      avatar:
+        'https://picx.zhimg.com/v2-52a6e836434d15d74a2121bbd6bed34d_720w.jpg?source=172ae18b'
+    },
+    is_not_disturb: true,
+    is_pin: true
+  },
+  {
+    relation_id: 789,
+    relation_type: 'friend',
+    is_show: false,
+    pin_time: '2025-03-04T22:00:00',
+    last_show: '2025-03-06T08:30:00',
+    friend_info: {
+      account_id: 101,
+      name: 'Bob Johnson',
+      gender: '男',
+      avatar:
+        'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
+    },
+    is_not_disturb: false,
+    is_pin: false
+  },
+  {
+    relation_id: 3,
+    relation_type: 'friend',
+    is_show: true,
+    pin_time: '2025-03-03T12:00:00',
+    last_show: '2025-03-06T10:10:00',
+    friend_info: {
+      account_id: 103,
+      name: 'Charlie',
+      gender: '女',
+      avatar:
+        'https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con'
+    },
+    is_not_disturb: true,
+    is_pin: false
+  }
+])
+const getFriendList = async () => {
+  const res = await getFriendListService()
+  console.log(res.data.data)
+  friendList.value = res.data.data.list
 }
+getFriendList()
+const handleSelect = (item) => {
+  console.log(item)
+  console.log(checked.value)
+}
+const addMember = async () => {
+  const res = await inviteMemberService({
+    account_id: checked.value,
+    relation_id: groupStore.groupInfo.relation_id
+  })
+  console.log(res)
+  inviteFriend.value = false
+}
+const open = () => {
+  inviteFriend.value = true
+}
+defineExpose({
+  open
+})
 </script>
 
-
 <template>
-  <div style="text-align: center">
-    <el-transfer
-      v-model="leftValue"
-      style="text-align: left; display: inline-block"
-      filterable
-      :render-content="renderFunc"
-      :titles="['Source', 'Target']"
-      :format="{
-        noChecked: '${total}',
-        hasChecked: '${checked}/${total}',
-      }"
-      :data="data"
-      @change="handleChange"
-    >
-      <!-- <template #left-footer>
-        <el-button class="transfer-footer" size="small">Operation</el-button>
-      </template>
-      <template #right-footer>
-        <el-button class="transfer-footer" size="small">Operation</el-button>
-      </template> -->
-    </el-transfer>
-  </div>
+  <el-dialog class="invite-friend" v-model="inviteFriend" title="邀请好友">
+    <div class="member">
+      <div class="friend">
+        <el-header>
+          <el-input
+            v-model="input"
+            :prefix-icon="Search"
+            placeholder="搜索"
+            class="search"
+            @focus="handleFocus"
+            @blur="handleBlue"
+          >
+          </el-input>
+        </el-header>
+        <el-main v-if="!IsSearch" class="list">
+          <el-scrollbar>
+            <el-checkbox-group v-model="checked" text-color="#fff">
+              <el-checkbox
+                class="check"
+                v-for="item in friendList"
+                :key="item.friend_info.account_id"
+                :label="item.friend_info.account_id"
+                size="large"
+                @change="handleSelect(item)"
+              >
+                <div class="list-item">
+                  <div class="avatar">
+                    <el-avatar
+                      shape="square"
+                      :src="item.friend_info.avatar"
+                    ></el-avatar>
+                  </div>
+                  <span class="name">{{ item.friend_info.name }}</span>
+                </div>
+              </el-checkbox>
+            </el-checkbox-group>
+          </el-scrollbar>
+        </el-main>
+        <!-- 搜索结果列表 -->
+        <el-main v-else> <search-list></search-list> </el-main>
+      </div>
+
+      <div class="line"></div>
+      <div class="select">123</div>
+    </div>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="inviteFriend = false">取消</el-button>
+        <el-button type="primary" @click="addMember"> 确定 </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
-<style>
-.transfer-footer {
-  margin-left: 15px;
-  padding: 6px 5px;
+<style lang="scss" scoped>
+.invite-friend {
+  height: 387px;
+}
+.member {
+  display: flex;
+  // flex-direction: column;
+  .friend {
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+  }
+  .el-header {
+    height: 45px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    .el-input {
+      width: 90%;
+      height: 25px;
+    }
+    .el-button {
+      width: 10px;
+    }
+  }
+  .el-main {
+    .check {
+      width: 90%;
+      cursor: pointer;
+      height: 60px;
+      padding-top: 5px;
+    }
+    .list-item {
+      display: flex;
+      align-items: center;
+      .avatar {
+        margin: 0 10px;
+      }
+      .name {
+        font-size: 16px;
+      }
+    }
+  }
+  .line {
+    border-left: 1px solid #000;
+    height: 387px;
+  }
 }
 </style>

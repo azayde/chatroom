@@ -1,10 +1,8 @@
 <script setup>
 import { ref } from 'vue'
+import { updateAvatarService } from '@/api/user.js'
 // import { Plus } from '@element-plus/icons-vue'
 
-// 默认头像
-// const dafault_avatar =
-//   'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
 // 判断是否为修改账号
 // const currentIndex = ref(-1)
 const isEdit = ref(false)
@@ -22,11 +20,18 @@ const accountInfo = {
 // 接口传参要form-data
 const imgUrl = ref('')
 const fd = new FormData()
-fd.append('avatar', imgUrl)
-const onUploadFile = (File) => {
-  const img = URL.createObjectURL(File)
-  console.log(img)
+// fd.append('file', imgUrl)
+const onUploadFile = async (File) => {
+  imgUrl.value = URL.createObjectURL(File.raw)
+  fd.append('file', File.raw)
   console.log(File)
+}
+const updateAvatar = async () => {
+  for (let [key, value] of fd.entries()) {
+    console.log(key, value)
+  }
+  const res = await updateAvatarService(fd)
+  console.log(res)
 }
 // emit 传给父组件
 const emit = defineEmits(['submit'])
@@ -56,20 +61,19 @@ const open = (obj) => {
     formData.value = { ...obj.row }
     imgUrl.value = formData.value.avatar
     isEdit.value = true
-    // console.log(formData.value)
   } else {
     formData.value = { ...accountInfo }
     imgUrl.value = ''
     isEdit.value = false
   }
   // 调用open的同时打开对话框
-  // console.log(formData.value)
   console.log(imgUrl.value)
   accountEditForm.value = true
 }
 
 defineExpose({
-  open
+  open,
+  updateAvatar
 })
 </script>
 

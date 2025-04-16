@@ -56,7 +56,7 @@ const handleSwitch = async (msg) => {
   } else if (msg === 'isPin') {
     const res = await updatePinService({
       relation_id: relation_id.value,
-      isPin: isPin.value
+      is_pin: isPin.value
     })
     console.log(res)
   } else if (msg === 'isShow') {

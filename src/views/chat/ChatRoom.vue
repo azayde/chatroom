@@ -11,7 +11,7 @@ import {
 import { ref, watch, onUnmounted } from 'vue'
 import { useUserStore, useChatStore } from '@/stores'
 // import { useRoute } from 'vue-router'
-import { publishFileSerivce } from '@/api/chat.js'
+import { publishFileSerivce, sendFileService } from '@/api/chat.js'
 import { sendMsg_socket } from '@/utils/websocket'
 
 const userStore = useUserStore()
@@ -27,7 +27,6 @@ const props = defineProps({
 // 当前聊天相关信息
 const activeChatInfo = ref(props.chatInfo)
 activeChatInfo.value = props.chatInfo ? props.chatInfo : chatStore.chatInfo
-// console.log(activeChatInfo.value)
 
 // 聊天记录dialog
 const chatDialog = ref()
@@ -43,6 +42,28 @@ const htmlToPlainText = (html) => {
   return tempDiv.innerText // 返回普通文本
 }
 
+// 转换出的File与直接上传的有细微不同，测试时看能否成功
+function base64toFile(dataurl, filename = 'file') {
+  let arr = dataurl.split(',')
+  let mime = arr[0].match(/:(.*?);/)[1]
+  // suffix是该文件的后缀
+  let suffix = mime.split('/')[1]
+  // atob 对经过 base-64 编码的字符串进行解码
+  let bstr = atob(arr[1])
+  // n 是解码后的长度
+  let n = bstr.length
+  // Uint8Array 数组类型表示一个 8 位无符号整型数组 初始值都是 数子0
+  let u8arr = new Uint8Array(n)
+  // charCodeAt() 方法可返回指定位置的字符的 Unicode 编码。这个返回值是 0 - 65535 之间的整数
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n)
+  }
+  // new File返回File对象 第一个参数是 ArraryBuffer 或 Bolb 或Arrary 第二个参数是文件名
+  // 第三个参数是 要放到文件中的内容的 MIME 类型
+  return new File([u8arr], `${filename}.${suffix}`, {
+    type: mime
+  })
+}
 // 是否正在发送中
 const isSending = ref(false)
 const sendMsg = () => {
@@ -51,18 +72,13 @@ const sendMsg = () => {
   if (isSending.value) return
   isSending.value = true
   try {
+    // 获取输入框中的内容
     const content = inputEditorRef.value.getContent()
-    // 如果内容为空，不发送
-    // const content = inputEditorRef.value.getContent()
-    // console.log(content)
-    // if (content) {
-    //   console.log(11)
-    //   return
-    // }
-    // console.log('发送内容', content)
+    console.log(content)
+
+    // 区分纯文本or图片
     // 获取纯文本
     const plainText = htmlToPlainText(content)
-
     // 将纯文本编码为 UTF-8
     // 创建 TextEncoder 实例
     const encoder = new TextEncoder()
@@ -70,10 +86,41 @@ const sendMsg = () => {
     const encodedMessage = encoder.encode(plainText)
     // 发送时首先将其转换为字符串格式base64
     const byteArray = new Uint8Array(encodedMessage)
-    // 转换为 Base64 字符串（示例）
+    // 转换为 Base64 字符串
     const base64Message = btoa(String.fromCharCode(...byteArray))
 
-    // 发送消息
+    // 直接复制粘贴进来的图片类型
+
+    // DOM解析器
+    const parser = new DOMParser()
+    console.log(parser)
+    // 将html字符串解析为文档对象
+    const doc = parser.parseFromString(content, 'text/html')
+    console.log(doc)
+    // 获取图片标签
+    // const imgTags = doc.querySelectorAll('img')
+    // if (imgTags.length == 1) {
+    //   imgTags.forEach((item) => {
+    //     // getAttribute 获取节点元素的属性值
+    //     const src = item.getAttribute('src')
+    //     if (src && src.startsWith('data:image/')) {
+    //       // const base64Data = src.split(',')[1]
+    //       // console.log(base64Data)
+    //       const file = base64toFile(src)
+    //       console.log(file)
+    //     }
+    //   })
+    // } else {
+    //   ElMessage.warning('不能一次发送两张图片哦')
+    //   return
+    // }
+
+    // 如果内容为空，不发送
+    // if (plainText) {
+    //   ElMessage.warning('发送内容不能为空')
+    //   return
+    // }
+    // 发送消息（纯文本）
     const msg = ref({
       relation_id: props.chatInfo.relation_id,
       msg_content: base64Message
@@ -85,7 +132,6 @@ const sendMsg = () => {
 
     // // 发送消息失败
     // if (!sendSuccess) {
-    //   // chatStore.updateMessageStatus(tempMsg.temp_id, false)
     //   ElMessage.danger('发送失败')
     // }
 
@@ -96,6 +142,7 @@ const sendMsg = () => {
   }
 }
 
+// 回车发送，shift+回车换行
 const handleKeyDown = (e) => {
   // console.log(e.shiftKey)
   if (e.key === 'Enter') {
@@ -108,36 +155,6 @@ const handleKeyDown = (e) => {
   }
 }
 // 上传文件
-// const fileUpdate = [
-//   {
-//     id: 0,
-//     file_type: 'pdf',
-//     file_size: 1024,
-//     url: 'http://example.com/file1.pdf',
-//     create_at: '2025-03-31T10:00:00Z'
-//   },
-//   {
-//     id: 1,
-//     file_type: 'doc',
-//     file_size: 2048,
-//     url: 'http://example.com/file2.doc',
-//     create_at: '2025-03-31T11:00:00Z'
-//   },
-//   {
-//     id: 2,
-//     file_type: 'text',
-//     file_size: 512,
-//     url: 'http://example.com/file3.txt',
-//     create_at: '2025-03-31T12:00:00Z'
-//   },
-//   {
-//     id: 3,
-//     file_type: 'ppt',
-//     file_size: 4096,
-//     url: 'http://example.com/file4.ppt',
-//     create_at: '2025-03-31T13:00:00Z'
-//   }
-// ]
 const fileTypeIcon = {
   pdf: 'icon-pdf',
   txt: 'icon-wenbenwendang-txt',
@@ -148,15 +165,30 @@ const fileTypeIcon = {
   doc: 'icon-wendang-docx_doc',
   docx: 'icon-wendang-docx_doc'
 }
+// 选择文件上传
+const formData = new FormData()
 const selectFile = ref([])
 const handleFileChange = async (file) => {
-  console.log(URL.createObjectURL(file.raw))
-  console.log(file.name)
-
-  const formData = new FormData()
-  formData.append('file', URL.createObjectURL(file.raw))
+  // const formData = new FormData()
+  // formData.append('file', file.raw) // 第三个参数 filename 可选
+  // formData.append('relation_id', props.chatInfo.relation_id)
+  // formData.append('account_id', userStore.accountInfo.id)
+  // selectFile.value = [
+  //   {
+  //     id: file.uid,
+  //     file_name: file.name,
+  //     file_type: file.name.split('.').pop(),
+  //     file_size: (file.size / 1024).toFixed(2) + 'KB',
+  //     url: URL.createObjectURL(file.raw),
+  //     create_at: new Date().toISOString()
+  //   }
+  // ]
+  // fileDialog.value = true
+  // const res = await publishFileSerivce(formData)
+  // console.log(res)
+  console.log(file)
   formData.append('relation_id', props.chatInfo.relation_id)
-  formData.append('account_id', userStore.accountInfo.id)
+  formData.append('file', file.raw)
   selectFile.value = [
     {
       id: file.uid,
@@ -168,11 +200,22 @@ const handleFileChange = async (file) => {
     }
   ]
   fileDialog.value = true
-  console.log(selectFile.value)
-  const res = await publishFileSerivce(file)
-  console.log(res)
 }
 
+// 发送文件
+const sendFile = async () => {
+  fileDialog.value = false
+  formData.forEach((value, key) => {
+    console.log(`${key}: ${value}`)
+  })
+  const res = await sendFileService(formData)
+  console.log(res)
+  // 清空formData
+  for (const key of formData.keys()) {
+    formData.delete(key)
+  }
+}
+// 清除存到本地的聊天记录
 const cleanup = () => {
   chatStore.cleanChatMsg()
 }
@@ -180,7 +223,10 @@ watch(
   () => props.chatInfo,
   (newVal) => {
     console.log(newVal)
+    // 切换时清除聊天记录
     cleanup()
+    // 切换清除输入框？？TODO
+    inputEditorRef.value.clearContent()
     activeChatInfo.value = newVal
   }
 )
@@ -228,7 +274,7 @@ onUnmounted(() => {
             <img ref="emoji" src="@/assets/smile.svg" alt="" />
           </el-icon>
           <!-- 上传图片 -->
-          <el-upload class="avatar-uploader">
+          <el-upload class="pic-uploader" :on-change="handleFileChange">
             <el-icon>
               <img src="@/assets/picture.svg" alt="" />
             </el-icon>
@@ -324,11 +370,7 @@ onUnmounted(() => {
       <!-- <div class="file-update"></div> -->
       <template #footer>
         <div class="dialog-footer">
-          <!-- <el-button type="primary" @click="onSubmit"> 发送 </el-button> -->
-          <!-- <el-button @click="accountEditForm = false">取消</el-button> -->
-          <el-button type="primary" @click="fileDialog = false">
-            发送
-          </el-button>
+          <el-button type="primary" @click="sendFile"> 发送 </el-button>
           <el-button @click="fileDialog = false">取消</el-button>
         </div>
       </template>
@@ -372,16 +414,9 @@ onUnmounted(() => {
   }
   .el-main {
     overflow: auto;
-    // text-align: center;
-    // display: flex;
-    // flex-direction: column;
-    // align-items: center;
-    // padding: 0 10px;
-    // margin: 0 10px;
     background-color: #f5f5f5;
   }
   .el-footer {
-    // border: 1px solid #000;
     padding: 0;
     height: 150px;
     background-color: #f3f3f3;
@@ -393,7 +428,7 @@ onUnmounted(() => {
         width: 100%;
         display: flex;
         align-items: center;
-        .avatar-uploader,
+        .pic-uploader,
         .doc-uploader {
           width: 30px;
           height: 20px;
@@ -422,7 +457,6 @@ onUnmounted(() => {
       .textarea {
         height: 80px;
         background-color: #f3f3f3;
-
         padding: 0;
       }
       .footer {
@@ -508,7 +542,6 @@ onUnmounted(() => {
     margin: 0 5px;
   }
 }
-
 hr {
   margin: 5px 0;
   border: none;

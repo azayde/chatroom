@@ -6,10 +6,15 @@ export const useGroupStore = defineStore(
   'chat-group',
   () => {
     const groupInfo = ref()
+    // 群成员总人数
+    const groupMember = ref()
     const setGroupInfo = (value) => {
       groupInfo.value = value
     }
-    return { groupInfo, setGroupInfo }
+    const setGroupMember = (value) => {
+      groupMember.value = value
+    }
+    return { groupInfo, groupMember, setGroupInfo, setGroupMember }
   },
   {
     persist: true

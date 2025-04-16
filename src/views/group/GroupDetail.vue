@@ -8,7 +8,7 @@ import {
   Edit,
   Delete
 } from '@element-plus/icons-vue'
-import { watch, ref, nextTick } from 'vue'
+import { watch, ref, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   updateNickNameService,
@@ -19,7 +19,7 @@ import {
 import {
   quitGroupService,
   dissolveGroupService,
-  updateGroupInfoService
+  getGroupMemberService
 } from '@/api/group.js'
 import { useUserStore, useChatStore, useGroupStore } from '@/stores'
 
@@ -28,136 +28,131 @@ const chatStore = useChatStore()
 const groupStore = useGroupStore()
 
 const router = useRouter()
-
+// 群聊详情
+const props = defineProps({
+  groupInfo: Object
+})
 // switch开关 （三个）
 // pin 和 置顶 ？？
-const isPin = ref(false)
-const isShow = ref(false)
-const isNotDisturb = ref(false)
-// const update = ref({
-//   isPin: false,
-//   isShow: false,
-//   isNotDisturb: false
-// })
+const isPin = ref(groupStore.groupInfo.is_pin || false)
+const isShow = ref(groupStore.groupInfo.is_show || false)
+const isNotDisturb = ref(groupStore.groupInfo.is_not_disturb || false)
 
-const dialogFormVisible = ref(false)
 // 点击头像出现名片(点击头像名片消失)  --- 改 TODO:
 // const userCardVisible = ref(false)
-
-// 添加群成员
-const bools = ref(false)
 
 const groupNotify = ref(false)
 
 // 群成员列表 (TODO: ) 可以拿到信息： 共有多少人
-const groupList = ref([
-  {
-    relation_id: 704513048576,
-    relation_type: 'friend',
-    is_show: true,
-    pin_time: '2025-03-06T10:00:00',
-    last_show: '2025-03-06T09:55:00',
-    friend_info: {
-      account_id: 704513048576,
-      name: 'Alice Smith',
-      avatar:
-        'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
-    },
-    is_not_disturb: false,
-    is_pin: true
-  },
-  {
-    relation_id: 456,
-    relation_type: 'group',
-    is_show: true,
-    pin_time: '2025-03-05T18:00:00',
-    last_show: '2025-03-06T10:05:00',
-    friend_info: {
-      account_id: 789,
-      name: 'Tech Enthusiasts',
-      avatar:
-        'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
-    },
-    is_not_disturb: true,
-    is_pin: true
-  },
-  {
-    relation_id: 789,
-    relation_type: 'friend',
-    is_show: false,
-    pin_time: '2025-03-04T22:00:00',
-    last_show: '2025-03-06T08:30:00',
-    friend_info: {
-      account_id: 101,
-      name: 'Bob Johnson',
-      avatar:
-        'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
-    },
-    is_not_disturb: false,
-    is_pin: false
-  },
-  {
-    relation_id: 101,
-    relation_type: 'friend',
-    is_show: true,
-    pin_time: '2025-03-03T12:00:00',
-    last_show: '2025-03-06T10:10:00',
-    friend_info: {
-      account_id: 202,
-      name: 'Charlie Brown',
-      avatar:
-        'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
-    },
-    is_not_disturb: true,
-    is_pin: false
-  }
-])
-// 群成员信息
-// const groupMember = ref([
+// const groupList = ref([
 //   {
-//     account_id: 12345,
-//     name: 'Alice Smith',
-//     avatar: 'https://example.com/alice.jpg',
-//     nickname: 'Alice',
-//     is_leader: false
+//     relation_id: 704513048576,
+//     relation_type: 'friend',
+//     is_show: true,
+//     pin_time: '2025-03-06T10:00:00',
+//     last_show: '2025-03-06T09:55:00',
+//     friend_info: {
+//       account_id: 704513048576,
+//       name: 'Alice Smith',
+//       avatar:
+//         'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
+//     },
+//     is_not_disturb: false,
+//     is_pin: true
 //   },
 //   {
-//     account_id: 704513048576,
-//     name: 'Bob Johnson',
-//     avatar: 'https://example.com/bob.png',
-//     nickname: 'Bob',
-//     is_leader: true
+//     relation_id: 456,
+//     relation_type: 'group',
+//     is_show: true,
+//     pin_time: '2025-03-05T18:00:00',
+//     last_show: '2025-03-06T10:05:00',
+//     friend_info: {
+//       account_id: 789,
+//       name: 'Tech Enthusiasts',
+//       avatar:
+//         'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
+//     },
+//     is_not_disturb: true,
+//     is_pin: true
 //   },
 //   {
-//     account_id: 24680,
-//     name: 'Charlie Brown',
-//     avatar: 'https://example.com/charlie.gif',
-//     nickname: 'Chuck',
-//     is_leader: false
+//     relation_id: 789,
+//     relation_type: 'friend',
+//     is_show: false,
+//     pin_time: '2025-03-04T22:00:00',
+//     last_show: '2025-03-06T08:30:00',
+//     friend_info: {
+//       account_id: 101,
+//       name: 'Bob Johnson',
+//       avatar:
+//         'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
+//     },
+//     is_not_disturb: false,
+//     is_pin: false
 //   },
 //   {
-//     account_id: 13579,
-//     name: 'Diana Miller',
-//     avatar: 'https://example.com/diana.svg',
-//     nickname: 'Di',
-//     is_leader: false
+//     relation_id: 101,
+//     relation_type: 'friend',
+//     is_show: true,
+//     pin_time: '2025-03-03T12:00:00',
+//     last_show: '2025-03-06T10:10:00',
+//     friend_info: {
+//       account_id: 202,
+//       name: 'Charlie Brown',
+//       avatar:
+//         'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
+//     },
+//     is_not_disturb: true,
+//     is_pin: false
 //   }
 // ])
-
-// const res = await getGroupMemberService(props.groupInfo.relation_id)
-// console.log(res)
+// 群成员信息
+const groupMember = ref([
+  {
+    account_id: 12345,
+    name: 'Alice Smith',
+    avatar: 'https://example.com/alice.jpg',
+    nickname: 'Alice',
+    is_leader: false
+  },
+  {
+    account_id: 704513048576,
+    name: 'Bob Johnson',
+    avatar: 'https://example.com/bob.png',
+    nickname: 'Bob',
+    is_leader: true
+  },
+  {
+    account_id: 24680,
+    name: 'Charlie Brown',
+    avatar: 'https://example.com/charlie.gif',
+    nickname: 'Chuck',
+    is_leader: false
+  },
+  {
+    account_id: 13579,
+    name: 'Diana Miller',
+    avatar: 'https://example.com/diana.svg',
+    nickname: 'Di',
+    is_leader: false
+  }
+])
+const totalMember = ref()
+const getGroupMember = async () => {
+  // console.log(groupStore.groupInfo.group_info.relation_id)
+  const res = await getGroupMemberService(
+    groupStore.groupInfo.group_info.relation_id
+  )
+  groupMember.value = res.data.data.List
+  totalMember.value = res.data.data.List.length
+  console.log(res)
+}
 // 存储user-card的显隐状态
-
 //
 
 // gen'ju
 const activeMemberId = ref(null)
 // const popverStates = ref({})
-
-// 群聊详情
-const props = defineProps({
-  groupInfo: Object
-})
 
 // 当前群聊
 const activeGroup = ref(props.groupInfo)
@@ -168,7 +163,9 @@ watch(
   () => props.groupInfo,
   (newVal) => {
     activeGroup.value = newVal
-  }
+    getGroupMember()
+  },
+  { deep: true }
 )
 // 点击群成员获取当前的id（用于名片）
 const handleClickMember = (id) => {
@@ -177,84 +174,97 @@ const handleClickMember = (id) => {
 
 // 修改昵称
 const isEdit = ref(false)
-// const id = groupMember.value.findIndex(
-//   (item) => item.account_id === userStore.accountInfo.id
-// )
-
-const id = groupList.value.findIndex(
-  (item) => item.friend_info.account_id === userStore.accountInfo.id
+const id = groupMember.value.findIndex(
+  (item) => item.account_id === userStore.accountInfo.id
 )
+
+// const id = groupList.value.findIndex(
+//   (item) => item.friend_info.account_id === userStore.accountInfo.id
+// )
+const nickName = ref()
 
 // const nick_name = ref(groupMember.value[id].nickname)
 // const nick_name = ref(groupList.value[id].friend_info.name)
-const nick_name = ref('test')
+const nick_name = ref(null)
 const inp = ref(null)
-console.log(nick_name.value)
+// console.log(nick_name.value)
+// console.log(ref.nick_name)
 
-// 双击切换编辑状态
+// // 双击切换编辑状态
 const handleNickName = () => {
+  console.log(nick_name.value)
   isEdit.value = true
-  nick_name.value = groupList.value[id].friend_info.name
+  nick_name.value.innerHTML = 'abc'
+  // nick_name.value = groupList.value[id].friend_info.name
   nextTick(() => {
     inp.value.focus()
     inp.value.select()
   })
 }
 // 提交昵称修改
-const updateNickName = () => {
+const updateNickName = async () => {
   isEdit.value = false
-  // updateNickNameService({
-  //   relation_id: groupList.value.relation_id,
-  //   nick_name: nick_name.value
+  console.log(groupStore.groupInfo.group_info.relation_id)
+  console.log(nickName.value)
+  const res = await updateNickNameService({
+    relation_id: groupStore.groupInfo.group_info.relation_id,
+    nick_name: nickName.value
+  })
+  console.log(res)
+  // isEdit.value = true
+
+  // nextTick(() => {
+  //   console.log(nick_name.value)
+  //   console.log(inp.value)
+  //   // nick_name.value.innerHTML = 'ii'
+  //   inp.value.focus()
+  //   inp.value.select()
   // })
-
   // 按回车会出现两次，因为 该函数被触发了两次  TODO:
-  if (nick_name.value) {
-    ElMessage.success('修改备注成功')
-  }
+  // if (nick_name.value) {
+  //   ElMessage.success('修改备注成功')
+  // }
 }
-
+// const abc = ref()
+// console.log(abc.value)
 // 聊天记录dialog
 const chatDialog = ref()
 
 // 三个switch
-const handleSwitch = (msg) => {
+const handleSwitch = async (msg) => {
+  // 状态更改后，要更新一下store里面的内容，否则需要手动刷新
   const relation_id = ref(props.groupInfo.relation_id)
   console.log(relation_id.value)
   console.log(msg)
   if (msg === 'isNotDisturb') {
-    // updateDisturbService({
-    //   relation_id: relation_id.value,
-    //   isNotDisturb: isNotDisturb.value
-    // })
+    const res = await updateDisturbService({
+      relation_id: relation_id.value,
+      isNotDisturb: isNotDisturb.value
+    })
+    console.log(res)
   } else if (msg === 'isPin') {
-    // updatePinService({
-    //   relation_id: relation_id.value,
-    //   isPin: isPin.value
-    // })
+    const res = await updatePinService({
+      relation_id: relation_id.value,
+      is_pin: isPin.value
+    })
+    console.log(res)
   } else if (msg === 'isShow') {
-    // updateShowService({
-    //   relation_id: relation_id.value,
-    //   isShow: isShow.value
-    // })
+    const res = await updateShowService({
+      relation_id: relation_id.value,
+      is_show: isShow.value
+    })
+    console.log(res)
   }
 }
 watch(isNotDisturb, () => handleSwitch('isNotDisturb'))
 watch(isPin, () => handleSwitch('isPin'))
 watch(isShow, () => handleSwitch('isShow'))
 
-// 修改群聊信息（在这里改（子组件）？？）
-const updateGroupInfo = async () => {
-  dialogFormVisible.value = false
-  // 参数 对 or 错 ？？
-  // await updateGroupInfoService({
-  //   relation_id: props.groupInfo.relation_id,
-  //   group_name: 'group_name',
-  //   description: 'description'
-  // })
-  ElMessage.success('修改成功')
+// 修改群聊信息
+const groupEdit = ref()
+const handleGroupEdit = () => {
+  groupEdit.value.open()
 }
-
 // 退出群聊
 const handleQuit = async () => {
   // await quitGroupService(props.groupInfo.relation_id)
@@ -377,12 +387,51 @@ const notifyList = [
     read_ids: [5]
   }
 ]
+
+// // const isEdit = ref(false)
+// const nickname = ref('未设置昵称') // 初始昵称
+// const nicknameInput = ref(null)
+
+// // 点击切换编辑状态
+// const toggleEdit = () => {
+//   isEdit.value = true
+//   nextTick(() => {
+//     nicknameInput.value.focus()
+//     nicknameInput.value.select()
+//   })
+// }
+
+// // 保存昵称修改
+// const saveNickname = () => {
+//   isEdit.value = false
+//   if (nickname.value.trim()) {
+//     // 这里可以调用API保存修改
+//     // await updateNickNameService({
+//     //   relation_id: props.groupInfo.relation_id,
+//     //   nick_name: nickname.value
+//     // })
+//     ElMessage.success('昵称修改成功')
+//   }
+// }
+
+// 取消修改
+// const cancelEdit = () => {
+//   isEdit.value = false
+// }
+
+const invite = ref()
+const inviteFriend = () => {
+  invite.value.open()
+}
+onMounted(() => {
+  getGroupMember()
+})
 </script>
 
 <template>
   <el-container>
     <el-header>
-      <h1>{{ activeGroup.group_info.name }}（4）</h1>
+      <h1>{{ activeGroup.group_info.name }}({{ groupMember.length }})</h1>
     </el-header>
     <el-main>
       <el-scrollbar>
@@ -395,33 +444,33 @@ const notifyList = [
             placement="right"
             trigger="click"
             width="450px"
-            :visible="activeMemberId === item.friend_info.account_id"
+            :visible="activeMemberId === item.account_id"
             manual
-            v-for="item in groupList"
-            :key="item.friend_info.account_id"
+            v-for="item in groupMember"
+            :key="item.account_id"
           >
             <template #reference>
               <!-- 需修改 TODO -->
               <div
                 class="member-item"
-                @click="handleClickMember(item.friend_info.account_id)"
+                @click="handleClickMember(item.account_id)"
               >
                 <!-- @click="userCardVisible = !userCardVisible" -->
                 <el-avatar
                   shape="square"
-                  :src="item.friend_info.avatar"
+                  :src="item.avatar"
                   class="member-avatar"
                 />
-                <div class="member-name">{{ item.friend_info.name }}</div>
+                <div class="member-name">{{ item.name }}</div>
               </div>
             </template>
             <div class="user-info">
               <!-- <user-card style="padding: 10px;"  @close-dialog="userCardVisible = false"></user-card> -->
-              <user-card :userInfo="item" style="padding: 10px"></user-card>
+              <!-- <user-card :userInfo="item" style="padding: 10px"></user-card> -->
             </div>
           </el-popover>
 
-          <div class="add" @click="bools = true">
+          <div class="add" @click="inviteFriend">
             <el-icon><Plus /></el-icon>
             <div class="member-name">添加</div>
           </div>
@@ -437,13 +486,13 @@ const notifyList = [
           <input
             v-if="isEdit"
             type="text"
-            v-model="nick_name"
+            v-model="nickName"
             @blur="updateNickName"
             @keyup.enter="updateNickName"
             ref="inp"
           />
-          <div v-else @dblclick="handleNickName">
-            {{ nick_name || '未设置' }}
+          <div v-else @click="handleNickName" ref="nick_name">
+            {{ nickName || '未设置昵称' }}
           </div>
         </div>
         <hr />
@@ -501,20 +550,9 @@ const notifyList = [
           </div>
         </div>
         <hr />
-        <!-- <div class="title">
-          <div class="switch">
-            <span>Pin</span>
-            <el-switch
-              v-model="isPin"
-              size="small"
-              style="--el-switch-on-color: #13ce66"
-            ></el-switch>
-          </div>
-        </div> -->
-        <!-- <hr /> -->
         <!-- 群头像，群名称，群描述 -->
         <div class="title">
-          <div class="update" @click="dialogFormVisible = true">
+          <div class="update" @click="handleGroupEdit">
             <span>修改群聊消息</span>
             <span
               ><el-icon><ArrowRight /></el-icon
@@ -540,13 +578,13 @@ const notifyList = [
   </el-container>
 
   <!-- 对话框（设置群聊信息） -->
-  <el-dialog
+  <!-- <group-edit ref="groupEdit"></group-edit> -->
+  <!-- <el-dialog
     v-model="dialogFormVisible"
     title="设置群聊信息"
     width="500"
     class="dialog"
   >
-    <!-- 不能直接修改父组件传过来的信息, 父组件暴露open方法 -->
     <el-form>
       <el-upload
         class="avatar-uploader"
@@ -559,10 +597,10 @@ const notifyList = [
         </el-icon>
       </el-upload>
       <el-form-item label="群聊名称">
-        <el-input></el-input>
+        <el-input v-model="group_name"></el-input>
       </el-form-item>
       <el-form-item label="群描述">
-        <el-input></el-input>
+        <el-input v-model="description"></el-input>
       </el-form-item>
     </el-form>
     <template #footer>
@@ -571,18 +609,10 @@ const notifyList = [
         <el-button type="primary" @click="updateGroupInfo"> 确定 </el-button>
       </div>
     </template>
-  </el-dialog>
+  </el-dialog> -->
 
   <!-- 添加群成员 -->
-  <el-dialog v-model="bools" title="邀请好友">
-    <!-- <change-group-member></change-group-member> -->
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="bools = false">取消</el-button>
-        <el-button type="primary" @click="bools = false"> 确定 </el-button>
-      </div>
-    </template>
-  </el-dialog>
+  <change-group-member ref="invite"></change-group-member>
 
   <!-- 聊天记录 -->
   <chat-history ref="chatDialog"></chat-history>
@@ -748,37 +778,6 @@ const notifyList = [
       // display: inline-block;
       width: 80px;
       margin: 0 auto;
-    }
-  }
-}
-
-.dialog {
-  .avatar-uploader {
-    :deep() {
-      .avatar {
-        width: 178px;
-        height: 178px;
-        display: block;
-      }
-      .el-upload {
-        border: 1px dashed var(--el-border-color);
-        border-radius: 6px;
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-        transition: var(--el-transition-duration-fast);
-        margin-bottom: 15px;
-      }
-      .el-upload:hover {
-        border-color: var(--el-color-primary);
-      }
-      .el-icon.avatar-uploader-icon {
-        font-size: 28px;
-        color: #8c939d;
-        width: 178px;
-        height: 178px;
-        text-align: center;
-      }
     }
   }
 }
