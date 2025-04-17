@@ -124,6 +124,7 @@ const sendMsg = () => {
     const msg = ref({
       relation_id: props.chatInfo.relation_id,
       msg_content: base64Message
+      // rly_msg_id
     })
 
     // 发送到服务器
@@ -242,7 +243,7 @@ onUnmounted(() => {
         <h1>
           {{
             activeChatInfo.relation_type === 'friend'
-              ? activeChatInfo.friend_info.name
+              ? activeChatInfo.nick_name || activeChatInfo.friend_info.name
               : activeChatInfo.group_info.name
           }}{{ activeChatInfo.relation_type === 'group' ? '（4）' : '' }}
         </h1>

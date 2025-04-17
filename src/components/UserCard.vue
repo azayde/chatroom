@@ -42,6 +42,7 @@ const sendMsg = () => {
 console.log(props.userInfo)
 
 const activeFiendInfo = ref(props.userInfo)
+// console.log(activeFiendInfo.value)
 activeFiendInfo.value = props.userInfo ? props.userInfo : friendStore.friendInfo
 watch(
   () => props.userInfo,
@@ -94,15 +95,17 @@ const deleteFriend = async () => {
 
 // 设置备注
 const nick_name = ref()
-const updateNickName = () => {
-  dialogFormVisible.value = false
-  updateNickNameService({
+const updateNickName = async () => {
+  await updateNickNameService({
     relation_id: props.userInfo.relation_id,
     nick_name: nick_name.value
   })
+  friendStore.updateFriendNickName(nick_name.value)
   if (nick_name.value) {
     ElMessage.success('修改备注成功')
+    nick_name.value = ''
   }
+  dialogFormVisible.value = false
 }
 </script>
 
@@ -119,7 +122,9 @@ const updateNickName = () => {
       <div class="right">
         <!-- 点击设置备注 -->
         <div class="span" v-if="isFriend === true">
-          备注：<span>{{ activeFiendInfo.friend_info.name }}</span>
+          备注：<span>{{
+            activeFiendInfo.nick_name || activeFiendInfo.friend_info.name
+          }}</span>
         </div>
         <div class="span">
           昵称：<span>{{ activeFiendInfo.friend_info.name }}</span>

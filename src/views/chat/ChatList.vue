@@ -72,19 +72,7 @@ const chatList = ref([
   }
 ])
 
-const chatPinList = ref([
-  // {
-  //   relation_id: 3,
-  //   relation_type: 'friend',
-  //   pin_time: '2025-03-15T12:00:00Z',
-  //   friend_info: {
-  //     account_id: 103,
-  //     name: 'Charlie',
-  //     avatar:
-  //       'https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con'
-  //   }
-  // }
-])
+const chatPinList = ref([])
 // console.log(chatPinList.value)
 
 // class:  pin 的样式(用is_pin判断) ！！！！！！！ TODO
@@ -219,7 +207,7 @@ watch(
             <div class="top">
               <span class="name">{{
                 item.relation_type === 'friend'
-                  ? item.friend_info.name
+                  ? item.nick_name || item.friend_info.name
                   : item.group_info.name
               }}</span>
               <span class="time_now">19:30</span>

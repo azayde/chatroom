@@ -43,7 +43,7 @@ const handleDel = (row) => {
   // 删除
   console.log(typeof row.id)
 
-  ElMessageBox.confirm('你确认删除该分类信息吗？', '温馨提示', {
+  ElMessageBox.confirm('你确定要注销该账号吗？', '温馨提示', {
     type: 'warning',
     confirmButtonText: '确认',
     cancelButtonText: '取消'

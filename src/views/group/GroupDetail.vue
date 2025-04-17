@@ -19,7 +19,8 @@ import {
 import {
   quitGroupService,
   dissolveGroupService,
-  getGroupMemberService
+  getGroupMemberService,
+  updateGroupInfoService
 } from '@/api/group.js'
 import { useUserStore, useChatStore, useGroupStore } from '@/stores'
 
@@ -43,69 +44,6 @@ const isNotDisturb = ref(groupStore.groupInfo.is_not_disturb || false)
 
 const groupNotify = ref(false)
 
-// 群成员列表 (TODO: ) 可以拿到信息： 共有多少人
-// const groupList = ref([
-//   {
-//     relation_id: 704513048576,
-//     relation_type: 'friend',
-//     is_show: true,
-//     pin_time: '2025-03-06T10:00:00',
-//     last_show: '2025-03-06T09:55:00',
-//     friend_info: {
-//       account_id: 704513048576,
-//       name: 'Alice Smith',
-//       avatar:
-//         'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
-//     },
-//     is_not_disturb: false,
-//     is_pin: true
-//   },
-//   {
-//     relation_id: 456,
-//     relation_type: 'group',
-//     is_show: true,
-//     pin_time: '2025-03-05T18:00:00',
-//     last_show: '2025-03-06T10:05:00',
-//     friend_info: {
-//       account_id: 789,
-//       name: 'Tech Enthusiasts',
-//       avatar:
-//         'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
-//     },
-//     is_not_disturb: true,
-//     is_pin: true
-//   },
-//   {
-//     relation_id: 789,
-//     relation_type: 'friend',
-//     is_show: false,
-//     pin_time: '2025-03-04T22:00:00',
-//     last_show: '2025-03-06T08:30:00',
-//     friend_info: {
-//       account_id: 101,
-//       name: 'Bob Johnson',
-//       avatar:
-//         'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
-//     },
-//     is_not_disturb: false,
-//     is_pin: false
-//   },
-//   {
-//     relation_id: 101,
-//     relation_type: 'friend',
-//     is_show: true,
-//     pin_time: '2025-03-03T12:00:00',
-//     last_show: '2025-03-06T10:10:00',
-//     friend_info: {
-//       account_id: 202,
-//       name: 'Charlie Brown',
-//       avatar:
-//         'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
-//     },
-//     is_not_disturb: true,
-//     is_pin: false
-//   }
-// ])
 // 群成员信息
 const groupMember = ref([
   {
@@ -198,6 +136,7 @@ const handleNickName = () => {
   // nick_name.value = groupList.value[id].friend_info.name
   nextTick(() => {
     inp.value.focus()
+    // inp.value.blur()
     inp.value.select()
   })
 }
@@ -261,9 +200,29 @@ watch(isPin, () => handleSwitch('isPin'))
 watch(isShow, () => handleSwitch('isShow'))
 
 // 修改群聊信息
-const groupEdit = ref()
-const handleGroupEdit = () => {
-  groupEdit.value.open()
+// const groupEdit = ref()
+// const handleGroupEdit = () => {
+//   groupEdit.value.open(activeGroup.value.group_info)
+// }
+const groupInfoEdit = ref(false)
+const group_name = ref(groupStore.groupInfo.group_info.name)
+const description = ref(groupStore.groupInfo.group_info.description)
+const imgUrl = ref(groupStore.groupInfo.group_info.avatar)
+const fd = new FormData()
+const onUploadFile = async (File) => {
+  imgUrl.value = URL.createObjectURL(File.raw)
+  fd.append('avatar', File.raw)
+  console.log(File)
+}
+const updateGroupInfo = async () => {
+  groupInfoEdit.value = false
+  // 参数 对 or 错 ？？
+  fd.append('relation_id', groupStore.groupInfo.group_info.relation_id)
+  fd.append('name', group_name.value)
+  fd.append('description', description.value)
+  const res = await updateGroupInfoService(fd)
+  console.log(res)
+  // ElMessage.success('修改成功')
 }
 // 退出群聊
 const handleQuit = async () => {
@@ -388,37 +347,6 @@ const notifyList = [
   }
 ]
 
-// // const isEdit = ref(false)
-// const nickname = ref('未设置昵称') // 初始昵称
-// const nicknameInput = ref(null)
-
-// // 点击切换编辑状态
-// const toggleEdit = () => {
-//   isEdit.value = true
-//   nextTick(() => {
-//     nicknameInput.value.focus()
-//     nicknameInput.value.select()
-//   })
-// }
-
-// // 保存昵称修改
-// const saveNickname = () => {
-//   isEdit.value = false
-//   if (nickname.value.trim()) {
-//     // 这里可以调用API保存修改
-//     // await updateNickNameService({
-//     //   relation_id: props.groupInfo.relation_id,
-//     //   nick_name: nickname.value
-//     // })
-//     ElMessage.success('昵称修改成功')
-//   }
-// }
-
-// 取消修改
-// const cancelEdit = () => {
-//   isEdit.value = false
-// }
-
 const invite = ref()
 const inviteFriend = () => {
   invite.value.open()
@@ -487,9 +415,9 @@ onMounted(() => {
             v-if="isEdit"
             type="text"
             v-model="nickName"
-            @blur="updateNickName"
-            @keyup.enter="updateNickName"
             ref="inp"
+            @blur="updateNickName"
+            @keyup.enter="inp.blur()"
           />
           <div v-else @click="handleNickName" ref="nick_name">
             {{ nickName || '未设置昵称' }}
@@ -552,7 +480,8 @@ onMounted(() => {
         <hr />
         <!-- 群头像，群名称，群描述 -->
         <div class="title">
-          <div class="update" @click="handleGroupEdit">
+          <!-- <div class="update" @click="handleGroupEdit"> -->
+          <div class="update" @click="groupInfoEdit = true">
             <span>修改群聊消息</span>
             <span
               ><el-icon><ArrowRight /></el-icon
@@ -578,9 +507,9 @@ onMounted(() => {
   </el-container>
 
   <!-- 对话框（设置群聊信息） -->
-  <!-- <group-edit ref="groupEdit"></group-edit> -->
-  <!-- <el-dialog
-    v-model="dialogFormVisible"
+  <!-- <group-edit ref="groupEdit" @submit="handleSubmit"></group-edit> -->
+  <el-dialog
+    v-model="groupInfoEdit"
     title="设置群聊信息"
     width="500"
     class="dialog"
@@ -590,11 +519,9 @@ onMounted(() => {
         class="avatar-uploader"
         :auto-upload="false"
         :show-file-list="false"
+        @change="onUploadFile"
       >
-        <img v-if="imgUrl" :src="imgUrl" class="avatar" />
-        <el-icon v-else class="avatar-uploader-icon">
-          <Plus />
-        </el-icon>
+        <img :src="imgUrl" class="avatar" />
       </el-upload>
       <el-form-item label="群聊名称">
         <el-input v-model="group_name"></el-input>
@@ -605,11 +532,11 @@ onMounted(() => {
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取消</el-button>
+        <el-button @click="groupInfoEdit = false">取消</el-button>
         <el-button type="primary" @click="updateGroupInfo"> 确定 </el-button>
       </div>
     </template>
-  </el-dialog> -->
+  </el-dialog>
 
   <!-- 添加群成员 -->
   <change-group-member ref="invite"></change-group-member>
@@ -781,9 +708,38 @@ onMounted(() => {
     }
   }
 }
-
+.dialog {
+  .avatar-uploader {
+    :deep() {
+      .avatar {
+        width: 178px;
+        height: 178px;
+        display: block;
+      }
+      .el-upload {
+        border: 1px dashed var(--el-border-color);
+        border-radius: 6px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        transition: var(--el-transition-duration-fast);
+        margin-bottom: 15px;
+      }
+      .el-upload:hover {
+        border-color: var(--el-color-primary);
+      }
+      .el-icon.avatar-uploader-icon {
+        font-size: 28px;
+        color: #8c939d;
+        width: 178px;
+        height: 178px;
+        text-align: center;
+      }
+    }
+  }
+}
 .editor {
   // background-color: red;
-  border: 1px solid #000;
+  // border: 1px solid #000;
 }
 </style>

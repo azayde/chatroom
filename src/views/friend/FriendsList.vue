@@ -210,7 +210,9 @@ const handleCreateApplication = async () => {
               :src="item.friend_info.avatar"
             ></el-avatar>
           </div>
-          <span class="name">{{ item.friend_info.name }}</span>
+          <span class="name">{{
+            item.nick_name || item.friend_info.name
+          }}</span>
         </div>
       </el-scrollbar>
     </el-main>

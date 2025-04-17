@@ -9,7 +9,13 @@ export const useFriendStore = defineStore(
     const setFriendInfo = (value) => {
       friendInfo.value = value
     }
-    return { friendInfo, setFriendInfo }
+    const updateFriendNickName = (newNickName) => {
+      friendInfo.value.nick_name = newNickName
+    }
+    const cleanFriend = () => {
+      friendInfo.value = ''
+    }
+    return { friendInfo, setFriendInfo, updateFriendNickName, cleanFriend }
   },
   {
     persist: true

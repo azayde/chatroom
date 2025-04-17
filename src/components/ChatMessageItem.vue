@@ -93,33 +93,33 @@ watch(
   { deep: true, immediate: true }
 )
 
-const menu = ref(false)
-const menuTop = ref(0)
-const menuLeft = ref(0)
-document.addEventListener('contextmenu', (e) => {
-  console.log(e.target)
-  const mouseX = e.clientX
-  const mouseY = e.clientY
+const menu = ref(true)
+const menuTop = ref(200)
+const menuLeft = ref(700)
+// document.addEventListener('contextmenu', (e) => {
+//   console.log(e.target)
+//   const mouseX = e.clientX
+//   const mouseY = e.clientY
 
-  if (e.target.className === 'chat-pao') {
-    console.log(1111)
-    menu.value = true
+//   if (e.target.className === 'chat-pao') {
+//     console.log(1111)
+//     menu.value = true
 
-    const rightMenu = document.querySelector('.contextMenu')
-    console.log(rightMenu)
-    menuTop.value = mouseY
-    menuLeft.value = mouseX
+//     const rightMenu = document.querySelector('.contextMenu')
+//     console.log(rightMenu)
+//     menuTop.value = mouseY
+//     menuLeft.value = mouseX
 
-    // 右键全选文字
-    // console.log(document.querySelector('.contextMenu'))
-  }
-  menu.value = false
+//     // 右键全选文字
+//     // console.log(document.querySelector('.contextMenu'))
+//   }
+//   menu.value = false
 
-  // console.log(listRef.value)
-})
-window.addEventListener('click', function () {
-  menu.value = false
-})
+//   // console.log(listRef.value)
+// })
+// window.addEventListener('click', function () {
+//   menu.value = false
+// })
 </script>
 
 <template>
@@ -167,9 +167,10 @@ window.addEventListener('click', function () {
     </div>
   </el-scrollbar>
   <context-menu
-    v-if="menu"
+    v-show="menu"
     class="contextMenu"
     :style="{ top: menuTop + 'px', left: menuLeft + 'px' }"
+    msg="msg"
   ></context-menu>
 </template>
 <style lang="scss" scoped>

@@ -36,6 +36,10 @@ export const useChatStore = defineStore(
     const cleanChatMsg = () => {
       chatMsg.value = ''
     }
+    const cleanChat = () => {
+      chatMsg.value = ''
+      chatInfo.value = ''
+    }
     return {
       chatInfo,
       chatMsg,
@@ -43,7 +47,8 @@ export const useChatStore = defineStore(
       setChatMsg,
       addChatMsg,
       // updateTempMessage,
-      cleanChatMsg
+      cleanChatMsg,
+      cleanChat
     }
   },
   {

@@ -57,7 +57,11 @@ const logout = async () => {
     cancelButtonText: '取消',
     type: 'warning'
   })
-  // 清楚本地数据
+  // 清除本地数据
+  userStore.logoutAccount()
+  chatStore.cleanChat()
+  friendStore.cleanFriend()
+  groupStore.cleanGroup()
   router.push('/login')
 }
 </script>
@@ -155,6 +159,8 @@ const logout = async () => {
       .avatar {
         padding: 10px 5px;
         padding-bottom: 0;
+        width: 40px;
+        height: 40px;
       }
       img {
         width: 100%;

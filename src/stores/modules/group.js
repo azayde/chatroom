@@ -1,3 +1,4 @@
+import { getMonthDays } from 'element-plus/es/components/calendar/src/date-table'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
@@ -14,7 +15,11 @@ export const useGroupStore = defineStore(
     const setGroupMember = (value) => {
       groupMember.value = value
     }
-    return { groupInfo, groupMember, setGroupInfo, setGroupMember }
+    const cleanGroup = () => {
+      groupInfo.value = ''
+      groupMember.value = ''
+    }
+    return { groupInfo, groupMember, setGroupInfo, setGroupMember, cleanGroup }
   },
   {
     persist: true
