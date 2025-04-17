@@ -58,6 +58,12 @@ export const useUserStore = defineStore(
       accountToken.value = ''
       token.value = ''
     }
+
+    // 背景颜色
+    const color = ref('rgba(232, 242, 255, 1)')
+    const setColor = (value) => {
+      color.value = value
+    }
     return {
       token,
       remember,
@@ -73,7 +79,9 @@ export const useUserStore = defineStore(
       setUser,
       setUserInfo,
       setAccountInfo,
-      logoutAccount
+      logoutAccount,
+      color,
+      setColor
     }
   },
   {

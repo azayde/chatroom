@@ -64,6 +64,18 @@ const logout = async () => {
   groupStore.cleanGroup()
   router.push('/login')
 }
+
+// 设置背景色
+const color = ref(userStore.color)
+const body = document.querySelector('body')
+
+// localStorage.setItem('color', color.value)
+body.style.backgroundColor = color.value
+watch(color, (newColor) => {
+  body.style.backgroundColor = newColor
+  userStore.setColor(newColor)
+  // localStorage.setItem('color', newColor)
+})
 </script>
 
 <template>
@@ -129,6 +141,9 @@ const logout = async () => {
             </el-icon>
           </el-badge>
         </div>
+        <div class="li">
+          <el-color-picker v-model="color" show-alpha />
+        </div>
         <div class="li" @click="logout">
           <el-icon><SwitchButton /></el-icon>
         </div>
@@ -154,6 +169,7 @@ const logout = async () => {
       overflow: hidden;
       width: 50px;
       background-color: #60b0ff;
+      // background-color: #2e2e2e;
       display: flex;
       flex-direction: column;
       .avatar {

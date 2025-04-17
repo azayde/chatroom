@@ -1,5 +1,6 @@
 <!-- 群聊列表 -->
 <script setup>
+// import '@/assets/list.scss'
 import { ref, watch } from 'vue'
 import { Search, Plus } from '@element-plus/icons-vue'
 import {
@@ -209,6 +210,7 @@ const sendMsg = (obj) => {
     }
   }
   .el-main {
+    background-color: #e8e8e8;
     .list-item {
       cursor: pointer;
       height: 60px;

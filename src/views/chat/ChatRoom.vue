@@ -6,16 +6,18 @@ import {
   MoreFilled,
   ChatDotRound,
   Delete,
-  Star
+  Star,
+  Bell
 } from '@element-plus/icons-vue'
 import { ref, watch, onUnmounted } from 'vue'
-import { useUserStore, useChatStore } from '@/stores'
+import { useUserStore, useChatStore, useGroupStore } from '@/stores'
 // import { useRoute } from 'vue-router'
 import { publishFileSerivce, sendFileService } from '@/api/chat.js'
 import { sendMsg_socket } from '@/utils/websocket'
 
 const userStore = useUserStore()
 const chatStore = useChatStore()
+const groupStore = useGroupStore()
 // const route = useRoute()
 
 const drawer = ref(false)
@@ -245,7 +247,11 @@ onUnmounted(() => {
             activeChatInfo.relation_type === 'friend'
               ? activeChatInfo.nick_name || activeChatInfo.friend_info.name
               : activeChatInfo.group_info.name
-          }}{{ activeChatInfo.relation_type === 'group' ? '（4）' : '' }}
+          }}{{
+            activeChatInfo.relation_type === 'group'
+              ? groupStore.groupMember
+              : ''
+          }}
         </h1>
         <div class="more" @click="drawer = true">
           <el-icon><MoreFilled /></el-icon>
@@ -253,7 +259,10 @@ onUnmounted(() => {
       </div>
       <!-- 有置顶或有pin时展示 -->
       <div class="bottom" v-if="true">
-        <el-button text class="is_top">置顶</el-button>
+        <div class="is_top">
+          <el-icon><Bell /></el-icon>
+          置顶消息一二三四五六七八
+        </div>
         <el-button text class="is_pin">
           <el-icon><Star /></el-icon>
           Pin
@@ -396,6 +405,22 @@ onUnmounted(() => {
     }
     .bottom {
       display: flex;
+      .is_top {
+        color: #9ea0a3;
+        font-size: 14px;
+        text-align: center;
+        height: 25px;
+        line-height: 25px;
+        width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        .el-icon {
+          font-size: 16px;
+          color: #ffc202;
+          // background-color: #ffc202;
+        }
+      }
     }
     h1 {
       margin: 0;

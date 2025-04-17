@@ -269,6 +269,8 @@ const handleCreateApplication = async () => {
     }
   }
   .el-main {
+    // background-color: #f0f0f0;
+    background-color: #e8e8e8;
     .list-item {
       cursor: pointer;
       height: 60px;
