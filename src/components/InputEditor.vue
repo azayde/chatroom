@@ -3,7 +3,6 @@ import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 import { reactive, ref } from 'vue'
 
-// 为什么 TODO ???? ？？？ 富文本样式
 const data = reactive({
   content: '',
   editorOption: {
