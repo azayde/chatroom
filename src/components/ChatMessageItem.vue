@@ -4,6 +4,7 @@ import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useUserStore, useChatStore } from '@/stores'
 import { getChatListByLastTime } from '@/api/chat.js'
 import { onMessage, offMessage, setMessageCallback } from '@/utils/websocket'
+import { transform } from '@/utils/emoji'
 
 const userStore = useUserStore()
 const chatStore = useChatStore()
@@ -93,33 +94,24 @@ watch(
   { deep: true, immediate: true }
 )
 
-const menu = ref(true)
+const selectMessage = ref(null)
+const menu = ref(false)
 const menuTop = ref(200)
 const menuLeft = ref(700)
-// document.addEventListener('contextmenu', (e) => {
-//   console.log(e.target)
-//   const mouseX = e.clientX
-//   const mouseY = e.clientY
 
-//   if (e.target.className === 'chat-pao') {
-//     console.log(1111)
-//     menu.value = true
-
-//     const rightMenu = document.querySelector('.contextMenu')
-//     console.log(rightMenu)
-//     menuTop.value = mouseY
-//     menuLeft.value = mouseX
-
-//     // 右键全选文字
-//     // console.log(document.querySelector('.contextMenu'))
-//   }
-//   menu.value = false
-
-//   // console.log(listRef.value)
-// })
-// window.addEventListener('click', function () {
-//   menu.value = false
-// })
+const handleRightClick = (e, item) => {
+  console.log(e.target)
+  console.log(item)
+  const mouseX = e.clientX
+  const mouseY = e.clientY
+  menu.value = true
+  menuTop.value = mouseY
+  menuLeft.value = mouseX
+  selectMessage.value = item
+}
+window.addEventListener('click', function () {
+  menu.value = false
+})
 </script>
 
 <template>
@@ -146,11 +138,15 @@ const menuLeft = ref(700)
             "
           ></el-avatar>
         </div>
-        <div class="chat-pao" v-if="item.msg_type === 'text'">
-          {{ item.msg_content }}
-        </div>
+        <div
+          class="chat-pao"
+          v-if="item.msg_type === 'text'"
+          @contextmenu="handleRightClick($event, item)"
+          v-html="transform(item.msg_content)"
+        ></div>
         <div class="picture" v-else-if="item.msg_type === 'file'">
           <img class="img" :src="item.msg_content" alt="" />
+          <!-- <audio :src="item.msg_content"></audio> -->
         </div>
         <!-- <div class="file">
           <el-link href="https://element-plus.org" :underline="false">
@@ -170,7 +166,7 @@ const menuLeft = ref(700)
     v-show="menu"
     class="contextMenu"
     :style="{ top: menuTop + 'px', left: menuLeft + 'px' }"
-    msg="msg"
+    :msg="selectMessage"
   ></context-menu>
 </template>
 <style lang="scss" scoped>

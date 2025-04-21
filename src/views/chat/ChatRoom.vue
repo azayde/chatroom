@@ -11,9 +11,14 @@ import {
 } from '@element-plus/icons-vue'
 import { ref, watch, onUnmounted } from 'vue'
 import { useUserStore, useChatStore, useGroupStore } from '@/stores'
-// import { useRoute } from 'vue-router'
-import { publishFileSerivce, sendFileService } from '@/api/chat.js'
+import {
+  // publishFileSerivce,
+  sendFileService,
+  getTopMsgService,
+  getPinMsgService
+} from '@/api/chat.js'
 import { sendMsg_socket } from '@/utils/websocket'
+import { revertImgToText } from '@/utils/emoji'
 
 const userStore = useUserStore()
 const chatStore = useChatStore()
@@ -25,7 +30,18 @@ const drawer = ref(false)
 const props = defineProps({
   chatInfo: Object
 })
-// console.log(props.chatInfo)
+
+//获取当前置顶消息
+const getPinMsg = async () => {
+  const res = await getPinMsgService(chatStore.chatInfo.relation_id)
+  console.log(res)
+}
+getPinMsg()
+const getTopMsg = async () => {
+  const res = await getTopMsgService(chatStore.chatInfo.relation_id)
+  console.log(res)
+}
+getTopMsg()
 // 当前聊天相关信息
 const activeChatInfo = ref(props.chatInfo)
 activeChatInfo.value = props.chatInfo ? props.chatInfo : chatStore.chatInfo
@@ -35,6 +51,20 @@ const chatDialog = ref()
 
 // 发送图片或文件
 const fileDialog = ref(false)
+
+// 表情
+const emoji = ref()
+const emojiDis = ref(false)
+const emoBoxPos = ref({ x: 0, y: 0 })
+const handleEmoji = () => {
+  emojiDis.value = !emojiDis.value
+  const val = emoji.value.getBoundingClientRect()
+  emoBoxPos.value.x = val.x
+  emoBoxPos.value.y = val.y
+}
+const getEmoji = (val) => {
+  inputEditorRef.value.emojiHandle(val)
+}
 
 // 发送消息
 const inputEditorRef = ref(null)
@@ -75,8 +105,10 @@ const sendMsg = () => {
   isSending.value = true
   try {
     // 获取输入框中的内容
-    const content = inputEditorRef.value.getContent()
+    const content = revertImgToText(inputEditorRef.value.getContent())
     console.log(content)
+    // const transformContent =
+    // console.log(transformContent)
 
     // 区分纯文本or图片
     // 获取纯文本
@@ -92,7 +124,6 @@ const sendMsg = () => {
     const base64Message = btoa(String.fromCharCode(...byteArray))
 
     // 直接复制粘贴进来的图片类型
-
     // DOM解析器
     const parser = new DOMParser()
     console.log(parser)
@@ -122,7 +153,9 @@ const sendMsg = () => {
     //   ElMessage.warning('发送内容不能为空')
     //   return
     // }
+
     // 发送消息（纯文本）
+
     const msg = ref({
       relation_id: props.chatInfo.relation_id,
       msg_content: base64Message
@@ -249,7 +282,7 @@ onUnmounted(() => {
               : activeChatInfo.group_info.name
           }}{{
             activeChatInfo.relation_type === 'group'
-              ? groupStore.groupMember
+              ? `(${groupStore.groupMember})`
               : ''
           }}
         </h1>
@@ -280,7 +313,7 @@ onUnmounted(() => {
       <div class="Ibox">
         <div class="fun">
           <!-- emoji表情 -->
-          <el-icon>
+          <el-icon @click="handleEmoji">
             <img ref="emoji" src="@/assets/smile.svg" alt="" />
           </el-icon>
           <!-- 上传图片 -->
@@ -321,6 +354,11 @@ onUnmounted(() => {
         </div>
       </div>
     </el-footer>
+    <emoji-content
+      v-show="emojiDis"
+      :pos="emoBoxPos"
+      @getEmoji="getEmoji"
+    ></emoji-content>
     <!-- 右上角 三点 -- 聊天对象的详细信息 -->
     <!-- TODO  -->
     <el-drawer v-model="drawer" :with-header="false">

@@ -118,12 +118,14 @@ const getChatList = async () => {
     return 0
   })
   console.log(chatList.value)
-  chatList.value.forEach((item) => {
-    const time = new Date(item.create_at)
-    console.log(time)
-    console.log(time.getHours())
-    console.log(time.getMinutes())
-  })
+  // chatList.value.forEach((item) => {
+  //   // const time = new Date(item.create_at)
+  //   const time = formatTime(item.creat_at)
+
+  //   console.log(time)
+  //   // console.log(time.getHours())
+  //   // console.log(time.getMinutes())
+  // })
   // pinOrderMap.forEach((value, key) => {
   //   console.log(`Key: ${key}, Value: ${value}`)
   // })
@@ -131,6 +133,14 @@ const getChatList = async () => {
 }
 // 渲染列表
 getChatList()
+
+// const formatTime = (timestamp) => {
+//   if (!timestamp) return ''
+//   const date = new Date(timestamp)
+//   const hours = String(date.getHours()).padStart(2, '0')
+//   const minutes = String(date.getMinutes()).padStart(2, '0')
+//   return `${hours}:${minutes}`
+// }
 
 // if (!route.path.split('/')[2]) {
 //   router.push('/chat/chatroom')

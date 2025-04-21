@@ -42,3 +42,27 @@ export const getChatListByLastTime = (params) => {
 
 // 获取所有关系指定时间戳之后的信息
 // export const getOfferChatListBy
+
+// 更改消息pin状态
+export const updatePinMsg = (data) => {
+  return request.put('/message/update/pin', data)
+}
+// 更改消息置顶状态
+export const updateTopMsg = (data) => {
+  return request.put('/message/update/top', data)
+}
+
+// 撤回消息
+export const revokeMsgService = (id) => {
+  return request.put('/message/update/revoke', id)
+}
+
+// 获取指定关系的置顶消息（一条）
+export const getTopMsgService = (id) => {
+  return request.get('/message/info/top', { params: { relation_id: id } })
+}
+
+// 获取指定关系中的pin消息
+export const getPinMsgService = (id) => {
+  return request.get('/message/info/top', { params: { relation_id: id } })
+}

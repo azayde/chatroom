@@ -83,12 +83,13 @@ const getGroupMember = async () => {
   )
   groupMember.value = res.data.data.List
   totalMember.value = res.data.data.List.length
+  // groupStore.setGroupMember(totalMember.value)
   console.log(res)
 }
 // 存储user-card的显隐状态
 //
 
-// gen'ju
+//
 const activeMemberId = ref(null)
 // const popverStates = ref({})
 

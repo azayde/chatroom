@@ -106,4 +106,29 @@ const emoTextList = [
   '右太极'
 ]
 
-console.log(emoTextList)
+// 将匹配结果替换为表情图片
+let textToImg = (emoText) => {
+  let word = emoText.replace(/\#|\;/gi, '')
+  let idx = emoTextList.indexOf(word)
+  if (idx === -1) {
+    return emoText
+  }
+  let url = `/public/emoji/${idx}.gif`
+  return `<img src="${url}" style="vertical-align: bottom;">`
+}
+
+const transform = (content) => {
+  // return content.replace(/\#[\u4E00-\u9FA5]{1,3}\;/gi, textToImg)
+  return content.replace(/#([\u4E00-\u9FA5]{1,3})\;/gi, textToImg)
+}
+const revertImgToText = (content) => {
+  return content.replace(
+    /<img[^>]+src="\/public\/emoji\/(\d+)\.gif"[^>]*>/gi,
+    (match, idx) => {
+      let word = emoTextList[idx]
+      return `#${word};`
+    }
+  )
+}
+
+export { emoTextList, transform, textToImg, revertImgToText }

@@ -10,6 +10,12 @@ export const useChatStore = defineStore(
     const setChatInfo = (value) => {
       chatInfo.value = value
     }
+    // // 群成员总人数
+    // const groupMember = ref()
+    // const setGroupMember = (value) => {
+    //   groupMember.value = value
+    // }
+
     // 当前聊天对象的聊天记录
     const chatMsg = ref()
     // 设置消息列表
@@ -26,10 +32,14 @@ export const useChatStore = defineStore(
     const cleanChat = () => {
       chatMsg.value = ''
       chatInfo.value = ''
+      // groupMember.value = ''
     }
+
     return {
       chatInfo,
       chatMsg,
+      // groupMember,
+      // setGroupMember,
       setChatInfo,
       setChatMsg,
       addChatMsg,
