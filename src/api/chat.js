@@ -58,11 +58,11 @@ export const revokeMsgService = (id) => {
 }
 
 // 获取指定关系的置顶消息（一条）
-export const getTopMsgService = (id) => {
-  return request.get('/message/info/top', { params: { relation_id: id } })
+export const getTopMsgService = (params) => {
+  return request.get('/message/info/top', { params })
 }
 
 // 获取指定关系中的pin消息
-export const getPinMsgService = (id) => {
-  return request.get('/message/info/top', { params: { relation_id: id } })
+export const getPinMsgService = (params) => {
+  return request.get('/message/list/pin', { params })
 }

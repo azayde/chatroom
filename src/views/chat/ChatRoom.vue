@@ -9,7 +9,7 @@ import {
   Star,
   Bell
 } from '@element-plus/icons-vue'
-import { ref, watch, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useUserStore, useChatStore, useGroupStore } from '@/stores'
 import {
   // publishFileSerivce,
@@ -31,17 +31,27 @@ const props = defineProps({
   chatInfo: Object
 })
 
-//获取当前置顶消息
+const pinMsg = ref()
 const getPinMsg = async () => {
-  const res = await getPinMsgService(chatStore.chatInfo.relation_id)
-  console.log(res)
+  const res = await getPinMsgService({
+    relation_id: chatStore.chatInfo.relation_id,
+    page: 2,
+    pageSize: 100
+  })
+  console.log(res.data)
+  pinMsg.value = res.data.data.msg_info
 }
-getPinMsg()
+//获取当前置顶消息
+const topMsg = ref()
 const getTopMsg = async () => {
-  const res = await getTopMsgService(chatStore.chatInfo.relation_id)
-  console.log(res)
+  const res = await getTopMsgService({
+    relation_id: chatStore.chatInfo.relation_id,
+    page: 2,
+    pageSize: 100
+  })
+  console.log(res.data)
+  topMsg.value = res.data.data.msg_info
 }
-getTopMsg()
 // 当前聊天相关信息
 const activeChatInfo = ref(props.chatInfo)
 activeChatInfo.value = props.chatInfo ? props.chatInfo : chatStore.chatInfo
@@ -266,6 +276,15 @@ watch(
     activeChatInfo.value = newVal
   }
 )
+onMounted(() => {
+  // console.log(props.chatInfo)
+  // scrollToBottom(true)
+  getTopMsg()
+  getPinMsg()
+  // 启动消息监听
+  // onMessage()
+  // console.log(props.chatInfo)
+})
 onUnmounted(() => {
   cleanup()
 })
@@ -291,14 +310,14 @@ onUnmounted(() => {
         </div>
       </div>
       <!-- 有置顶或有pin时展示 -->
-      <div class="bottom" v-if="true">
-        <div class="is_top">
+      <div class="bottom" v-if="pinMsg || topMsg">
+        <div class="is_top" v-if="topMsg">
           <el-icon><Bell /></el-icon>
-          置顶消息一二三四五六七八
+          {{ topMsg.msg_content }}
         </div>
-        <el-button text class="is_pin">
+        <el-button text class="is_pin" v-if="pinMsg">
           <el-icon><Star /></el-icon>
-          Pin
+          {{ pinMsg.msg_content }}
         </el-button>
       </div>
     </el-header>

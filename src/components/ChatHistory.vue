@@ -24,16 +24,17 @@ const activeName = ref('')
 // 日期
 const value1 = ref('')
 
+// const chatMsg = ref()
 // const last_time = new Date('2026-04-01T00:00:00').getTime() / 1000
 // const getChatList = async () => {
 //   const res = await getChatListByLastTime({
-//     relation_id: props.chatInfo.relation_id,
+//     relation_id: chatStore.chatInfo.relation_id,
 //     last_time: last_time,
 //     page: 1,
 //     page_size: 1000
 //   })
-//   // chatMsg.value = res.data.data.list.filter((item) => item !== null)
-//   // chatStore.setChatMsg(chatMsg.value)
+//   chatMsg.value = res.data.data.list.filter((item) => item !== null)
+//   chatStore.setChatMsg(chatMsg.value)
 
 //   // await nextTick() // 等待 DOM 更新
 //   // scrollToBottom(true) // 确保数据渲染后滚动

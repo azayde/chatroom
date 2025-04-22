@@ -144,7 +144,11 @@ window.addEventListener('click', function () {
           @contextmenu="handleRightClick($event, item)"
           v-html="transform(item.msg_content)"
         ></div>
-        <div class="picture" v-else-if="item.msg_type === 'file'">
+        <div
+          class="picture"
+          v-else-if="item.msg_type === 'file'"
+          @contextmenu="handleRightClick($event, item)"
+        >
           <img class="img" :src="item.msg_content" alt="" />
           <!-- <audio :src="item.msg_content"></audio> -->
         </div>
