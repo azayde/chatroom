@@ -14,16 +14,17 @@ const friendStore = useFriendStore()
 const router = useRouter()
 
 const props = defineProps({
-  userInfo: Object
+  userInfo: Object,
+  isFriend: Boolean
 })
 // switch开关 （三个）
-const isPin = ref(false)
-const isShow = ref(false)
-const isNotDisturb = ref(false)
+const isPin = ref(props.userInfo.is_pin || false)
+const isShow = ref(props.userInfo.is_show || false)
+const isNotDisturb = ref(props.userInfo.is_not_disturb || false)
 const dialogFormVisible = ref(false)
 
 // 判断是否是好友
-const isFriend = ref(true)
+// const isFriend = ref(true)
 // 更多（右上角三点）
 const morePopver = ref(null)
 const handleSetNote = () => {
@@ -39,7 +40,7 @@ const sendMsg = () => {
   chatStore.setChatInfo(props.userInfo)
 }
 
-console.log(props.userInfo)
+// console.log(props.userInfo)
 
 const activeFiendInfo = ref(props.userInfo)
 // console.log(activeFiendInfo.value)
@@ -59,8 +60,8 @@ watch(
 
 const handleSwitch = async (msg) => {
   const relation_id = ref(props.userInfo.relation_id)
-  console.log(relation_id.value)
-  console.log(msg)
+  // console.log(relation_id.value)
+  // console.log(msg)
   if (msg === 'isNotDisturb') {
     // await updateDisturbService({
     //   relation_id: relation_id.value,
@@ -116,7 +117,7 @@ const updateNickName = async () => {
         <el-avatar
           size="large"
           shape="square"
-          :src="activeFiendInfo.friend_info.avatar"
+          :src="activeFiendInfo.friend_info?.avatar || activeFiendInfo.avatar"
         ></el-avatar>
       </div>
       <div class="right">
@@ -127,90 +128,66 @@ const updateNickName = async () => {
           }}</span>
         </div>
         <div class="span">
-          昵称：<span>{{ activeFiendInfo.friend_info.name }}</span>
+          昵称：<span>{{
+            activeFiendInfo.friend_info?.name || activeFiendInfo.name
+          }}</span>
         </div>
         <div class="span">
-          性别：<span>{{ activeFiendInfo.friend_info.gender }}</span>
+          性别：<span>{{
+            activeFiendInfo.friend_info?.gender || activeFiendInfo.gender
+          }}</span>
         </div>
         <div class="span">
-          账号：<span>{{ activeFiendInfo.friend_info.id }}</span>
+          账号：<span>{{
+            activeFiendInfo.friend_info?.account_id ||
+            activeFiendInfo.account_id
+          }}</span>
         </div>
         <div class="span">
-          个性签名：<span>{{ activeFiendInfo.friend_info.signature }}</span>
+          个性签名：<span>{{
+            activeFiendInfo.friend_info?.signature || activeFiendInfo.signature
+          }}</span>
         </div>
       </div>
 
       <!-- 更多 -->
       <el-popover ref="morePopver" placement="left" trigger="click">
-        <template #reference>
+        <template #reference v-if="isFriend === true">
           <el-button :icon="MoreFilled" class="more"></el-button>
         </template>
         <div class="more-content">
           <div class="note" style="cursor: pointer" @click.stop="handleSetNote">
             设置备注
           </div>
-          <hr
-            style="
-              margin: 2px 0;
-              border: none;
-              height: 1px;
-              background-color: #ececec;
-            "
-          />
-          <div
-            class="switch"
-            style="display: flex; justify-content: space-between"
-          >
+          <hr class="hr" />
+          <div class="switch">
             <span>消息免打扰</span>
             <el-switch
               v-model="isNotDisturb"
               size="small"
-              style="--el-switch-on-color: #13ce66"
+              class="elSwitch"
             ></el-switch>
           </div>
-          <hr
-            style="
-              margin: 2px 0;
-              border: none;
-              height: 1px;
-              background-color: #ececec;
-            "
-          />
-          <div
-            class="switch"
-            style="display: flex; justify-content: space-between"
-          >
+          <hr class="hr" />
+          <div class="switch">
             <span>置顶聊天</span>
             <el-switch
               v-model="isPin"
               size="small"
-              style="--el-switch-on-color: #13ce66"
+              class="elSwitch"
             ></el-switch>
           </div>
-          <hr
-            style="
-              margin: 2px 0;
-              border: none;
-              height: 1px;
-              background-color: #ececec;
-            "
-          />
-          <div
-            class="switch"
-            style="display: flex; justify-content: space-between"
-          >
+          <hr class="hr" />
+          <div class="switch">
             <span>显示在首页</span>
             <el-switch
               v-model="isShow"
               size="small"
-              style="--el-switch-on-color: #13ce66"
+              class="elSwitch"
             ></el-switch>
           </div>
         </div>
       </el-popover>
-      <!-- <div class="more">
-     <el-icon><MoreFilled /></el-icon>
-    </div> -->
     </div>
     <div class="btn">
       <el-button
@@ -327,10 +304,25 @@ const updateNickName = async () => {
 //     background-color: #bfa;
 //   }
 //   .split {
-//     margin: 2px 0;
-//     border: none;
-//     height: 1px;
-//     background-color: #ececec;
+
 //   }
 // }
+</style>
+
+<style lang="scss">
+.more-content {
+  .hr {
+    margin: 2px 0;
+    border: none;
+    height: 1px;
+    background-color: #ececec;
+  }
+  .switch {
+    display: flex;
+    justify-content: space-between;
+    .elSwitch {
+      --el-switch-on-color: #13ce66;
+    }
+  }
+}
 </style>

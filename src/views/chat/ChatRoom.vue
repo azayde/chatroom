@@ -9,16 +9,18 @@ import {
   Star,
   Bell
 } from '@element-plus/icons-vue'
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useUserStore, useChatStore, useGroupStore } from '@/stores'
 import {
   // publishFileSerivce,
   sendFileService,
   getTopMsgService,
-  getPinMsgService
+  getPinMsgService,
+  getChatListByLastTime
 } from '@/api/chat.js'
 import { sendMsg_socket } from '@/utils/websocket'
 import { revertImgToText } from '@/utils/emoji'
+import { onMessage, offMessage, setMessageCallback } from '@/utils/websocket'
 
 const userStore = useUserStore()
 const chatStore = useChatStore()
@@ -28,29 +30,116 @@ const groupStore = useGroupStore()
 const drawer = ref(false)
 // 父传子
 const props = defineProps({
-  chatInfo: Object
+  chatInfo: Object,
+  groupMember: Object
 })
 
+// 聊天信息
+const chatMsg = ref([])
+const scrollbarRef = ref(null)
+const scrollToBottom = (force = false) => {
+  console.log('滑动')
+  nextTick(() => {
+    const scrollContainer = scrollbarRef.value?.$el.querySelector(
+      '.el-scrollbar__wrap'
+    )
+    if (!scrollContainer) return
+
+    // 计算是否需要滚动（距离底部50px内视为已到底部）
+    if (force) {
+      scrollContainer.scrollTop = scrollContainer.scrollHeight
+      // scrollContainer.scrollTo({
+      //   top: scrollContainer.scrollHeight,
+      //   behavior: 'smooth'
+      // })
+    }
+
+    const shouldScroll =
+      scrollContainer.scrollHeight -
+        scrollContainer.scrollTop -
+        scrollContainer.clientHeight <
+      50
+
+    if (shouldScroll) {
+      scrollContainer.scrollTop = scrollContainer.scrollHeight
+      // 备用方案：平滑滚动
+      // scrollContainer.scrollTo({
+      //   top: scrollContainer.scrollHeight,
+      //   behavior: 'smooth'
+      // })
+    }
+  })
+}
+// 根据account_id获取用户信息进行渲染
+const last_time = new Date('2026-04-01T00:00:00').getTime() / 1000
+// 获取聊天信息
+const getChatList = async () => {
+  const res = await getChatListByLastTime({
+    relation_id: props.chatInfo.relation_id,
+    last_time: last_time,
+    page: 1,
+    page_size: 200
+  })
+  // console.log(res)
+  chatMsg.value = res.data.data.list.filter((item) => item !== null)
+  chatStore.setChatMsg(chatMsg.value)
+
+  await nextTick() // 等待 DOM 更新
+  scrollToBottom(true) // 确保数据渲染后滚动
+}
+
+// 处理收到的新消息
+const handleNewMessage = (newMessage) => {
+  if (newMessage.relation_id === props.chatInfo.relation_id) {
+    chatStore.addChatMsg(newMessage)
+    scrollToBottom(true)
+  }
+  console.log(newMessage)
+}
+
+// 判断该条消息的头像
+const handleAvatar = (info) => {
+  // console.log(info)
+  // groupMember不为空
+  // console.log(props.groupMember)
+  if (props.groupMember) {
+    // console.log('群聊')
+    let member
+    for (let ele of props.groupMember) {
+      // console.log(ele)
+      if (ele.account_id === info.account_id) {
+        member = ele
+        break
+      }
+    }
+    return member ? member.avatar : ''
+  }
+  // 好友
+  return info.account_id === userStore.accountInfo.id
+    ? userStore.accountInfo.avatar
+    : chatStore.chatInfo.friend_info?.avatar
+}
+//获取当前pin消息
 const pinMsg = ref()
 const getPinMsg = async () => {
   const res = await getPinMsgService({
     relation_id: chatStore.chatInfo.relation_id,
-    page: 2,
+    page: 1,
     pageSize: 100
   })
   console.log(res.data)
-  pinMsg.value = res.data.data.msg_info
+  pinMsg.value = res.data.data.list
 }
 //获取当前置顶消息
 const topMsg = ref()
 const getTopMsg = async () => {
   const res = await getTopMsgService({
     relation_id: chatStore.chatInfo.relation_id,
-    page: 2,
+    page: 1,
     pageSize: 100
   })
   console.log(res.data)
-  topMsg.value = res.data.data.msg_info
+  topMsg.value = res.data.data?.msg_info || undefined
 }
 // 当前聊天相关信息
 const activeChatInfo = ref(props.chatInfo)
@@ -265,27 +354,48 @@ const sendFile = async () => {
 const cleanup = () => {
   chatStore.cleanChatMsg()
 }
+
+// 右键菜单
+const menu = ref(false)
+const menuTop = ref(0)
+const menuLeft = ref(0)
+const selectMessage = ref(null)
+const getContentMenu = (val) => {
+  console.log(val)
+  menu.value = true
+  menuTop.value = val.clientY
+  menuLeft.value = val.clientX
+  selectMessage.value = val.msg
+}
+window.addEventListener('click', function () {
+  menu.value = false
+})
 watch(
   () => props.chatInfo,
   (newVal) => {
-    console.log(newVal)
+    getTopMsg()
+    getPinMsg()
     // 切换时清除聊天记录
     cleanup()
     // 切换清除输入框？？TODO
     inputEditorRef.value.clearContent()
     activeChatInfo.value = newVal
+    getChatList()
+    scrollToBottom(true)
   }
 )
 onMounted(() => {
-  // console.log(props.chatInfo)
-  // scrollToBottom(true)
   getTopMsg()
   getPinMsg()
+  getChatList()
+  scrollToBottom(true)
+  setMessageCallback(handleNewMessage)
   // 启动消息监听
-  // onMessage()
-  // console.log(props.chatInfo)
+  onMessage()
 })
 onUnmounted(() => {
+  offMessage()
+  setMessageCallback(null)
   cleanup()
 })
 </script>
@@ -301,7 +411,7 @@ onUnmounted(() => {
               : activeChatInfo.group_info.name
           }}{{
             activeChatInfo.relation_type === 'group'
-              ? `(${groupStore.groupMember})`
+              ? `(${groupMember?.length})`
               : ''
           }}
         </h1>
@@ -317,16 +427,29 @@ onUnmounted(() => {
         </div>
         <el-button text class="is_pin" v-if="pinMsg">
           <el-icon><Star /></el-icon>
-          {{ pinMsg.msg_content }}
+          Pin
         </el-button>
       </div>
     </el-header>
     <el-main>
-      <!-- 聊天窗口  -->
-      <chat-message-item
-        :chatInfo="activeChatInfo"
-        :key="activeChatInfo.relation_id"
-      ></chat-message-item>
+      <el-scrollbar ref="scrollbarRef" class="chat-msg">
+        <div class="list">
+          <!-- 聊天窗口  -->
+          <chat-message-item
+            v-for="item in chatMsg"
+            :msgInfo="item"
+            :headImage="handleAvatar(item)"
+            :key="item.id"
+            @setContextMenu="getContentMenu"
+          ></chat-message-item>
+          <context-menu
+            v-show="menu"
+            class="contextMenu"
+            :style="{ top: menuTop + 'px', left: menuLeft + 'px' }"
+            :msg="selectMessage"
+          ></context-menu>
+        </div>
+      </el-scrollbar>
     </el-main>
     <el-footer>
       <div class="Ibox">
@@ -378,6 +501,7 @@ onUnmounted(() => {
       :pos="emoBoxPos"
       @getEmoji="getEmoji"
     ></emoji-content>
+
     <!-- 右上角 三点 -- 聊天对象的详细信息 -->
     <!-- TODO  -->
     <el-drawer v-model="drawer" :with-header="false">
@@ -390,6 +514,7 @@ onUnmounted(() => {
         :frinedInfo="activeChatInfo"
       ></friend-detail>
     </el-drawer>
+
     <!-- 聊天记录 -->
     <chat-history ref="chatDialog"></chat-history>
     <!-- 发送文件或图片 -->
@@ -463,12 +588,13 @@ onUnmounted(() => {
     .bottom {
       display: flex;
       .is_top {
+        cursor: pointer;
         color: #9ea0a3;
         font-size: 14px;
         text-align: center;
         height: 25px;
         line-height: 25px;
-        width: 150px;
+        width: 100px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -630,5 +756,8 @@ hr {
   border: none;
   height: 1px;
   background-color: #ececec;
+}
+.contextMenu {
+  position: fixed;
 }
 </style>

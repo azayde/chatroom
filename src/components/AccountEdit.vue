@@ -1,10 +1,8 @@
 <script setup>
 import { ref } from 'vue'
 import { updateAvatarService } from '@/api/user.js'
-// import { Plus } from '@element-plus/icons-vue'
 
 // 判断是否为修改账号
-// const currentIndex = ref(-1)
 const isEdit = ref(false)
 
 // 对话框是否显示
@@ -20,7 +18,6 @@ const accountInfo = {
 // 接口传参要form-data
 const imgUrl = ref('')
 const fd = new FormData()
-// fd.append('file', imgUrl)
 const onUploadFile = async (File) => {
   imgUrl.value = URL.createObjectURL(File.raw)
   fd.append('file', File.raw)
@@ -41,15 +38,10 @@ const formData = ref({ ...accountInfo })
 // 提交表单
 const onSubmit = () => {
   // console.log(formData.value)
-  // if (formData.value) {
-  //   console.log(11)
-  // }
   // 判断是否为空 正则 TODO:
   emit('submit', {
     ...formData.value
-    // index: currentIndex.value
   })
-  // console.log(formData.value)
   // 提交表单时关闭对话框
   accountEditForm.value = false
 }

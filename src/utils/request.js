@@ -6,7 +6,7 @@ const router = useRouter()
 // const baseURL = 'http://192.168.1.114:8000/api'
 // const baseURL = 'http://192.168.3.34:8000/api'
 // const baseURL = 'http://192.168.1.122:8000/api'
-const baseURL = 'http://192.168.0.196:8000/api'
+const baseURL = 'http://192.168.0.197:8000/api'
 
 const userStore = useUserStore()
 

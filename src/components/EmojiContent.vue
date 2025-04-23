@@ -1,5 +1,4 @@
 <script setup>
-import { ref } from 'vue'
 import { emoTextList, textToImg } from '@/utils/emoji'
 const props = defineProps({
   pos: Object

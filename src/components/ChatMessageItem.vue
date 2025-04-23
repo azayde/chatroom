@@ -1,182 +1,71 @@
 <!-- 聊天窗 -->
 <script setup>
-import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
-import { useUserStore, useChatStore } from '@/stores'
-import { getChatListByLastTime } from '@/api/chat.js'
-import { onMessage, offMessage, setMessageCallback } from '@/utils/websocket'
 import { transform } from '@/utils/emoji'
-
+import { useUserStore } from '@/stores'
 const userStore = useUserStore()
-const chatStore = useChatStore()
-
 const props = defineProps({
-  chatInfo: Object
+  msgInfo: Object,
+  headImage: String
 })
-
-// 聊天信息
-const chatMsg = ref([])
-const scrollbarRef = ref(null)
-const scrollToBottom = (force = false) => {
-  console.log('滑动')
-  nextTick(() => {
-    const scrollContainer = scrollbarRef.value?.$el.querySelector(
-      '.el-scrollbar__wrap'
-    )
-    if (!scrollContainer) return
-
-    // 计算是否需要滚动（距离底部50px内视为已到底部）
-    if (force) {
-      scrollContainer.scrollTop = scrollContainer.scrollHeight
-      // scrollContainer.scrollTo({
-      //   top: scrollContainer.scrollHeight,
-      //   behavior: 'smooth'
-      // })
-    }
-
-    const shouldScroll =
-      scrollContainer.scrollHeight -
-        scrollContainer.scrollTop -
-        scrollContainer.clientHeight <
-      50
-
-    if (shouldScroll) {
-      scrollContainer.scrollTop = scrollContainer.scrollHeight
-      // 备用方案：平滑滚动
-      // scrollContainer.scrollTo({
-      //   top: scrollContainer.scrollHeight,
-      //   behavior: 'smooth'
-      // })
-    }
-  })
-}
-// 根据account_id获取用户信息进行渲染
-const last_time = new Date('2026-04-01T00:00:00').getTime() / 1000
-const getChatList = async () => {
-  const res = await getChatListByLastTime({
-    relation_id: props.chatInfo.relation_id,
-    last_time: last_time,
-    page: 1,
-    page_size: 200
-  })
-  chatMsg.value = res.data.data.list.filter((item) => item !== null)
-  chatStore.setChatMsg(chatMsg.value)
-
-  await nextTick() // 等待 DOM 更新
-  scrollToBottom(true) // 确保数据渲染后滚动
-}
-
-const handleNewMessage = (newMessage) => {
-  if (newMessage.relation_id === props.chatInfo.relation_id) {
-    chatStore.addChatMsg(newMessage)
-    scrollToBottom(true)
+// 右键菜单
+const emit = defineEmits(['setContextMenu'])
+const handleRightClick = (e) => {
+  let obj = {
+    clientX: e.clientX,
+    clientY: e.clientY,
+    msg: props.msgInfo
   }
-  console.log(newMessage)
+  emit('setContextMenu', obj)
 }
-onMounted(() => {
-  console.log(props.chatInfo)
-  scrollToBottom(true)
-  setMessageCallback(handleNewMessage)
-  // 启动消息监听
-  onMessage()
-})
-onUnmounted(() => {
-  offMessage()
-  setMessageCallback(null)
-})
-watch(
-  () => props.chatInfo,
-  (newVal) => {
-    if (newVal?.relation_id) {
-      getChatList()
-      scrollToBottom(true)
-    }
-  },
-  { deep: true, immediate: true }
-)
-
-const selectMessage = ref(null)
-const menu = ref(false)
-const menuTop = ref(200)
-const menuLeft = ref(700)
-
-const handleRightClick = (e, item) => {
-  console.log(e.target)
-  console.log(item)
-  const mouseX = e.clientX
-  const mouseY = e.clientY
-  menu.value = true
-  menuTop.value = mouseY
-  menuLeft.value = mouseX
-  selectMessage.value = item
-}
-window.addEventListener('click', function () {
-  menu.value = false
-})
 </script>
 
 <template>
-  <el-scrollbar ref="scrollbarRef" class="chat-msg">
-    <div class="list">
-      <div
-        class="chat-item"
-        v-for="item in chatStore.chatMsg"
-        :key="item?.id || 0"
-        :class="{
-          left: item.account_id !== userStore.accountInfo.id,
-          right: item.account_id === userStore.accountInfo.id
-        }"
-      >
-        <div class="user-avatar">
-          <el-avatar
-            shape="square"
-            :src="
-              item.account_id === userStore.accountInfo.id
-                ? userStore.accountInfo.avatar
-                : chatInfo.relation_type === 'friend'
-                  ? chatInfo.friend_info.avatar
-                  : chatInfo.group_info.avatar
-            "
-          ></el-avatar>
-        </div>
-        <div
-          class="chat-pao"
-          v-if="item.msg_type === 'text'"
-          @contextmenu="handleRightClick($event, item)"
-          v-html="transform(item.msg_content)"
-        ></div>
-        <div
-          class="picture"
-          v-else-if="item.msg_type === 'file'"
-          @contextmenu="handleRightClick($event, item)"
-        >
-          <img class="img" :src="item.msg_content" alt="" />
-          <!-- <audio :src="item.msg_content"></audio> -->
-        </div>
-        <!-- <div class="file">
-          <el-link href="https://element-plus.org" :underline="false">
-            <div class="item">
-              <div class="right">
-                <span class="file_name">文件1</span>
-                <span class="file_size">1090024</span>
-              </div>
-              <i class="iconfont icon-pdf pdf"></i>
-            </div>
-          </el-link>
-        </div> -->
-      </div>
+  <!-- 新的 -->
+  <div class="chat-system" v-show="msgInfo.notify_type === 'system'">
+    {{ msgInfo.msg_content }}
+  </div>
+  <div
+    v-show="msgInfo.notify_type === 'common'"
+    class="chat-item"
+    :class="{
+      left: props.msgInfo.account_id !== userStore.accountInfo.id,
+      right: props.msgInfo.account_id === userStore.accountInfo.id
+    }"
+  >
+    <div class="user-avatar">
+      <el-avatar shape="square" :src="props.headImage"></el-avatar>
     </div>
-  </el-scrollbar>
-  <context-menu
-    v-show="menu"
-    class="contextMenu"
-    :style="{ top: menuTop + 'px', left: menuLeft + 'px' }"
-    :msg="selectMessage"
-  ></context-menu>
+    <div
+      class="chat-pao"
+      v-show="props.msgInfo.msg_type === 'text'"
+      @contextmenu="handleRightClick($event)"
+      v-html="transform(props.msgInfo.msg_content)"
+    ></div>
+    <div
+      class="picture"
+      v-show="props.msgInfo.msg_type === 'file'"
+      @contextmenu="handleRightClick($event)"
+    >
+      <img class="img" :src="props.msgInfo.msg_content" alt="" />
+    </div>
+    <!-- <div class="file">
+      <el-link href="https://element-plus.org" :underline="false">
+        <div class="item">
+          <div class="right">
+            <span class="file_name">文件1</span>
+            <span class="file_size">1090024</span>
+          </div>
+          <i class="iconfont icon-pdf pdf"></i>
+        </div>
+      </el-link>
+    </div> -->
+  </div>
 </template>
 <style lang="scss" scoped>
-.el-scrollbar {
-  width: 100%;
-  // overflow: hidden;
+.chat-system {
+  line-height: 50px;
+  text-align: center;
+  color: #b8b5b5;
 }
 .chat-item {
   display: flex;
@@ -302,10 +191,5 @@ window.addEventListener('click', function () {
   .picture {
     margin-left: 10px;
   }
-}
-.contextMenu {
-  position: absolute;
-  // top: 154px;
-  // left: 752px;
 }
 </style>

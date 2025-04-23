@@ -15,13 +15,15 @@ import {
   updateShowService,
   updateDisturbService,
   updatePinService
-} from '@/api/setting.js'
+} from '@/api/setting'
 import {
   quitGroupService,
   dissolveGroupService,
   getGroupMemberService,
   updateGroupInfoService
-} from '@/api/group.js'
+} from '@/api/group'
+import { getFriendListService } from '@/api/friend.js'
+import { getAccountInfoById } from '@/api/user.js'
 import { useUserStore, useChatStore, useGroupStore } from '@/stores'
 
 const userStore = useUserStore()
@@ -49,28 +51,32 @@ const groupMember = ref([
   {
     account_id: 12345,
     name: 'Alice Smith',
-    avatar: 'https://example.com/alice.jpg',
+    avatar:
+      'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg',
     nickname: 'Alice',
     is_leader: false
   },
   {
     account_id: 704513048576,
     name: 'Bob Johnson',
-    avatar: 'https://example.com/bob.png',
+    avatar:
+      'https://picx.zhimg.com/v2-52a6e836434d15d74a2121bbd6bed34d_720w.jpg?source=172ae18b',
     nickname: 'Bob',
     is_leader: true
   },
   {
     account_id: 24680,
     name: 'Charlie Brown',
-    avatar: 'https://example.com/charlie.gif',
+    avatar:
+      'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg',
     nickname: 'Chuck',
     is_leader: false
   },
   {
     account_id: 13579,
     name: 'Diana Miller',
-    avatar: 'https://example.com/diana.svg',
+    avatar:
+      'https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con',
     nickname: 'Di',
     is_leader: false
   }
@@ -87,15 +93,12 @@ const getGroupMember = async () => {
   console.log(res)
 }
 // 存储user-card的显隐状态
-//
-
-//
-const activeMemberId = ref(null)
+// const activeMemberId = ref(null)
 // const popverStates = ref({})
 
 // 当前群聊
 const activeGroup = ref(props.groupInfo)
-console.log(activeGroup.value)
+// console.log(activeGroup.value)
 activeGroup.value = props.groupInfo ? props.groupInfo : groupStore.groupInfo
 
 watch(
@@ -107,10 +110,56 @@ watch(
   { deep: true }
 )
 // 点击群成员获取当前的id（用于名片）
-const handleClickMember = (id) => {
-  activeMemberId.value = activeMemberId.value === id ? null : id
+// const handleClickMember = (id) => {
+//   activeMemberId.value = activeMemberId.value === id ? null : id
+// }
+// 获取好友列表，一用于拉取好友，二用于判读群聊中的成员是否是好友
+const friendList = ref([])
+// 获取好友列表
+const getFriendList = async () => {
+  const res = await getFriendListService()
+  // console.log(res.data.data)
+  // 根据id获取账号信息
+  for (let item of res.data.data.list) {
+    // console.log(item)
+    // console.log()
+    const res1 = await getAccountInfoById(item.friend_info.account_id)
+    // console.log(res1)
+    const info = {
+      ...res1.data.data.info,
+      signature: res1.data.data.signature
+    }
+    // console.log(info)
+    item.friend_info = info
+  }
+  friendList.value = res.data.data.list
+  console.log(friendList.value)
 }
+// getFriendList()
+// const getFriendList = async () => {
+//   const res = await getFriendListService()
+//   console.log(res.data.data)
+//   friendList.value = res.data.data.list
+// }
 
+const handleMember = (item) => {
+  for (let ele of friendList.value) {
+    // console.log(ele)
+    if (item.account_id === ele.friend_info.account_id) {
+      // console.log('好友', ele)
+      return ele
+    }
+  }
+  return item
+}
+const handleIs = (item) => {
+  for (let ele of friendList.value) {
+    if (item.account_id === ele.friend_info.account_id) {
+      return true
+    }
+  }
+  return false
+}
 // 修改昵称
 const isEdit = ref(false)
 const id = groupMember.value.findIndex(
@@ -137,7 +186,6 @@ const handleNickName = () => {
   // nick_name.value = groupList.value[id].friend_info.name
   nextTick(() => {
     inp.value.focus()
-    // inp.value.blur()
     inp.value.select()
   })
 }
@@ -151,22 +199,11 @@ const updateNickName = async () => {
     nick_name: nickName.value
   })
   console.log(res)
-  // isEdit.value = true
-
-  // nextTick(() => {
-  //   console.log(nick_name.value)
-  //   console.log(inp.value)
-  //   // nick_name.value.innerHTML = 'ii'
-  //   inp.value.focus()
-  //   inp.value.select()
-  // })
-  // 按回车会出现两次，因为 该函数被触发了两次  TODO:
   // if (nick_name.value) {
   //   ElMessage.success('修改备注成功')
   // }
 }
-// const abc = ref()
-// console.log(abc.value)
+
 // 聊天记录dialog
 const chatDialog = ref()
 
@@ -217,7 +254,6 @@ const onUploadFile = async (File) => {
 }
 const updateGroupInfo = async () => {
   groupInfoEdit.value = false
-  // 参数 对 or 错 ？？
   fd.append('relation_id', groupStore.groupInfo.group_info.relation_id)
   fd.append('name', group_name.value)
   fd.append('description', description.value)
@@ -354,6 +390,7 @@ const inviteFriend = () => {
 }
 onMounted(() => {
   getGroupMember()
+  getFriendList()
 })
 </script>
 
@@ -369,7 +406,13 @@ onMounted(() => {
         <hr />
         <div class="title">群成员</div>
         <div class="member">
-          <el-popover
+          <avatar-card
+            v-for="item in groupMember"
+            :key="item.account_id"
+            :member="handleMember(item)"
+            :isFriend="handleIs(item)"
+          ></avatar-card>
+          <!-- <el-popover
             placement="right"
             trigger="click"
             width="450px"
@@ -379,12 +422,10 @@ onMounted(() => {
             :key="item.account_id"
           >
             <template #reference>
-              <!-- 需修改 TODO -->
               <div
                 class="member-item"
                 @click="handleClickMember(item.account_id)"
               >
-                <!-- @click="userCardVisible = !userCardVisible" -->
                 <el-avatar
                   shape="square"
                   :src="item.avatar"
@@ -394,10 +435,9 @@ onMounted(() => {
               </div>
             </template>
             <div class="user-info">
-              <!-- <user-card style="padding: 10px;"  @close-dialog="userCardVisible = false"></user-card> -->
-              <!-- <user-card :userInfo="item" style="padding: 10px"></user-card> -->
+              <user-card :userInfo="item" style="padding: 10px"></user-card>
             </div>
-          </el-popover>
+          </el-popover> -->
 
           <div class="add" @click="inviteFriend">
             <el-icon><Plus /></el-icon>
@@ -490,9 +530,7 @@ onMounted(() => {
           </div>
         </div>
         <hr />
-
         <!-- <div class="title">清空聊天记录</div> -->
-
         <!-- 不是群主 -->
         <div class="title exit" @click="handleQuit" v-if="true">退出群聊</div>
         <!-- 群主 -->
@@ -508,7 +546,6 @@ onMounted(() => {
   </el-container>
 
   <!-- 对话框（设置群聊信息） -->
-  <!-- <group-edit ref="groupEdit" @submit="handleSubmit"></group-edit> -->
   <el-dialog
     v-model="groupInfoEdit"
     title="设置群聊信息"
@@ -540,7 +577,10 @@ onMounted(() => {
   </el-dialog>
 
   <!-- 添加群成员 -->
-  <change-group-member ref="invite"></change-group-member>
+  <change-group-member
+    ref="invite"
+    :friendList="friendList"
+  ></change-group-member>
 
   <!-- 聊天记录 -->
   <chat-history ref="chatDialog"></chat-history>

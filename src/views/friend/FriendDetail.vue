@@ -12,26 +12,21 @@ import { useChatStore } from '@/stores'
 const chatStore = useChatStore()
 // const router = useRouter()
 
-// switch开关 （三个）
-// pin 和 置顶 ？？
-const isPin = ref(chatStore.chatInfo.is_pin)
-const isShow = ref(chatStore.chatInfo.is_show)
-const isNotDisturb = ref(chatStore.chatInfo.is_not_disturb)
-
-// 点击头像出现名片(点击头像名片消失)  --- 改 TODO:
-// const userCardVisible = ref(false)
-
-// 添加群成员
-const bools = ref(false)
-
-//
-const activeMemberId = ref(null)
-// const popverStates = ref({})
-
 // 详情
 const props = defineProps({
   frinedInfo: Object
 })
+console.log(props.frinedInfo)
+// switch开关 （三个）
+const isPin = ref(chatStore.chatInfo.is_pin || false)
+const isShow = ref(chatStore.chatInfo.is_show || false)
+const isNotDisturb = ref(chatStore.chatInfo.is_not_disturb || false)
+
+// // 添加群成员
+// const bools = ref(false)
+
+const activeMemberId = ref(null)
+// const popverStates = ref({})
 
 // 点击群成员获取当前的id（用于名片）
 const handleClickMember = (id) => {
@@ -86,41 +81,12 @@ watch(isShow, () => handleSwitch('isShow'))
     <el-main>
       <el-scrollbar>
         <div class="member">
-          <el-popover
-            placement="right"
-            trigger="click"
-            width="450px"
-            :visible="activeMemberId === frinedInfo.friend_info.account_id"
-            manual
-          >
-            <template #reference>
-              <!-- 需修改 TODO -->
-              <div
-                class="member-item"
-                @click="handleClickMember(frinedInfo.friend_info.account_id)"
-              >
-                <!-- @click="userCardVisible = !userCardVisible" -->
-                <el-avatar
-                  shape="square"
-                  :src="frinedInfo.friend_info.avatar"
-                  class="member-avatar"
-                />
-                <div class="member-name">{{ frinedInfo.friend_info.name }}</div>
-              </div>
-            </template>
-            <div class="user-info">
-              <!-- <user-card style="padding: 10px;"  @close-dialog="userCardVisible = false"></user-card> -->
-              <user-card
-                :userInfo="frinedInfo"
-                style="padding: 10px"
-              ></user-card>
-            </div>
-          </el-popover>
+          <avatar-card :member="frinedInfo" :isFriend="true"></avatar-card>
 
-          <div class="add" @click="bools = true">
+          <!-- <div class="add" @click="bools = true">
             <el-icon><Plus /></el-icon>
             <div class="member-name">添加</div>
-          </div>
+          </div> -->
         </div>
         <hr />
         <div class="title" @click="chatDialog.open()">
@@ -139,7 +105,7 @@ watch(isShow, () => handleSwitch('isShow'))
             <el-switch
               v-model="isNotDisturb"
               size="small"
-              style="--el-switch-on-color: #13ce66"
+              class="elSwitch"
             ></el-switch>
           </div>
         </div>
@@ -150,7 +116,7 @@ watch(isShow, () => handleSwitch('isShow'))
             <el-switch
               v-model="isPin"
               size="small"
-              style="--el-switch-on-color: #13ce66"
+              class="elSwitch"
             ></el-switch>
           </div>
         </div>
@@ -161,7 +127,7 @@ watch(isShow, () => handleSwitch('isShow'))
             <el-switch
               v-model="isShow"
               size="small"
-              style="--el-switch-on-color: #13ce66"
+              class="elSwitch"
             ></el-switch>
           </div>
         </div>
@@ -177,15 +143,15 @@ watch(isShow, () => handleSwitch('isShow'))
   </el-container>
 
   <!-- 添加群成员 -->
-  <el-dialog v-model="bools" title="邀请好友">
-    <!-- <change-group-member></change-group-member> -->
+  <!-- <el-dialog v-model="bools" title="邀请好友">
+    <change-group-member></change-group-member>
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="bools = false">取消</el-button>
         <el-button type="primary" @click="bools = false"> 确定 </el-button>
       </div>
     </template>
-  </el-dialog>
+  </el-dialog> -->
 
   <!-- 聊天记录 -->
   <chat-history ref="chatDialog"></chat-history>
@@ -326,6 +292,13 @@ watch(isShow, () => handleSwitch('isShow'))
         text-align: center;
       }
     }
+  }
+}
+</style>
+<style lang="scss">
+.switch {
+  .elSwitch {
+    --el-switch-on-color: #13ce66;
   }
 }
 </style>

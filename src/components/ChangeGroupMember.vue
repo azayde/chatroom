@@ -2,11 +2,18 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { Search } from '@element-plus/icons-vue'
-// import FriendsList from '@/views/friend/FriendsList.vue'
-import { getFriendListService } from '@/api/friend.js'
+// import { getFriendListService } from '@/api/friend.js'
 import { inviteMemberService } from '@/api/group.js'
 import { useGroupStore } from '@/stores'
 const groupStore = useGroupStore()
+const props = defineProps({
+  friendList: Array
+})
+console.log(props.friendList)
+props.friendList.forEach((item) => {
+  console.log('account_id:', item.friend_info.account_id)
+  // 如果发现重复，需联系后端修复数据
+})
 // 搜索框
 const input = ref('')
 // 搜索列表切换
@@ -35,78 +42,13 @@ watch(input, () => {
 })
 const checked = ref([])
 const inviteFriend = ref(false)
-const friendList = ref([
-  {
-    relation_id: 1,
-    relation_type: 'friend',
-    is_show: true,
-    pin_time: '2025-03-06T10:00:00',
-    last_show: '2025-03-06T09:55:00',
-    friend_info: {
-      account_id: 101,
-      name: 'Alice Smith',
-      gender: '女',
-      avatar:
-        'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
-    },
-    is_not_disturb: false,
-    is_pin: true
-  },
-  {
-    relation_id: 456,
-    relation_type: 'friend',
-    is_show: true,
-    pin_time: '2025-03-05T18:00:00',
-    last_show: '2025-03-06T10:05:00',
-    friend_info: {
-      account_id: 789,
-      name: 'Tech Enthusiasts',
-      gender: '男',
-      avatar:
-        'https://picx.zhimg.com/v2-52a6e836434d15d74a2121bbd6bed34d_720w.jpg?source=172ae18b'
-    },
-    is_not_disturb: true,
-    is_pin: true
-  },
-  {
-    relation_id: 789,
-    relation_type: 'friend',
-    is_show: false,
-    pin_time: '2025-03-04T22:00:00',
-    last_show: '2025-03-06T08:30:00',
-    friend_info: {
-      account_id: 101,
-      name: 'Bob Johnson',
-      gender: '男',
-      avatar:
-        'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
-    },
-    is_not_disturb: false,
-    is_pin: false
-  },
-  {
-    relation_id: 3,
-    relation_type: 'friend',
-    is_show: true,
-    pin_time: '2025-03-03T12:00:00',
-    last_show: '2025-03-06T10:10:00',
-    friend_info: {
-      account_id: 103,
-      name: 'Charlie',
-      gender: '女',
-      avatar:
-        'https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con'
-    },
-    is_not_disturb: true,
-    is_pin: false
-  }
-])
-const getFriendList = async () => {
-  const res = await getFriendListService()
-  console.log(res.data.data)
-  friendList.value = res.data.data.list
-}
-getFriendList()
+// const friendList = ref([])
+// const getFriendList = async () => {
+//   const res = await getFriendListService()
+//   console.log(res.data.data)
+//   friendList.value = res.data.data.list
+// }
+// getFriendList()
 const handleSelect = (item) => {
   console.log(item)
   console.log(checked.value)

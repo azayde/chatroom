@@ -15,6 +15,8 @@ watch(
     console.log(newVal)
   }
 )
+console.log(activeMsg.value)
+
 const isPin = ref(activeMsg.value?.is_pin || true)
 const isTop = ref(activeMsg.value?.is_top || true)
 // 置顶
@@ -36,8 +38,6 @@ const handlePin = async () => {
     is_pin: isPin.value
   })
   console.log(res)
-  // console.log(chatStore.chatInfo.relation_id)
-  // console.log(activeMsg.value.id)
 }
 // 撤回
 const handleRevoke = async () => {

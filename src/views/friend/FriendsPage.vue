@@ -63,6 +63,7 @@ watch(
       <user-card
         v-else-if="friendShow"
         :userInfo="friendInfo"
+        :isFriend="true"
         class="user-card"
       ></user-card>
     </el-main>

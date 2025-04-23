@@ -30,6 +30,7 @@ const chatList = ref([
     relation_id: 1,
     relation_type: 'friend',
     pin_time: '',
+    is_show: true,
     friend_info: {
       account_id: 101,
       name: 'Alice Smith',
@@ -118,36 +119,52 @@ const getChatList = async () => {
     return 0
   })
   console.log(chatList.value)
-  // chatList.value.forEach((item) => {
-  //   // const time = new Date(item.create_at)
-  //   const time = formatTime(item.creat_at)
-
-  //   console.log(time)
-  //   // console.log(time.getHours())
-  //   // console.log(time.getMinutes())
-  // })
-  // pinOrderMap.forEach((value, key) => {
-  //   console.log(`Key: ${key}, Value: ${value}`)
-  // })
-  console.log(pinOrderMap)
 }
 // 渲染列表
 getChatList()
 
-// const formatTime = (timestamp) => {
-//   if (!timestamp) return ''
-//   const date = new Date(timestamp)
-//   const hours = String(date.getHours()).padStart(2, '0')
-//   const minutes = String(date.getMinutes()).padStart(2, '0')
-//   return `${hours}:${minutes}`
-// }
+// 最新消息时间渲染
+const formatTime = (timestamp) => {
+  if (!timestamp) return ''
 
-// if (!route.path.split('/')[2]) {
-//   router.push('/chat/chatroom')
-// }
+  const date = new Date(timestamp)
+  const now = new Date()
+
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+
+  if (
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate()
+  ) {
+    return `${hours}:${minutes}`
+  }
+  if (now.getDate() - date.getDate() === 1) {
+    return '昨天'
+  }
+  const getWeekDay = (date) =>
+    ['日', '一', '二', '三', '四', '五', '六'][date.getDay()]
+  const sameWeek =
+    now.getFullYear() === date.getFullYear() &&
+    Math.abs(now.getWeek() - date.getWeek()) === 0
+  if (sameWeek) {
+    return `周${getWeekDay(date)}`
+  }
+  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
+}
+//  扩展Date原型计算周数（ISO周）
+Date.prototype.getWeek = function () {
+  const date = new Date(this)
+  date.setHours(0, 0, 0, 0)
+  date.setDate(date.getDate() + 3 - ((date.getDay() + 6) % 7))
+  const week1 = new Date(date.getFullYear(), 0, 4)
+  return Math.round(
+    ((date - week1) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7 + 1
+  )
+}
+
 // 当前聊天页
-
-// console.log()
 const activeChat = ref(route.query.relation_id ? chatStore.chatInfo : 0)
 const emit = defineEmits(['get-message'])
 const handleClick = (obj) => {
@@ -220,7 +237,7 @@ watch(
                   ? item.nick_name || item.friend_info.name
                   : item.group_info.name
               }}</span>
-              <span class="time_now">19:30</span>
+              <span class="time_now">{{ formatTime(item.create_at) }}</span>
             </div>
             <span class="message">
               {{ item.msg_type === 'text' ? item.msg_content : '[文件]' }}
@@ -299,13 +316,16 @@ watch(
       }
     }
     .list-item:hover {
-      background-color: #e0e0e0;
+      // background-color: #e0e0e0;
+      background-color: #d0d0d0;
     }
     .pin {
-      background-color: #e4e4e4;
+      // background-color: #cacaca;
+      background-color: #d5d5d5;
     }
     .active {
-      background-color: #d6d6d6 !important; //点击后颜色
+      // background-color: #d6d6d6 !important; //点击后颜色
+      background-color: #cacaca !important; //点击后颜色
     }
   }
 }
