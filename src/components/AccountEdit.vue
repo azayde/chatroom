@@ -15,6 +15,11 @@ const accountInfo = {
   gender: '',
   signature: ''
 }
+const rules = {
+  name: [{ required: true, message: '请输入账号昵称', trigger: 'blur' }],
+  signature: [{ required: true, message: '请输入个性签名', trigger: 'blur' }],
+  gender: [{ required: true, message: '请选择性别', trigger: 'change' }]
+}
 // 接口传参要form-data
 const imgUrl = ref('')
 const fd = new FormData()
@@ -35,15 +40,22 @@ const emit = defineEmits(['submit'])
 // 表单数据
 const formData = ref({ ...accountInfo })
 
+const formRef = ref(null)
 // 提交表单
 const onSubmit = () => {
   // console.log(formData.value)
-  // 判断是否为空 正则 TODO:
-  emit('submit', {
-    ...formData.value
+  // 判断是否为空
+  formRef.value.validate((valid) => {
+    if (valid) {
+      emit('submit', {
+        ...formData.value
+      })
+      // 提交表单时关闭对话框
+      accountEditForm.value = false
+    } else {
+      ElMessage.warning('请先完善信息，再点击确定')
+    }
   })
-  // 提交表单时关闭对话框
-  accountEditForm.value = false
 }
 // 传给父组件的方法
 const open = (obj) => {
@@ -76,7 +88,7 @@ defineExpose({
     width="500"
     class="dialog"
   >
-    <el-form :model="formData">
+    <el-form :model="formData" :rules="rules" ref="formRef">
       <el-upload
         v-if="isEdit"
         class="avatar-uploader"
@@ -85,21 +97,18 @@ defineExpose({
         @change="onUploadFile"
       >
         <img :src="imgUrl" class="avatar" />
-        <!-- <el-icon v-else class="avatar-uploader-icon">
-          <Plus />
-        </el-icon> -->
       </el-upload>
-      <el-form-item label="账号昵称">
+      <el-form-item label="账号昵称" prop="name">
         <el-input v-model="formData.name"></el-input>
       </el-form-item>
-      <el-form-item label="性别">
+      <el-form-item label="性别" prop="gender">
         <el-radio-group v-model="formData.gender">
           <el-radio value="男">男</el-radio>
           <el-radio value="女">女</el-radio>
           <el-radio value="未知">保密</el-radio>
         </el-radio-group>
       </el-form-item>
-      <el-form-item label="个性签名">
+      <el-form-item label="个性签名" prop="signature">
         <el-input v-model="formData.signature"></el-input>
       </el-form-item>
     </el-form>

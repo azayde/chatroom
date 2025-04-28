@@ -2,13 +2,19 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { Search } from '@element-plus/icons-vue'
-import { getChatPinListService, getChatShowListService } from '@/api/chat.js'
+import {
+  getChatPinListService,
+  getChatShowListService,
+  searchMsgByContent
+} from '@/api/chat.js'
 import { useRouter, useRoute } from 'vue-router'
 import { useChatStore } from '@/stores'
+import { formatTime } from '@/utils/time'
 const route = useRoute()
 const router = useRouter()
 const chatStore = useChatStore()
 
+const loading = ref(true)
 // 搜索框
 const input = ref('')
 
@@ -17,11 +23,17 @@ const IsSearch = ref(false)
 const handleFocus = () => {
   IsSearch.value = true
 }
-const handleBlue = () => {
+const handleBlue = async () => {
   // 输入框为空 且 失焦 切换
   if (!input.value) {
     IsSearch.value = false
   }
+  console.log(input.value)
+  const res = await searchMsgByContent({
+    relation_id: -1,
+    content: input.value
+  })
+  console.log(res)
 }
 
 // 聊天列表
@@ -76,7 +88,6 @@ const chatList = ref([
 const chatPinList = ref([])
 // console.log(chatPinList.value)
 
-// class:  pin 的样式(用is_pin判断) ！！！！！！！ TODO
 // 获取置顶列表
 const getChatPinList = async () => {
   const res = await getChatPinListService()
@@ -86,83 +97,49 @@ const getChatPinList = async () => {
 
 // 获取聊天列表（置顶在上，已排序）
 const getChatList = async () => {
+  try {
+    await getChatPinList()
+
+    // 获取展示列表
+    const res = await getChatShowListService()
+    console.log(res)
+
+    chatList.value = res.data.data.list
+    console.log(chatPinList.value)
+    // 然后再进行排序
+    const pinOrderMap = new Map()
+    chatPinList.value.forEach((item, index) => {
+      pinOrderMap.set(item.relation_id, index)
+    })
+
+    chatList.value.sort((a, b) => {
+      const aIsPinned = pinOrderMap.has(a.relation_id)
+      const bIsPinned = pinOrderMap.has(b.relation_id)
+      // a,b都是置顶项 - 按chatPinList中的顺序排序
+      if (aIsPinned && bIsPinned) {
+        return pinOrderMap.get(a.relation_id) - pinOrderMap.get(b.relation_id)
+      }
+      // a是置顶项，a排前面
+      if (aIsPinned) {
+        return -1
+      }
+      // b是置顶项，b排前面
+      if (bIsPinned) {
+        return 1
+      }
+      return 0
+    })
+    console.log(chatList.value)
+  } catch (err) {
+    console.log(err)
+    ElMessage.error('消息列表加载失败')
+  } finally {
+    loading.value = false
+  }
   // 先获取到置顶列表
-  await getChatPinList()
-
-  // 获取展示列表
-  const res = await getChatShowListService()
-  console.log(res)
-
-  chatList.value = res.data.data.list
-  console.log(chatPinList.value)
-  // 然后再进行排序
-  const pinOrderMap = new Map()
-  chatPinList.value.forEach((item, index) => {
-    pinOrderMap.set(item.relation_id, index)
-  })
-
-  chatList.value.sort((a, b) => {
-    const aIsPinned = pinOrderMap.has(a.relation_id)
-    const bIsPinned = pinOrderMap.has(b.relation_id)
-    // a,b都是置顶项 - 按chatPinList中的顺序排序
-    if (aIsPinned && bIsPinned) {
-      return pinOrderMap.get(a.relation_id) - pinOrderMap.get(b.relation_id)
-    }
-    // a是置顶项，a排前面
-    if (aIsPinned) {
-      return -1
-    }
-    // b是置顶项，b排前面
-    if (bIsPinned) {
-      return 1
-    }
-    return 0
-  })
-  console.log(chatList.value)
 }
 // 渲染列表
 getChatList()
-
-// 最新消息时间渲染
-const formatTime = (timestamp) => {
-  if (!timestamp) return ''
-
-  const date = new Date(timestamp)
-  const now = new Date()
-
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-
-  if (
-    date.getFullYear() === now.getFullYear() &&
-    date.getMonth() === now.getMonth() &&
-    date.getDate() === now.getDate()
-  ) {
-    return `${hours}:${minutes}`
-  }
-  if (now.getDate() - date.getDate() === 1) {
-    return '昨天'
-  }
-  const getWeekDay = (date) =>
-    ['日', '一', '二', '三', '四', '五', '六'][date.getDay()]
-  const sameWeek =
-    now.getFullYear() === date.getFullYear() &&
-    Math.abs(now.getWeek() - date.getWeek()) === 0
-  if (sameWeek) {
-    return `周${getWeekDay(date)}`
-  }
-  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
-}
-//  扩展Date原型计算周数（ISO周）
-Date.prototype.getWeek = function () {
-  const date = new Date(this)
-  date.setHours(0, 0, 0, 0)
-  date.setDate(date.getDate() + 3 - ((date.getDay() + 6) % 7))
-  const week1 = new Date(date.getFullYear(), 0, 4)
-  return Math.round(
-    ((date - week1) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7 + 1
-  )
-}
 
 // 当前聊天页
 const activeChat = ref(route.query.relation_id ? chatStore.chatInfo : 0)
@@ -181,11 +158,6 @@ watch(
   () => {
     getChatList()
   }
-  // (newid) => {
-  //   chatShow.value = true
-  //   chatInfo.value = chatStore.chatInfo
-  //   console.log(newid)
-  // }
 )
 </script>
 
@@ -203,9 +175,8 @@ watch(
       </el-input>
     </el-header>
     <!-- 聊天列表 -->
-    <el-main v-if="!IsSearch" class="list">
+    <el-main v-if="!IsSearch" class="list" v-loading="loading">
       <el-scrollbar>
-        <!-- TODO pin 样式 is_pin -->
         <div
           class="list-item"
           v-for="item in chatList"
@@ -268,6 +239,10 @@ watch(
       height: 25px;
     }
   }
+  // .el-main {
+  //   // background-color: #f0f0f0;
+  //   background-color: #e8e8e8;
+  // }
   .list {
     background-color: #e8e8e8;
     .list-item {
@@ -288,21 +263,21 @@ watch(
         padding-right: 15px;
         flex-direction: column;
         justify-content: space-between;
-        // align-items: center;
         .top {
           display: flex;
           justify-content: space-between;
-        }
-        .name {
-          font-size: 16px;
-          width: 100px;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        .time_now {
-          font-size: 12px;
-          color: #b8b5b5;
+          min-width: 0; /* 防止 flex 容器溢出 */
+          .name {
+            font-size: 16px;
+            width: 75px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          .time_now {
+            font-size: 12px;
+            color: #b8b5b5;
+          }
         }
         .message {
           width: 120px;

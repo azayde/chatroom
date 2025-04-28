@@ -73,8 +73,8 @@ export const updateAvatarService = (file) => {
   return request.put('/file/avatar/account', file)
 }
 // 根据名称模糊查找账号
-export const searchAccountByName = (name) => {
-  return request.get('/account/infos/name', { params: { name } })
+export const searchAccountByName = (Name) => {
+  return request.get('/account/infos/name', { params: { Name } })
 }
 
 // 根据ID查找账号信息

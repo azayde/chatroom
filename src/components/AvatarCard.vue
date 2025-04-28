@@ -8,7 +8,6 @@ defineProps({
 <template>
   <el-popover placement="right" trigger="click" width="450px">
     <template #reference>
-      <!-- 需修改 TODO -->
       <div class="member-item">
         <el-avatar
           shape="square"
@@ -20,13 +19,15 @@ defineProps({
         </div>
       </div>
     </template>
-    <div class="user-info">
-      <user-card
-        :userInfo="member"
-        :isFriend="isFriend"
-        style="padding: 10px"
-      ></user-card>
-    </div>
+    <template #default>
+      <div class="user-info">
+        <user-card
+          :userInfo="member"
+          :isFriend="isFriend"
+          style="padding: 10px"
+        ></user-card>
+      </div>
+    </template>
   </el-popover>
 </template>
 

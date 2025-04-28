@@ -5,13 +5,13 @@ import {
   Minus,
   ArrowRight,
   Position,
-  Edit,
+  // Edit,
   Delete
 } from '@element-plus/icons-vue'
-import { watch, ref, nextTick, onMounted } from 'vue'
+import { watch, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  updateNickNameService,
+  // updateNickNameService,
   updateShowService,
   updateDisturbService,
   updatePinService
@@ -20,7 +20,11 @@ import {
   quitGroupService,
   dissolveGroupService,
   getGroupMemberService,
-  updateGroupInfoService
+  updateGroupInfoService,
+  createNotifyService,
+  getAllNotifyService,
+  updateNotifyService,
+  deleteNotifyService
 } from '@/api/group'
 import { getFriendListService } from '@/api/friend.js'
 import { getAccountInfoById } from '@/api/user.js'
@@ -36,16 +40,12 @@ const props = defineProps({
   groupInfo: Object
 })
 // switch开关 （三个）
-// pin 和 置顶 ？？
 const isPin = ref(groupStore.groupInfo.is_pin || false)
 const isShow = ref(groupStore.groupInfo.is_show || false)
 const isNotDisturb = ref(groupStore.groupInfo.is_not_disturb || false)
 
-// 点击头像出现名片(点击头像名片消失)  --- 改 TODO:
-// const userCardVisible = ref(false)
-
 const groupNotify = ref(false)
-
+const is_leader = ref(false)
 // 群成员信息
 const groupMember = ref([
   {
@@ -87,14 +87,11 @@ const getGroupMember = async () => {
   const res = await getGroupMemberService(
     groupStore.groupInfo.group_info.relation_id
   )
-  groupMember.value = res.data.data.List
+  groupMember.value = res.data.data?.List || null
   totalMember.value = res.data.data.List.length
   // groupStore.setGroupMember(totalMember.value)
   console.log(res)
 }
-// 存储user-card的显隐状态
-// const activeMemberId = ref(null)
-// const popverStates = ref({})
 
 // 当前群聊
 const activeGroup = ref(props.groupInfo)
@@ -136,22 +133,17 @@ const getFriendList = async () => {
   console.log(friendList.value)
 }
 // getFriendList()
-// const getFriendList = async () => {
-//   const res = await getFriendListService()
-//   console.log(res.data.data)
-//   friendList.value = res.data.data.list
-// }
 
+// 获取群成员信息（区分好友与非好友）
 const handleMember = (item) => {
   for (let ele of friendList.value) {
-    // console.log(ele)
     if (item.account_id === ele.friend_info.account_id) {
-      // console.log('好友', ele)
       return ele
     }
   }
   return item
 }
+// 判断是否是本人好友
 const handleIs = (item) => {
   for (let ele of friendList.value) {
     if (item.account_id === ele.friend_info.account_id) {
@@ -160,49 +152,46 @@ const handleIs = (item) => {
   }
   return false
 }
-// 修改昵称
-const isEdit = ref(false)
-const id = groupMember.value.findIndex(
-  (item) => item.account_id === userStore.accountInfo.id
-)
+
+// // 修改昵称
+// const isEdit = ref(false)
+// const id = groupMember.value.findIndex(
+//   (item) => item.account_id === userStore.accountInfo.id
+// )
 
 // const id = groupList.value.findIndex(
 //   (item) => item.friend_info.account_id === userStore.accountInfo.id
 // )
-const nickName = ref()
+// const nickName = ref()
 
-// const nick_name = ref(groupMember.value[id].nickname)
-// const nick_name = ref(groupList.value[id].friend_info.name)
-const nick_name = ref(null)
-const inp = ref(null)
-// console.log(nick_name.value)
-// console.log(ref.nick_name)
+// const nick_name = ref(null)
+// const inp = ref(null)
 
-// // 双击切换编辑状态
-const handleNickName = () => {
-  console.log(nick_name.value)
-  isEdit.value = true
-  nick_name.value.innerHTML = 'abc'
-  // nick_name.value = groupList.value[id].friend_info.name
-  nextTick(() => {
-    inp.value.focus()
-    inp.value.select()
-  })
-}
-// 提交昵称修改
-const updateNickName = async () => {
-  isEdit.value = false
-  console.log(groupStore.groupInfo.group_info.relation_id)
-  console.log(nickName.value)
-  const res = await updateNickNameService({
-    relation_id: groupStore.groupInfo.group_info.relation_id,
-    nick_name: nickName.value
-  })
-  console.log(res)
-  // if (nick_name.value) {
-  //   ElMessage.success('修改备注成功')
-  // }
-}
+// // // 双击切换编辑状态
+// const handleNickName = () => {
+//   console.log(nick_name.value)
+//   isEdit.value = true
+//   nick_name.value.innerHTML = 'abc'
+//   // nick_name.value = groupList.value[id].friend_info.name
+//   nextTick(() => {
+//     inp.value.focus()
+//     inp.value.select()
+//   })
+// }
+// // 提交昵称修改
+// const updateNickName = async () => {
+//   isEdit.value = false
+//   console.log(groupStore.groupInfo.group_info.relation_id)
+//   console.log(nickName.value)
+//   const res = await updateNickNameService({
+//     relation_id: groupStore.groupInfo.group_info.relation_id,
+//     nick_name: nickName.value
+//   })
+//   console.log(res)
+//   // if (nick_name.value) {
+//   //   ElMessage.success('修改备注成功')
+//   // }
+// }
 
 // 聊天记录dialog
 const chatDialog = ref()
@@ -257,20 +246,49 @@ const updateGroupInfo = async () => {
   fd.append('relation_id', groupStore.groupInfo.group_info.relation_id)
   fd.append('name', group_name.value)
   fd.append('description', description.value)
-  const res = await updateGroupInfoService(fd)
-  console.log(res)
-  // ElMessage.success('修改成功')
+  try {
+    const res = await updateGroupInfoService(fd)
+    console.log(res)
+    ElMessage.success('修改成功')
+  } catch (err) {
+    console.log(err)
+    ElMessage.error('修改失败')
+  }
 }
 // 退出群聊
 const handleQuit = async () => {
-  // await quitGroupService(props.groupInfo.relation_id)
-  ElMessage.success('已退出')
+  await ElMessageBox.confirm('确定退出群聊吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(async () => {
+    try {
+      const res = await quitGroupService(props.groupInfo.relation_id)
+      console.log(res)
+      ElMessage.success('已退出')
+    } catch (err) {
+      console.log(err)
+      ElMessage.error('退出失败，请重试')
+    }
+  })
 }
 
 // 解散群聊
 const handleDissolve = async () => {
-  // await dissolveGroupService(props.groupInfo.relation_id)
-  ElMessage.success('已解散')
+  await ElMessageBox.confirm('确定解散群聊吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(async () => {
+    try {
+      const res = await dissolveGroupService(props.groupInfo.relation_id)
+      console.log(res)
+      ElMessage.success('已解散')
+    } catch (err) {
+      console.log(err)
+      ElMessage.err('解散失败，请重试')
+    }
+  })
 }
 
 // 发消息
@@ -281,109 +299,55 @@ const sendMsg = () => {
   })
   chatStore.setChatInfo(props.groupInfo)
 }
-
-const notifyList = [
-  {
-    id: 1,
-    relation_id: 101,
-    msg_content: 'Hello, this is the first message.',
-    msg_extend: {
-      remind: null
-    },
-    account_id: 501,
-    create_at: '2025-04-01T10:00:00Z',
-    read_ids: [2]
-  },
-  {
-    id: 2,
-    relation_id: 102,
-    msg_content: 'This is the second message.',
-    msg_extend: {
-      remind: null
-    },
-    account_id: 502,
-    create_at: '2025-04-01T11:00:00Z',
-    read_ids: [3]
-  },
-  {
-    id: 3,
-    relation_id: 103,
-    msg_content: "Here's the third message.",
-    msg_extend: {
-      remind: null
-    },
-    account_id: 503,
-    create_at: '2025-04-01T12:00:00Z',
-    read_ids: [4]
-  },
-  {
-    id: 4,
-    relation_id: 104,
-    msg_content: 'And this is the fourth message.',
-    msg_extend: {
-      remind: null
-    },
-    account_id: 504,
-    create_at: '2025-04-01T13:00:00Z',
-    read_ids: [5]
-  },
-  {
-    id: 4,
-    relation_id: 104,
-    msg_content: 'And this is the fourth message.',
-    msg_extend: {
-      remind: null
-    },
-    account_id: 504,
-    create_at: '2025-04-01T13:00:00Z',
-    read_ids: [5]
-  },
-  {
-    id: 4,
-    relation_id: 104,
-    msg_content: 'And this is the fourth message.',
-    msg_extend: {
-      remind: null
-    },
-    account_id: 504,
-    create_at: '2025-04-01T13:00:00Z',
-    read_ids: [5]
-  },
-  {
-    id: 4,
-    relation_id: 104,
-    msg_content: 'And this is the fourth message.',
-    msg_extend: {
-      remind: null
-    },
-    account_id: 504,
-    create_at: '2025-04-01T13:00:00Z',
-    read_ids: [5]
-  },
-  {
-    id: 4,
-    relation_id: 104,
-    msg_content: 'And this is the fourth message.',
-    msg_extend: {
-      remind: null
-    },
-    account_id: 504,
-    create_at: '2025-04-01T13:00:00Z',
-    read_ids: [5]
-  },
-  {
-    id: 4,
-    relation_id: 104,
-    msg_content: 'And this is the fourth message.',
-    msg_extend: {
-      remind: null
-    },
-    account_id: 504,
-    create_at: '2025-04-01T13:00:00Z',
-    read_ids: [5]
+// 群公告列表
+const notifyList = ref()
+// 获取群公告
+const getNotifyList = async () => {
+  console.log(activeGroup.value.relation_id)
+  const res = await getAllNotifyService(activeGroup.value.relation_id)
+  console.log(res)
+  notifyList.value = res.data.data.list
+}
+getNotifyList()
+// 创建群公告
+const notify_content = ref()
+const createNotify = async () => {
+  console.log(activeGroup.value.relation_id)
+  console.log(notify_content.value)
+  if (notify_content.value) {
+    const res = await createNotifyService({
+      relation_id: activeGroup.value.relation_id,
+      msg_content: notify_content.value
+    })
+    console.log(res)
   }
-]
+}
+// 更新群公告
+const newNotify = ref({
+  id: 0,
+  relation_id: activeGroup.value.relation_id,
+  msg_content: ''
+})
+const handleUpdate = (obj) => {
+  console.log(obj)
+  newNotify.value.id = obj.id
+  newNotify.value.msg_content = obj.msg_content
+}
 
+const updateNotify = async () => {
+  const res = await updateNotifyService(newNotify.value)
+  console.log(res)
+}
+
+// 删除群公告
+const handleDel = async (item) => {
+  console.log(item.id)
+  const res = await deleteNotifyService({
+    id: item.id,
+    relation_id: activeGroup.value.relation_id
+  })
+  console.log(res)
+}
 const invite = ref()
 const inviteFriend = () => {
   invite.value.open()
@@ -412,35 +376,11 @@ onMounted(() => {
             :member="handleMember(item)"
             :isFriend="handleIs(item)"
           ></avatar-card>
-          <!-- <el-popover
-            placement="right"
-            trigger="click"
-            width="450px"
-            :visible="activeMemberId === item.account_id"
-            manual
-            v-for="item in groupMember"
-            :key="item.account_id"
-          >
-            <template #reference>
-              <div
-                class="member-item"
-                @click="handleClickMember(item.account_id)"
-              >
-                <el-avatar
-                  shape="square"
-                  :src="item.avatar"
-                  class="member-avatar"
-                />
-                <div class="member-name">{{ item.name }}</div>
-              </div>
-            </template>
-            <div class="user-info">
-              <user-card :userInfo="item" style="padding: 10px"></user-card>
-            </div>
-          </el-popover> -->
-
           <div class="add" @click="inviteFriend">
-            <el-icon><Plus /></el-icon>
+            <span>
+              <el-icon><Plus /></el-icon>
+            </span>
+
             <div class="member-name">添加</div>
           </div>
           <div class="remove">
@@ -449,8 +389,7 @@ onMounted(() => {
           </div>
         </div>
         <hr />
-        <div class="title">我在本群的昵称</div>
-        <!-- 点击可修改 -->
+        <!-- <div class="title">我在本群的昵称</div>
         <div class="nickname">
           <input
             v-if="isEdit"
@@ -464,7 +403,7 @@ onMounted(() => {
             {{ nickName || '未设置昵称' }}
           </div>
         </div>
-        <hr />
+        <hr /> -->
         <div class="Notify" @click="groupNotify = true">
           <div class="title">群公告</div>
           <!-- 显示最近的一条 -->
@@ -532,7 +471,9 @@ onMounted(() => {
         <hr />
         <!-- <div class="title">清空聊天记录</div> -->
         <!-- 不是群主 -->
-        <div class="title exit" @click="handleQuit" v-if="true">退出群聊</div>
+        <div class="title exit" @click="handleQuit" v-if="!is_leader">
+          退出群聊
+        </div>
         <!-- 群主 -->
         <div class="title disband" @click="handleDissolve" v-else>解散群聊</div>
         <hr />
@@ -588,41 +529,39 @@ onMounted(() => {
   <!-- 群公告 -->
   <el-dialog
     v-model="groupNotify"
-    :title="'\'' + activeGroup.group_info.name + '\' 的群公告'"
+    :title="`${activeGroup.group_info.name}的群公告`"
   >
     <div class="editor">
-      <el-table style="width: 100%" :data="notifyList" max-height="300">
-        <el-table-column label="序号" prop="id" width="55"></el-table-column>
-        <el-table-column label="公告" prop="msg_content"></el-table-column>
-        <el-table-column label="操作" width="150" v-if="true">
-          <template #default="{ row }">
-            <el-button
-              :icon="Edit"
-              circle
-              type="primary"
-              plain
-              @click="handleEdit(row)"
-            ></el-button>
-            <el-button
-              :icon="Delete"
-              circle
-              type="danger"
-              plain
-              @click="handleDel(row)"
-            ></el-button>
-          </template>
-        </el-table-column>
-        <template #empty>
-          <el-empty description="没有账号"></el-empty>
-        </template>
-      </el-table>
+      <!-- <textarea
+        v-model="notify_content"
+        name="notify"
+        class="notify_editor"
+      ></textarea> -->
+      <div class="item" v-for="(item, index) in notifyList" :key="index">
+        <span>
+          {{ index }}
+        </span>
+        <textarea
+          v-model="item.msg_content"
+          name="notify"
+          class="notify_editor"
+          @input="handleUpdate(item)"
+        ></textarea>
+        <el-button
+          :icon="Delete"
+          circle
+          type="danger"
+          plain
+          @click="handleDel(item)"
+        ></el-button>
+      </div>
+      <hr />
     </div>
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="groupNotify = false">取消</el-button>
-        <el-button type="primary" @click="groupNotify = false">
-          确定
-        </el-button>
+        <el-button type="primary" @click="createNotify"> 创建 </el-button>
+        <el-button type="primary" @click="updateNotify"> 修改 </el-button>
       </div>
     </template>
   </el-dialog>
@@ -780,7 +719,14 @@ onMounted(() => {
   }
 }
 .editor {
-  // background-color: red;
-  // border: 1px solid #000;
+  .notify_editor {
+    width: 736px;
+    height: auto;
+    min-height: 50px; /* 设置最小高度 */
+    max-height: 500px; /* 可设置最大高度 */
+    font-size: 16px;
+    border: none;
+    resize: none;
+  }
 }
 </style>

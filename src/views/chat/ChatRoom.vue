@@ -7,26 +7,31 @@ import {
   ChatDotRound,
   Delete,
   Star,
-  Bell
+  Bell,
+  Loading
 } from '@element-plus/icons-vue'
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { throttle } from 'lodash-es' // 节流
 import { useUserStore, useChatStore, useGroupStore } from '@/stores'
 import {
   // publishFileSerivce,
   sendFileService,
   getTopMsgService,
   getPinMsgService,
-  getChatListByLastTime
+  // getChatListByLastTime,
+  getChatListByLastTimeReverse
 } from '@/api/chat.js'
 import { sendMsg_socket } from '@/utils/websocket'
 import { revertImgToText } from '@/utils/emoji'
+import { formatTime } from '@/utils/time'
+
 import { onMessage, offMessage, setMessageCallback } from '@/utils/websocket'
 
 const userStore = useUserStore()
 const chatStore = useChatStore()
 const groupStore = useGroupStore()
-// const route = useRoute()
-
+// 聊天窗
+// const AllLoading = ref(true)
 const drawer = ref(false)
 // 父传子
 const props = defineProps({
@@ -36,6 +41,13 @@ const props = defineProps({
 
 // 聊天信息
 const chatMsg = ref([])
+const currentPage = ref(1)
+const pageSize = ref(20)
+const loading = ref(false)
+// 更多消息
+const hasMore = ref(true)
+const last_time = ref(Math.floor(Date.now() / 1000))
+// console.log(last_time.value)
 const scrollbarRef = ref(null)
 const scrollToBottom = (force = false) => {
   console.log('滑动')
@@ -71,21 +83,66 @@ const scrollToBottom = (force = false) => {
   })
 }
 // 根据account_id获取用户信息进行渲染
-const last_time = new Date('2026-04-01T00:00:00').getTime() / 1000
 // 获取聊天信息
-const getChatList = async () => {
-  const res = await getChatListByLastTime({
-    relation_id: props.chatInfo.relation_id,
-    last_time: last_time,
-    page: 1,
-    page_size: 200
-  })
-  // console.log(res)
-  chatMsg.value = res.data.data.list.filter((item) => item !== null)
-  chatStore.setChatMsg(chatMsg.value)
+// const getChatList = async () => {
+//   const res = await getChatListByLastTime({
+//     relation_id: props.chatInfo.relation_id,
+//     last_time: last_time.value,
+//     page: currentPage.value,
+//     page_size: pageSize.value
+//   })
+//   chatMsg.value = res.data.data.list.filter((item) => item !== null)
+//   chatStore.setChatMsg(chatMsg.value)
 
-  await nextTick() // 等待 DOM 更新
-  scrollToBottom(true) // 确保数据渲染后滚动
+//   await nextTick() // 等待 DOM 更新
+//   scrollToBottom(true) // 确保数据渲染后滚动
+// }
+const getChatList = async () => {
+  if (loading.value || !hasMore.value) return
+  loading.value = true
+  // AllLoading.value = false
+  // 获取当前滚动状态
+  const scrollContainer = scrollbarRef.value?.wrapRef
+  // 之前滚动条的位置
+  const prevState = {
+    height: scrollContainer?.scrollHeight || 0,
+    top: scrollContainer?.scrollTop || 0
+  }
+  try {
+    const res = await getChatListByLastTimeReverse({
+      relation_id: chatStore.chatInfo.relation_id,
+      last_time: last_time.value,
+      page: currentPage.value,
+      page_size: pageSize.value
+    })
+    console.log(res)
+    const newMsg = res.data.data.list
+      .filter((item) => item !== null && item.notify_type === 'common')
+      .reverse()
+    if (newMsg.length === 0) {
+      hasMore.value = false
+      return
+    }
+    console.log(newMsg)
+    // 记录最早消息事件
+    last_time.value = new Date(newMsg[0].create_at).getTime() / 1000
+    // 插入到现在的数据头部
+    chatMsg.value = [...newMsg, ...chatMsg.value]
+    chatStore.setChatMsg(chatMsg.value)
+
+    await nextTick() // 等待 DOM 更新
+    // scrollToBottom(true) // 确保数据渲染后滚动
+
+    if (scrollContainer) {
+      const newHeight = scrollContainer.scrollHeight
+      scrollContainer.scrollTop = prevState.top + (newHeight - prevState.height)
+    }
+  } catch (err) {
+    console.log(err)
+    ElMessage.error('聊天信息加载失败')
+  } finally {
+    loading.value = false
+  }
 }
 
 // 处理收到的新消息
@@ -93,15 +150,27 @@ const handleNewMessage = (newMessage) => {
   if (newMessage.relation_id === props.chatInfo.relation_id) {
     chatStore.addChatMsg(newMessage)
     scrollToBottom(true)
+    // getChatList()
   }
   console.log(newMessage)
 }
 
+// 滚动处理
+const handleScroll = throttle(() => {
+  const scrollContainer = scrollbarRef.value?.wrapRef
+  // console.log(scrollContainer)
+  // console.log(scrollContainer.scrollTop)
+
+  if (!scrollContainer || loading.value) return
+
+  // 距离顶部50px时加载
+  if (scrollContainer.scrollTop < 50) {
+    getChatList()
+  }
+}, 500)
 // 判断该条消息的头像
 const handleAvatar = (info) => {
-  // console.log(info)
   // groupMember不为空
-  // console.log(props.groupMember)
   if (props.groupMember) {
     // console.log('群聊')
     let member
@@ -119,6 +188,28 @@ const handleAvatar = (info) => {
     ? userStore.accountInfo.avatar
     : chatStore.chatInfo.friend_info?.avatar
 }
+// 判断发送该条消息的昵称
+const handleName = (info) => {
+  // console.log(info)
+  if (info.notify_type === ' system') return
+  // groupMember不为空
+  if (props.groupMember) {
+    // console.log('群聊')
+    let member
+    for (let ele of props.groupMember) {
+      // console.log(ele)
+      if (ele.account_id === info.account_id) {
+        member = ele
+        break
+      }
+    }
+    return member ? member.name : ''
+  }
+  // 好友
+  return info.account_id === userStore.accountInfo.id
+    ? userStore.accountInfo.name
+    : chatStore.chatInfo.friend_info?.name
+}
 //获取当前pin消息
 const pinMsg = ref()
 const getPinMsg = async () => {
@@ -128,7 +219,7 @@ const getPinMsg = async () => {
     pageSize: 100
   })
   console.log(res.data)
-  pinMsg.value = res.data.data.list
+  pinMsg.value = res.data.data.list || null
 }
 //获取当前置顶消息
 const topMsg = ref()
@@ -139,8 +230,41 @@ const getTopMsg = async () => {
     pageSize: 100
   })
   console.log(res.data)
-  topMsg.value = res.data.data?.msg_info || undefined
+  topMsg.value = res.data.data?.msg_info || null
 }
+
+// 点击置顶跳转到对应位置
+const scrollToTopMsg = async () => {
+  console.log(topMsg.value)
+  // 根据消息id定位消息？
+  console.log(topMsg.value.id)
+  const topTarget = document.getElementById(`msg-${topMsg.value.id}`)
+  if (topTarget) {
+    topTarget.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center'
+    })
+  }
+  nextTick(() => {
+    // 高亮
+    topTarget.classList.add('height-msg')
+    setTimeout(() => {
+      topTarget.classList.remove('height-msg')
+    }, 3000)
+  })
+}
+// 置顶更新
+const handleRefreshTop = () => {
+  getTopMsg()
+}
+// Pin更新
+const handleRefreshPin = () => {
+  getPinMsg()
+}
+
+// pin盒子
+const pinDialog = ref(false)
+
 // 当前聊天相关信息
 const activeChatInfo = ref(props.chatInfo)
 activeChatInfo.value = props.chatInfo ? props.chatInfo : chatStore.chatInfo
@@ -173,7 +297,7 @@ const htmlToPlainText = (html) => {
   return tempDiv.innerText // 返回普通文本
 }
 
-// 转换出的File与直接上传的有细微不同，测试时看能否成功
+// 转换出的File与直接上传的有细微不同，测试时看能否成功(差一个uid)
 function base64toFile(dataurl, filename = 'file') {
   let arr = dataurl.split(',')
   let mime = arr[0].match(/:(.*?);/)[1]
@@ -195,32 +319,21 @@ function base64toFile(dataurl, filename = 'file') {
     type: mime
   })
 }
+
+const formData = new FormData()
 // 是否正在发送中
 const isSending = ref(false)
-const sendMsg = () => {
+const sendMsg = async () => {
   // console.log(1111)
   // 发送内容
   if (isSending.value) return
   isSending.value = true
   try {
+    // 区分纯文本or图片
+
     // 获取输入框中的内容
     const content = revertImgToText(inputEditorRef.value.getContent())
     console.log(content)
-    // const transformContent =
-    // console.log(transformContent)
-
-    // 区分纯文本or图片
-    // 获取纯文本
-    const plainText = htmlToPlainText(content)
-    // 将纯文本编码为 UTF-8
-    // 创建 TextEncoder 实例
-    const encoder = new TextEncoder()
-    // 编码为 UTF-8
-    const encodedMessage = encoder.encode(plainText)
-    // 发送时首先将其转换为字符串格式base64
-    const byteArray = new Uint8Array(encodedMessage)
-    // 转换为 Base64 字符串
-    const base64Message = btoa(String.fromCharCode(...byteArray))
 
     // 直接复制粘贴进来的图片类型
     // DOM解析器
@@ -230,31 +343,78 @@ const sendMsg = () => {
     const doc = parser.parseFromString(content, 'text/html')
     console.log(doc)
     // 获取图片标签
-    // const imgTags = doc.querySelectorAll('img')
-    // if (imgTags.length == 1) {
-    //   imgTags.forEach((item) => {
-    //     // getAttribute 获取节点元素的属性值
-    //     const src = item.getAttribute('src')
-    //     if (src && src.startsWith('data:image/')) {
-    //       // const base64Data = src.split(',')[1]
-    //       // console.log(base64Data)
-    //       const file = base64toFile(src)
-    //       console.log(file)
-    //     }
-    //   })
-    // } else {
-    //   ElMessage.warning('不能一次发送两张图片哦')
-    //   return
-    // }
+    const imgTags = doc.querySelectorAll('img')
+    if (imgTags.length > 1) {
+      ElMessage.warning('一次只能发送一张图片哦')
+      return
+    }
 
-    // 如果内容为空，不发送
-    // if (plainText) {
-    //   ElMessage.warning('发送内容不能为空')
-    //   return
-    // }
+    // 获取纯文本
+    const plainText = htmlToPlainText(content)
+    // 判断是否是有效文本
+    const isValidText = plainText.replace(/[\n\r\s]/g, '').length > 0
+    // 如果是纯文本
+    if (imgTags.length === 0) {
+      if (!isValidText) {
+        ElMessage.warning('消息不能为空')
+        return
+      }
+    } else if (imgTags.length === 1 && !isValidText) {
+      // 发送纯图片
+      const src = imgTags[0].getAttribute('src')
+      if (src && src.startsWith('data:image/')) {
+        // const base64Data = src.split(',')[1]
+        // console.log(base64Data)
+        const file = base64toFile(src)
+        console.log(file)
+        sendFile()
+        return
+        // formData.append('relation_id', props.chatInfo.relation_id)
+        // formData.append('file', file)
+        // const res = await sendFileService(formData)
+        // console.log(res)
+        // // 发送成功清空formData
+        // for (const key of formData.keys()) {
+        //   formData.delete(key)
+        // }
+      }
+    }
+
+    // 如果是图片+文本？？TODO
+    let base64Message = ''
+    if (imgTags.length > 0) {
+      // 图片消息处理
+      const src = imgTags[0].getAttribute('src')
+      if (src && src.startsWith('data:image/')) {
+        // const base64Data = src.split(',')[1]
+        // console.log(base64Data)
+        const file = base64toFile(src)
+        console.log(file)
+        formData.append('relation_id', props.chatInfo.relation_id)
+        formData.append('file', file)
+        sendFile()
+        return
+        // const res = await sendFileService(formData)
+        // console.log(res)
+        // // 发送成功清空formData
+        // for (const key of formData.keys()) {
+        //   formData.delete(key)
+        // }
+      }
+    } else {
+      // 将纯文本编码为 UTF-8
+      // 创建 TextEncoder 实例
+      const encoder = new TextEncoder()
+      // 编码为 UTF-8
+      const encodedMessage = encoder.encode(plainText)
+      // 发送时首先将其转换为字符串格式base64
+      // const byteArray = new Uint8Array(encodedMessage)
+      // base64Message = btoa(String.fromCharCode(...byteArray))
+      // 转换为 Base64 字符串
+      base64Message = btoa(String.fromCharCode(...encodedMessage))
+    }
 
     // 发送消息（纯文本）
-
     const msg = ref({
       relation_id: props.chatInfo.relation_id,
       msg_content: base64Message
@@ -265,11 +425,11 @@ const sendMsg = () => {
     const sendSuccess = sendMsg_socket(JSON.stringify(msg.value))
     console.log(sendSuccess)
 
-    // // 发送消息失败
-    // if (!sendSuccess) {
-    //   ElMessage.danger('发送失败')
-    // }
-
+    // 发送消息失败
+    if (!sendSuccess) {
+      ElMessage.error('发送失败')
+      return
+    }
     // 清除输入框
     inputEditorRef.value.clearContent()
   } finally {
@@ -277,16 +437,35 @@ const sendMsg = () => {
   }
 }
 
-// 回车发送，shift+回车换行
+// 回车发送，shift+回车换行e.preventDefault()不管用!!!!!!TODO
 const handleKeyDown = (e) => {
-  // console.log(e.shiftKey)
+  console.log(e)
   if (e.key === 'Enter') {
+    // console.log('回车')
+    // e.preventDefault()
+    // console.log(e.defaultPrevented)
+    // const currentContent = inputEditorRef.value.getContent()
+    // console.log(currentContent)
+    // const isEmpty = htmlToPlainText(currentContent).trim().length === 0
     if (e.shiftKey) {
       return
     } else {
       e.preventDefault()
       sendMsg()
     }
+    // if (e.shiftKey) {
+    //   // Shift+Enter：插入换行
+    //   // inputEditorRef.value.insertText('\n')
+    // } else {
+    //   // e.preventDefault()
+    //   // 单独Enter键处理
+    //   // if (isEmpty) {
+    //   //   ElMessage.warning('请输入有效内容')
+    //   //   return
+    //   // }
+    //   console.log('发送')
+    //   // sendMsg()
+    // }
   }
 }
 // 上传文件
@@ -301,7 +480,6 @@ const fileTypeIcon = {
   docx: 'icon-wendang-docx_doc'
 }
 // 选择文件上传
-const formData = new FormData()
 const selectFile = ref([])
 const handleFileChange = async (file) => {
   // const formData = new FormData()
@@ -339,10 +517,11 @@ const handleFileChange = async (file) => {
 
 // 发送文件
 const sendFile = async () => {
-  fileDialog.value = false
+  console.log('发送文件')
   formData.forEach((value, key) => {
     console.log(`${key}: ${value}`)
   })
+  fileDialog.value = false
   const res = await sendFileService(formData)
   console.log(res)
   // 清空formData
@@ -373,6 +552,14 @@ window.addEventListener('click', function () {
 watch(
   () => props.chatInfo,
   (newVal) => {
+    // 清空消息列表
+    chatMsg.value = []
+    // 重置分页时间戳为当前时间
+    last_time.value = Math.floor(Date.now() / 1000)
+    // 重置其他参数
+    hasMore.value = true
+    currentPage.value = 1
+
     getTopMsg()
     getPinMsg()
     // 切换时清除聊天记录
@@ -421,24 +608,31 @@ onUnmounted(() => {
       </div>
       <!-- 有置顶或有pin时展示 -->
       <div class="bottom" v-if="pinMsg || topMsg">
-        <div class="is_top" v-if="topMsg">
+        <div class="is_top" v-if="topMsg" @click="scrollToTopMsg">
           <el-icon><Bell /></el-icon>
+          <!-- {{ topMsg }} -->
           {{ topMsg.msg_content }}
         </div>
-        <el-button text class="is_pin" v-if="pinMsg">
+        <el-button text class="is_pin" v-if="pinMsg" @click="pinDialog = true">
           <el-icon><Star /></el-icon>
           Pin
         </el-button>
       </div>
     </el-header>
     <el-main>
-      <el-scrollbar ref="scrollbarRef" class="chat-msg">
+      <el-scrollbar ref="scrollbarRef" class="chat-msg" @scroll="handleScroll">
+        <div v-if="loading" class="loading-icon">
+          <el-icon><Loading /></el-icon>
+        </div>
+        <div v-if="!hasMore" class="no-more">没有更多消息了</div>
         <div class="list">
           <!-- 聊天窗口  -->
           <chat-message-item
             v-for="item in chatMsg"
+            :id="'msg-' + item.id"
             :msgInfo="item"
             :headImage="handleAvatar(item)"
+            :name="handleName(item)"
             :key="item.id"
             @setContextMenu="getContentMenu"
           ></chat-message-item>
@@ -447,6 +641,8 @@ onUnmounted(() => {
             class="contextMenu"
             :style="{ top: menuTop + 'px', left: menuLeft + 'px' }"
             :msg="selectMessage"
+            @refresh-top="handleRefreshTop"
+            @refresh-pin="handleRefreshPin"
           ></context-menu>
         </div>
       </el-scrollbar>
@@ -503,7 +699,6 @@ onUnmounted(() => {
     ></emoji-content>
 
     <!-- 右上角 三点 -- 聊天对象的详细信息 -->
-    <!-- TODO  -->
     <el-drawer v-model="drawer" :with-header="false">
       <group-detail
         v-if="activeChatInfo.relation_type === 'group'"
@@ -559,7 +754,6 @@ onUnmounted(() => {
           </el-link>
         </el-scrollbar>
       </div>
-      <!-- <div class="file-update"></div> -->
       <template #footer>
         <div class="dialog-footer">
           <el-button type="primary" @click="sendFile"> 发送 </el-button>
@@ -567,6 +761,24 @@ onUnmounted(() => {
         </div>
       </template>
     </el-dialog>
+
+    <!-- pin消息 -->
+    <el-drawer v-model="pinDialog" title="pin" width="500" class="pinDialog">
+      <div class="list-item" v-for="(item, index) in pinMsg" :key="index">
+        <div class="left">
+          <div class="avatar">
+            <el-avatar shape="square" :src="handleAvatar(item)"></el-avatar>
+          </div>
+        </div>
+        <div class="right">
+          <div class="top">
+            <span class="name">{{ handleName(item) }}</span>
+            <span class="time_now">{{ formatTime(item.create_at) }}</span>
+          </div>
+          <span class="message">{{ item.msg_content }}</span>
+        </div>
+      </div>
+    </el-drawer>
   </el-container>
 </template>
 
@@ -624,6 +836,11 @@ onUnmounted(() => {
   .el-main {
     overflow: auto;
     background-color: #f5f5f5;
+    .no-more,
+    .loading-text,
+    .loading-icon {
+      text-align: center;
+    }
   }
   .el-footer {
     padding: 0;
@@ -759,5 +976,46 @@ hr {
 }
 .contextMenu {
   position: fixed;
+}
+.list-item {
+  width: 98%;
+  cursor: pointer;
+  display: flex;
+  padding: 5px 0;
+  margin: 5px 0;
+  .left {
+    margin: 0 10px;
+  }
+  .right {
+    width: 98%;
+    display: flex;
+    padding: 0 6px;
+    padding-right: 10px;
+    flex-direction: column;
+    justify-content: space-between;
+    .top {
+      display: flex;
+      justify-content: space-between;
+    }
+    .name {
+      font-size: 13px;
+      color: #999;
+    }
+    .time_now {
+      font-size: 12px;
+      color: #999;
+    }
+    .message {
+      font-size: 16px;
+      margin-bottom: 10px;
+      word-break: break-all;
+      white-space: pre-wrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+.list-item:hover {
+  background-color: #f0f0f0;
 }
 </style>

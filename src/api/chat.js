@@ -40,6 +40,12 @@ export const getChatListByLastTime = (params) => {
   })
 }
 
+// 获取指定关系指定时间戳之前的消息
+export const getChatListByLastTimeReverse = (params) => {
+  return request.get('/message/list/time/decs', {
+    params
+  })
+}
 // 获取所有关系指定时间戳之后的信息
 // export const getOfferChatListBy
 
@@ -65,4 +71,9 @@ export const getTopMsgService = (params) => {
 // 获取指定关系中的pin消息
 export const getPinMsgService = (params) => {
   return request.get('/message/list/pin', { params })
+}
+
+// 通过内容模糊查找指定或所有关系中的信息（relationID<0，查询所有关系中的信息）
+export const searchMsgByContent = (params) => {
+  return request.get('/message/list/content', { params })
 }

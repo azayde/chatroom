@@ -16,6 +16,7 @@
     "@vueup/vue-quill": "^1.2.0",
     "axios": "^1.8.2",
     "element-plus": "^2.9.6",
+    "lodash-es": "^4.17.21",
     "nodejs-websocket": "^1.7.2",
     "pinia": "^3.0.1",
     "socket.io-client": "2.4.0",

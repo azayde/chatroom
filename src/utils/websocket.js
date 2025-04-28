@@ -9,6 +9,8 @@ let isConnect = false
 
 let isEventBound = false // 标记事件是否已绑定
 
+let isSending = false // 全局发送状态锁
+
 // 延迟请求代码 的存储变量
 let rec
 // 重连函数
@@ -22,7 +24,7 @@ let reConnect = () => {
 }
 
 // WebSocket链接地址
-let wsurl = 'ws://192.168.0.197:8000/chat'
+let wsurl = 'ws://192.168.0.196:8000/chat'
 // let wsurl = 'ws://192.168.0.196:8000/chat'
 
 // 消息回调函数
@@ -72,35 +74,6 @@ const createWebSocket = () => {
   initWebSocket()
 }
 
-// const sendMsg_socket = (msg) => {
-//   console.log('发消息')
-//   if (isConnect === false) {
-//     console.log('链接断开，不能发送消息')
-//     return
-//   }
-//   socket.emit('send_msg', msg, (res) => {
-//     console.log(res)
-//   })
-// }
-
-// let isSending = false
-// const sendMsg_socket = (msg) => {
-//   if (isConnect === false) {
-//     console.log('链接断开，不能发送消息')
-//     return false
-//   }
-
-//   // 发送消息到服务器
-//   socket.emit('send_msg', msg, (res) => {
-//     console.log('服务器响应:', res)
-//     // isSending = false
-//   })
-
-//   return true
-// }
-
-let isSending = false // 全局发送状态锁
-
 const sendMsg_socket = (msg) => {
   if (!isConnect || isSending) return false
   isSending = true
@@ -122,7 +95,7 @@ const sendMsg_socket = (msg) => {
 // 接收消息
 const onMessage = () => {
   console.log('监听……')
-  if (isEventBound) return // yb
+  if (isEventBound) return
   isEventBound = true
   socket.on('send_msg', (data) => {
     console.log('收到消息:', data)
@@ -131,7 +104,7 @@ const onMessage = () => {
     }
   })
 }
-// 新增移除事件监听的方法
+// 移除事件监听
 const offMessage = () => {
   if (socket && isEventBound) {
     socket.off('send_msg') // 移除所有 send_msg 监听器
@@ -143,16 +116,6 @@ const offMessage = () => {
 const setMessageCallback = (callback) => {
   messageCallback = callback
 }
-
-// 接收消息
-// function onMessage() {
-//   socket.on('send_msg', (data) => {
-//     console.log('收到消息:', data) // 打印收到的消息
-//     if (messageCallback) {
-//       messageCallback(data)
-//     }
-//   })
-// }
 
 // 关闭链接函数
 let closeWebSocket = () => {

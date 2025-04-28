@@ -14,6 +14,8 @@ import { useGroupStore } from '@/stores'
 const route = useRoute()
 const router = useRouter()
 const groupStore = useGroupStore()
+const loading = ref(true)
+
 // 搜索框
 const input = ref('')
 // 搜索列表切换
@@ -32,8 +34,8 @@ const handleBlue = async () => {
   }
   // 查询
   console.log(22)
-  // const res = await searchGroupByName(input.value)
-  // console.log(res)
+  const res = await searchGroupByName(input.value)
+  console.log(res)
 }
 watch(input, () => {
   // 一直搜索吗？？ TODO:
@@ -114,9 +116,16 @@ const groupList = ref([
 
 // 获取群聊列表
 const getGroupList = async () => {
-  const res = await getGroupListService()
-  console.log(res.data.data.List)
-  groupList.value = res.data.data.List
+  try {
+    const res = await getGroupListService()
+    console.log(res.data.data.List)
+    groupList.value = res.data.data.List
+  } catch (err) {
+    console.log(err)
+    ElMessage.error('加载失败')
+  } finally {
+    loading.value = false
+  }
 }
 getGroupList()
 const activeGroup = ref(route.query.relation_id ? groupStore.groupInfo : 0)
@@ -149,7 +158,7 @@ const sendMsg = (obj) => {
       </el-input>
       <el-button :icon="Plus" plain size="small" @click="bools = true" />
     </el-header>
-    <el-main v-if="!IsSearch" class="list">
+    <el-main v-if="!IsSearch" class="list" v-loading="loading">
       <el-scrollbar>
         <div
           class="list-item"

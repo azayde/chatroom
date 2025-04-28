@@ -2,6 +2,7 @@
 <script setup>
 import { watch, ref } from 'vue'
 import { Search, Plus } from '@element-plus/icons-vue'
+import { debounce } from 'lodash-es' // 用于实现防抖功能
 import {
   getFriendListService,
   createApplicationService,
@@ -14,16 +15,13 @@ const route = useRoute()
 const router = useRouter()
 const friendStore = useFriendStore()
 
+const loading = ref(true)
 // 搜索框
 const input = ref('')
-// 搜索列表切换
+// // 搜索列表切换
 const IsSearch = ref(false)
 const handleFocus = () => {
   IsSearch.value = true
-  // if (input.value) {
-  //   searchFriendByName(input.value)
-  //   console.log(11)
-  // }
 }
 const handleBlue = async () => {
   // 输入框为空 且 失焦 切换
@@ -40,7 +38,6 @@ watch(input, () => {
   console.log(11)
   // searchFriendByName(input.value)
 })
-
 const createApplication = ref(false)
 // 好友列表
 const friendList = ref([
@@ -112,24 +109,31 @@ const friendList = ref([
 
 // 获取好友列表
 const getFriendList = async () => {
-  const res = await getFriendListService()
-  console.log(res.data.data)
-  // 根据id获取账号信息
-  // res.data.data.list.forEach((item) => {})
-  for (let item of res.data.data.list) {
-    console.log(item)
-    // console.log()
-    const res1 = await getAccountInfoById(item.friend_info.account_id)
-    console.log(res1)
-    const info = {
-      ...res1.data.data.info,
-      signature: res1.data.data.signature
+  try {
+    const res = await getFriendListService()
+    console.log(res.data.data)
+    // 根据id获取账号信息
+    // res.data.data.list.forEach((item) => {})
+    for (let item of res.data.data.list) {
+      console.log(item)
+      // console.log()
+      const res1 = await getAccountInfoById(item.friend_info.account_id)
+      console.log(res1)
+      const info = {
+        ...res1.data.data.info,
+        signature: res1.data.data.signature
+      }
+      console.log(info)
+      item.friend_info = info
     }
-    console.log(info)
-    item.friend_info = info
+    friendList.value = res.data.data.list
+    console.log(friendList.value)
+  } catch (err) {
+    console.log(err)
+    ElMessage.error('加载失败')
+  } finally {
+    loading.value = false
   }
-  friendList.value = res.data.data.list
-  console.log(friendList.value)
 }
 getFriendList()
 
@@ -182,7 +186,7 @@ const handleCreateApplication = async () => {
         @click="createApplication = true"
       />
     </el-header>
-    <el-main v-if="!IsSearch" class="list">
+    <el-main v-if="!IsSearch" class="list" v-loading="loading">
       <el-scrollbar>
         <!-- IsNewFriend 判断是否点击了 “新的朋友” -->
         <div

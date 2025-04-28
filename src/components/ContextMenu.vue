@@ -12,11 +12,12 @@ watch(
   () => props.msg,
   (newVal) => {
     activeMsg.value = newVal
-    console.log(newVal)
+    // console.log(newVal)
   }
 )
-console.log(activeMsg.value)
+// console.log(activeMsg.value)
 
+const emit = defineEmits(['refresh-top', 'refresh-pin'])
 const isPin = ref(activeMsg.value?.is_pin || true)
 const isTop = ref(activeMsg.value?.is_top || true)
 // 置顶
@@ -27,6 +28,9 @@ const handleTop = async () => {
     relation_id: chatStore.chatInfo.relation_id,
     is_top: isTop.value
   })
+  if (res.status === 200) {
+    emit('refresh-top')
+  }
   console.log(res)
 }
 // pin
@@ -37,6 +41,10 @@ const handlePin = async () => {
     relation_id: chatStore.chatInfo.relation_id,
     is_pin: isPin.value
   })
+  if (res.status === 200) {
+    console.log('pin更新')
+    emit('refresh-pin')
+  }
   console.log(res)
 }
 // 撤回

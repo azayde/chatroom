@@ -26,9 +26,10 @@ const getAccount = async () => {
 getAccount()
 
 const getAccountId = async (obj) => {
+  console.log(obj)
   console.log(typeof obj.id)
   console.log(obj.id)
-  const res = await getAccountTokenService(obj.id)
+  const res = await getAccountTokenService(obj.account_id)
   console.log(res)
   console.log(res.data.data.account_token.token)
   userStore.setAccountToken(res.data.data.account_token.token)

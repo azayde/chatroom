@@ -1,8 +1,13 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, reactive, nextTick, onMounted, watch } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import { useChatStore } from '@/stores'
-import { getChatListByLastTime } from '@/api/chat.js'
+import { formatTime } from '@/utils/time'
+import {
+  // getChatListByLastTime,
+  getChatListByLastTimeReverse
+} from '@/api/chat.js'
+import { throttle } from 'lodash-es' // 节流
 
 const chatStore = useChatStore()
 // 聊天记录搜索框
@@ -18,39 +23,147 @@ const handleBlur = () => {
 }
 
 // tab切换
-const activeName = ref('')
+// const activeName = ref('')
 // console.log(activeName.value)
 
 // 日期
-const value1 = ref('')
+// const value1 = ref('')
 
-// const chatMsg = ref()
-// const last_time = new Date('2026-04-01T00:00:00').getTime() / 1000
-// const getChatList = async () => {
-//   const res = await getChatListByLastTime({
-//     relation_id: chatStore.chatInfo.relation_id,
-//     last_time: last_time,
-//     page: 1,
-//     page_size: 1000
-//   })
-//   chatMsg.value = res.data.data.list.filter((item) => item !== null)
-//   chatStore.setChatMsg(chatMsg.value)
+const chatMsg = ref([])
+const currentPage = ref(1)
+const pageSize = ref(20)
+// 更多消息
+const hasMore = ref(true)
+const last_time = ref(Math.floor(Date.now() / 1000))
+// console.log(last_time.value)
+const loading = ref(false)
+// 滚动容器引用
+const scrollbarRef = ref(null)
+const scrollToBottom = (force = false) => {
+  console.log('聊天记录滑动')
+  nextTick(() => {
+    const scrollContainer = scrollbarRef.value?.$el.querySelector(
+      '.el-scrollbar__wrap'
+    )
+    if (!scrollContainer) return
 
-//   // await nextTick() // 等待 DOM 更新
-//   // scrollToBottom(true) // 确保数据渲染后滚动
-// }
-// getChatList()
+    // 计算是否需要滚动（距离底部50px内视为已到底部）
+    if (force) {
+      scrollContainer.scrollTop = scrollContainer.scrollHeight
+      // scrollContainer.scrollTo({
+      //   top: scrollContainer.scrollHeight,
+      //   behavior: 'smooth'
+      // })
+    }
 
+    const shouldScroll =
+      scrollContainer.scrollHeight -
+        scrollContainer.scrollTop -
+        scrollContainer.clientHeight <
+      50
+
+    if (shouldScroll) {
+      scrollContainer.scrollTop = scrollContainer.scrollHeight
+      // 备用方案：平滑滚动
+      // scrollContainer.scrollTo({
+      //   top: scrollContainer.scrollHeight,
+      //   behavior: 'smooth'
+      // })
+    }
+  })
+}
+const getChatList = async () => {
+  if (loading.value || !hasMore.value) return
+  loading.value = true
+  // 获取当前滚动状态
+  const scrollContainer = scrollbarRef.value?.wrapRef
+  // 之前滚动条的位置
+  const prevState = {
+    height: scrollContainer?.scrollHeight || 0,
+    top: scrollContainer?.scrollTop || 0
+  }
+  try {
+    const res = await getChatListByLastTimeReverse({
+      relation_id: chatStore.chatInfo.relation_id,
+      last_time: last_time.value,
+      page: currentPage.value,
+      page_size: pageSize.value
+    })
+    console.log(res)
+    const newMsg = res.data.data.list
+      .filter((item) => item !== null && item.notify_type === 'common')
+      .reverse()
+    if (newMsg.length === 0) {
+      hasMore.value = false
+      return
+    }
+    console.log(newMsg)
+    // 记录最早消息事件
+    last_time.value = new Date(newMsg[0].create_at).getTime() / 1000
+    // 插入到现在的数据头部
+    chatMsg.value = [...newMsg, ...chatMsg.value]
+    await nextTick() // 等待 DOM 更新
+
+    if (scrollContainer) {
+      const newHeight = scrollContainer.scrollHeight
+      scrollContainer.scrollTop = prevState.top + (newHeight - prevState.height)
+    }
+  } finally {
+    loading.value = false
+  }
+}
+getChatList()
+
+// 滚动处理
+const handleScroll = throttle(() => {
+  const scrollContainer = scrollbarRef.value?.wrapRef
+  // console.log(scrollContainer)
+  // console.log(scrollContainer.scrollTop)
+  if (!scrollContainer || loading.value) return
+
+  // 距离顶部50px时加载
+  if (scrollContainer.scrollTop < 50) {
+    getChatList()
+  }
+}, 500)
 // 弹层是否出现
 const dialog = ref(false)
 const open = () => {
   dialog.value = true
+  scrollToBottom(true)
 }
 defineExpose({
   open
 })
-
-// 分类切换没做好(取消分类查找？？) TODO:
+onMounted(async () => {
+  // console.log('activeName 初始值:', activeName.value)
+  console.log('scrollbarRef 存在性:', !!scrollbarRef.value)
+  await getChatList()
+  await nextTick()
+  scrollToBottom(true)
+  // nextTick(() => {
+  // const container = scrollbarRef.value?.wrapRef
+  // console.log(scrollbarRef.value)
+  // console.log(container)
+  // if (container) {
+  //   container.scrollTop = container.scrollHeight
+  // }
+  // })
+})
+watch(
+  () => chatStore.chatInfo,
+  () => {
+    // 清空消息列表
+    chatMsg.value = []
+    // 重置分页时间戳为当前时间
+    last_time.value = Math.floor(Date.now() / 1000)
+    // 重置其他参数
+    hasMore.value = true
+    currentPage.value = 1
+    getChatList()
+    scrollToBottom(true)
+  }
+)
 </script>
 
 <template>
@@ -65,173 +178,30 @@ defineExpose({
       @blur="handleBlur"
     >
     </el-input>
-
-    <!-- 按条件展示 -->
-    <el-tabs v-model="activeName" type="card" class="demo-tabs">
-      <el-tab-pane label="文件" name="file">
-        <el-scrollbar v-if="activeName === 'file'">
-          <div class="list-item">
-            <div class="left">
-              <el-badge class="item" :value="0" :hidden="true">
-                <div class="avatar">
-                  <el-avatar
-                    shape="square"
-                    src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
-                  ></el-avatar>
-                </div>
-              </el-badge>
+    <!-- TODO 正常展示 -->
+    <el-scrollbar ref="scrollbarRef" @scroll="handleScroll">
+      <div v-if="loading" class="loading-text">加载中...</div>
+      <div v-if="!hasMore" class="no-more">没有更多消息了</div>
+      <div class="list-item" v-for="(item, index) in chatMsg" :key="index">
+        <div class="left">
+          <el-badge class="item" :value="0" :hidden="true">
+            <div class="avatar">
+              <el-avatar
+                shape="square"
+                src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
+              ></el-avatar>
             </div>
-            <div class="right">
-              <div class="top">
-                <span class="name">张三</span>
-                <span class="time_now">19:30</span>
-              </div>
-              <span class="message"
-                >12344243435gfhghfhgfg65655676676876875</span
-              >
-            </div>
+          </el-badge>
+        </div>
+        <div class="right">
+          <div class="top">
+            <span class="name">张三</span>
+            <span class="time_now">{{ formatTime(item.create_at) }}</span>
           </div>
-          <div class="list-item">
-            <div class="left">
-              <el-badge class="item" :value="0" :hidden="true">
-                <div class="avatar">
-                  <el-avatar
-                    shape="square"
-                    src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
-                  ></el-avatar>
-                </div>
-              </el-badge>
-            </div>
-            <div class="right">
-              <div class="top">
-                <span class="name">张三</span>
-                <span class="time_now">19:30</span>
-              </div>
-              <span class="message"
-                >12344243435gfhg的广泛认同个人奋斗通过夫人的好帖让的广泛
-                认同个人奋斗通过夫人的好帖让的广泛认同个人奋斗通过夫人的好帖让的广泛认同个人奋斗
-                通过夫人的好帖让个风格和他显然并非好帖让个巴菲特和个人部分hfhgfg65655676676876875</span
-              >
-            </div>
-          </div>
-        </el-scrollbar>
-      </el-tab-pane>
-      <el-tab-pane label="Pin" name="pin">
-        <el-scrollbar v-if="activeName === 'pin'">
-          <div class="list-item">
-            <div class="left">
-              <el-badge class="item" :value="0" :hidden="true">
-                <div class="avatar">
-                  <el-avatar
-                    shape="square"
-                    src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
-                  ></el-avatar>
-                </div>
-              </el-badge>
-            </div>
-            <div class="right">
-              <div class="top">
-                <span class="name">张三</span>
-                <span class="time_now">19:30</span>
-              </div>
-              <span class="message"
-                >12344243435gfhghfhgfg65655676676876875</span
-              >
-            </div>
-          </div>
-          <div class="list-item">
-            <div class="left">
-              <el-badge class="item" :value="0" :hidden="true">
-                <div class="avatar">
-                  <el-avatar
-                    shape="square"
-                    src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
-                  ></el-avatar>
-                </div>
-              </el-badge>
-            </div>
-            <div class="right">
-              <div class="top">
-                <span class="name">张三</span>
-                <span class="time_now">19:30</span>
-              </div>
-              <span class="message"
-                >12344243435gfhg的广泛认同个人奋斗通过夫人的好帖让的广泛
-                认同个人奋斗通过夫人的好帖让的广泛认同个人奋斗通过夫人的好帖让的广泛认同个人奋斗
-                通过夫人的好帖让个风格和他显然并非好帖让个巴菲特和个人部分hfhgfg65655676676876875</span
-              >
-            </div>
-          </div>
-        </el-scrollbar>
-        <!-- <template #empty>
-          <el-empty description="无内容"></el-empty>
-        </template> -->
-      </el-tab-pane>
-      <el-tab-pane name="date">
-        <template #label>
-          <div class="demo-date-picker">
-            <el-date-picker
-              v-model="value1"
-              type="date"
-              placeholder="日期"
-              size="small"
-            />
-          </div>
-        </template>
-
-        <el-scrollbar v-if="activeName === 'date'">
-          <div class="list-item">
-            <div class="left">
-              <el-badge class="item" :value="0" :hidden="true">
-                <div class="avatar">
-                  <el-avatar
-                    shape="square"
-                    src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
-                  ></el-avatar>
-                </div>
-              </el-badge>
-            </div>
-            <div class="right">
-              <div class="top">
-                <span class="name">张三</span>
-                <span class="time_now">19:30</span>
-              </div>
-              <span class="message"
-                >12344243435gfhghfhgfg65655676676876875</span
-              >
-            </div>
-          </div>
-          <div class="list-item">
-            <div class="left">
-              <el-badge class="item" :value="0" :hidden="true">
-                <div class="avatar">
-                  <el-avatar
-                    shape="square"
-                    src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
-                  ></el-avatar>
-                </div>
-              </el-badge>
-            </div>
-            <div class="right">
-              <div class="top">
-                <span class="name">张三</span>
-                <span class="time_now">19:30</span>
-              </div>
-              <span class="message"
-                >12344243435gfhg的广泛认同个人奋斗通过夫人的好帖让的广泛
-                认同个人奋斗通过夫人的好帖让的广泛认同个人奋斗通过夫人的好帖让的广泛认同个人奋斗
-                通过夫人的好帖让个风格和他显然并非好帖让个巴菲特和个人部分hfhgfg65655676676876875</span
-              >
-            </div>
-          </div>
-        </el-scrollbar>
-      </el-tab-pane>
-    </el-tabs>
-    <!-- TODO
-      正常展示
-    -->
-    <el-scrollbar v-if="activeName === ''">
-      <div class="list-item">
+          <span class="message">{{ item.msg_content }}</span>
+        </div>
+      </div>
+      <!-- <div class="list-item">
         <div class="left">
           <el-badge class="item" :value="0" :hidden="true">
             <div class="avatar">
@@ -249,30 +219,7 @@ defineExpose({
           </div>
           <span class="message">12344243435gfhghfhgfg65655676676876875</span>
         </div>
-      </div>
-      <div class="list-item">
-        <div class="left">
-          <el-badge class="item" :value="0" :hidden="true">
-            <div class="avatar">
-              <el-avatar
-                shape="square"
-                src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
-              ></el-avatar>
-            </div>
-          </el-badge>
-        </div>
-        <div class="right">
-          <div class="top">
-            <span class="name">张三</span>
-            <span class="time_now">19:30</span>
-          </div>
-          <span class="message"
-            >12344243435gfhg的广泛认同个人奋斗通过夫人的好帖让的广泛
-            认同个人奋斗通过夫人的好帖让的广泛认同个人奋斗通过夫人的好帖让的广泛认同个人奋斗
-            通过夫人的好帖让个风格和他显然并非好帖让个巴菲特和个人部分hfhgfg65655676676876875</span
-          >
-        </div>
-      </div>
+      </div> -->
     </el-scrollbar>
   </el-dialog>
 </template>
@@ -281,6 +228,10 @@ defineExpose({
 .el-dialog {
   .el-scrollbar {
     height: 387px;
+    .no-more,
+    .loading-text {
+      text-align: center;
+    }
   }
   .list-item {
     width: 98%;
@@ -334,7 +285,6 @@ defineExpose({
   }
   .list-item:hover {
     background-color: #f0f0f0;
-    // background-color: #e9e9e9; 点击后颜色
   }
 }
 </style>

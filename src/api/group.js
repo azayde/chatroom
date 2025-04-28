@@ -42,3 +42,23 @@ export const quitGroupService = (relation_id) => {
 export const searchGroupByName = (name) => {
   return request.get('/group/name', { params: { name } })
 }
+
+// 创建群通知
+export const createNotifyService = (data) => {
+  return request.post('/notify/create', data)
+}
+
+// 更新群通知
+export const updateNotifyService = (data) => {
+  return request.put('/notify/update', data)
+}
+
+// 获取群中所有的群通知
+export const getAllNotifyService = (relation_id) => {
+  return request.get('/notify/get', { params: { relation_id } })
+}
+
+// 删除群通知
+export const deleteNotifyService = ({ id, relation_id }) => {
+  return request.delete('/notify/delete', { data: { id, relation_id } })
+}

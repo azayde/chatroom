@@ -37,30 +37,11 @@ const handleAccept = async (id) => {
   console.log(id)
   const res = await acceptApplicationService(id)
   console.log(res)
-  // 应该是后端修改了 ???  TODO: 重新获取列表 ??
-
-  // const friend = newFriendList.value.find((item) => item.account_id_1 === id)
-  // if (friend) {
-  //   friend.status = '已同意'
-  // }
-  // newFriendList[id].status = '已同意'
 
   // 重新渲染
   getNewFriendList()
   ElMessage.success('添加好友成功')
 }
-
-// const handleRefuse = async ({ id, refuse }) => {
-// const handleRefuse = ({ id, refuse }) => {
-//   console.log({ id, refuse })
-//   // await refuseApplicationService({ id, refuse })
-//   // 传数据 id, refuse
-//   // 下面调用的地方 TODO
-
-//   // 重新渲染
-//   // getNewFriendList()
-//   ElMessage.error('已拒绝')
-// }
 
 // 删除好友申请
 const handleDelete = async (id) => {
@@ -102,11 +83,10 @@ const handleRefuse = async (id) => {
       ></el-empty>
 
       <template v-else>
-        <!-- key 的唯一性(目前不唯一)  TODO: -->
         <div
           class="list-item"
-          v-for="item in newFriendList"
-          :key="item.account_id_1"
+          v-for="(item, index) in newFriendList"
+          :key="index"
         >
           <div class="content1">
             <!-- {{ item }} -->

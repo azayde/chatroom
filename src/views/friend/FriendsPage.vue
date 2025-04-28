@@ -12,7 +12,6 @@ const friendStore = useFriendStore()
 const route = useRoute()
 
 // 父传子 or  子传父 ？？？
-// TODO
 
 // FriendsList里的数据，传到 该页面
 // 然后数据再传到 user-card

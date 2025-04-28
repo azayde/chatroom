@@ -28,7 +28,7 @@ const getGroupMember = async () => {
   console.log(route.query.relation_id)
   const res = await getGroupMemberService(route.query.relation_id)
   console.log(res.data.data.List)
-  groupMember.value = res.data.data?.List || undefined
+  groupMember.value = res.data.data?.List || null
   totalMember.value = res.data.data?.List.length || 0
 }
 onMounted(() => {
@@ -53,7 +53,7 @@ watch(
 
 <template>
   <el-container class="chat-page">
-    <chat-list @get-message="getMsg"></chat-list>
+    <chat-list @get-message="getMsg" class="chat-list"></chat-list>
     <el-main>
       <chat-room
         v-if="chatShow"
@@ -67,6 +67,9 @@ watch(
 <style lang="scss" scoped>
 .el-container {
   height: 94vh;
+  .chat-list {
+    width: 215px;
+  }
   // .room{
   //   // overflow: hidden;
   //   // border: 1px solid #000;

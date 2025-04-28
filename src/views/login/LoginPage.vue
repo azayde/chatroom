@@ -107,7 +107,6 @@ const register = async () => {
   await form.value.validate()
   console.log(formModel.value)
 
-  // TODO: 注册逻辑
   await userRegisterService(formModel.value)
   ElMessage.success('注册成功')
   isRegister.value = false
@@ -135,7 +134,6 @@ const login = async () => {
   console.log(formModel.value)
 
   console.log('点击登录')
-  // TODO: 登录逻辑
   const res = await userLoginService(formModel.value)
   console.log(res.data.data.token.access_token)
   userStore.setToken(res.data.data.token.access_token)
@@ -156,9 +154,6 @@ const login = async () => {
   // 登录账号
   IsAccountLogin.value = true
   // getAccount()
-
-  // 获取账号token 登录 TODO:
-  // accountList.vue(已实现)
 
   // ElMessage.success('登录成功')
   // 跳转

@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import { debounce } from 'lodash-es' // 用于实现防抖功能
 import { Search, Switch, Edit, Delete, Check } from '@element-plus/icons-vue'
 import {
   getAccountTokenService,
@@ -61,7 +62,7 @@ const handleSubmit = async (data) => {
   const index = accountList.value.findIndex((item) => item.id === data.id)
   // 判断是添加还是编辑
   if (index === -1) {
-    // 添加新账号 TODO:
+    // 添加新账号
     // 调用接口 - 返回数据 - 放到数组
     const res = await accountRegisterServie(data)
     console.log(res)
@@ -93,39 +94,44 @@ const handleSubmit = async (data) => {
   console.log(accountList.value)
 }
 
-// 当前账号id，读取store信息 TODO
-const activeAccountId = ref(userStore.accountInfo.id)
-// 账号切换
-const handleSwtich = async (id) => {
-  // 获取账号的token，存入store
-  // console.log(id)
-  try {
-    const res = await getAccountTokenService(id)
-    // console.log(res)
-    // console.log(res.data.data.account_token.token)
-    userStore.setAccountToken(res.data.data.account_token.token)
-  } catch (err) {
-    console.log(err)
-  }
+// 当前账号id，读取store信息
+const activeAccountId = ref(userStore.accountInfo.account_id)
+// 账号切换（debounce防抖）
+const handleSwtich = debounce(
+  async (id) => {
+    // 获取账号的token，存入store
+    // console.log(id)
+    try {
+      const res = await getAccountTokenService(id)
+      // console.log(res)
+      // console.log(res.data.data.account_token.token)
+      userStore.setAccountToken(res.data.data.account_token.token)
+    } catch (err) {
+      console.log(err)
+    }
 
-  //  根据id 获取账号信息
-  const res1 = await getAccountInfoById(id)
-  console.log(res1)
-  // console.log(res1.data.data)
-  const accountInfo = {
-    ...res1.data.data.info,
-    signature: res1.data.data.signature
-  }
-  // console.log(accountInfo)
-  // 账号信息存入store（覆盖之前的）
-  userStore.setAccountInfo(accountInfo)
-  closeWebSocket()
-  createWebSocket()
-  // 防抖，一直点不起作用 TODO:
-  // console.log(id)
-  activeAccountId.value = id
-  ElMessage.success('切换成功')
-}
+    //  根据id 获取账号信息
+    const res1 = await getAccountInfoById(id)
+    console.log(res1)
+    // console.log(res1.data.data)
+    const accountInfo = {
+      ...res1.data.data.info,
+      signature: res1.data.data.signature
+    }
+    // console.log(accountInfo)
+    // 账号信息存入store（覆盖之前的）
+    userStore.setAccountInfo(accountInfo)
+    closeWebSocket()
+    createWebSocket()
+    // console.log(id)
+    activeAccountId.value = id
+    ElMessage.success('切换成功')
+  },
+  500, // wait: 500：500ms内重复点击无效
+  { leading: true, trailing: false }
+  // leading: true：首次点击立即执行
+  // trailing: false：忽略后续连续点击
+)
 
 // 账号搜索
 const handleSearch = async () => {
@@ -181,7 +187,7 @@ const handleReset = () => {
             <template #default="{ row }">
               <!-- 当前账号 ---  switch按钮可消失（切换） -->
               <el-button
-                v-if="row.id === activeAccountId"
+                v-if="row.account_id === activeAccountId"
                 :icon="Check"
                 circle
                 type="success"
@@ -193,7 +199,7 @@ const handleReset = () => {
                 circle
                 type="primary"
                 plain
-                @click="handleSwtich(row.id)"
+                @click="handleSwtich(row.account_id)"
               ></el-button>
               <el-button
                 :icon="Delete"

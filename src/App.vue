@@ -3,7 +3,6 @@ import '@/assets/main.scss'
 import { createWebSocket } from '@/utils/websocket.js'
 import { useUserStore } from './stores'
 const userStore = useUserStore()
-// import { onMounted } from 'vue'
 createWebSocket()
 document.addEventListener('contextmenu', (e) => {
   e.preventDefault()

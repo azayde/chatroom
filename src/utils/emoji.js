@@ -87,8 +87,8 @@ const emoTextList = [
   '拳头',
   '差劲',
   '爱你',
-  'NO',
-  'OK',
+  '不',
+  '好的',
   '爱情',
   '飞吻',
   '跳跳',
@@ -117,10 +117,11 @@ let textToImg = (emoText) => {
   return `<img src="${url}" style="vertical-align: bottom;">`
 }
 
+// 将文本中的文字替换为表情包
 const transform = (content) => {
-  // return content.replace(/\#[\u4E00-\u9FA5]{1,3}\;/gi, textToImg)
   return content.replace(/#([\u4E00-\u9FA5]{1,3})\;/gi, textToImg)
 }
+// 将表情图片替换为文字
 const revertImgToText = (content) => {
   return content.replace(
     /<img[^>]+src="\/public\/emoji\/(\d+)\.gif"[^>]*>/gi,

@@ -25,14 +25,6 @@ const isNotDisturb = ref(chatStore.chatInfo.is_not_disturb || false)
 // // 添加群成员
 // const bools = ref(false)
 
-const activeMemberId = ref(null)
-// const popverStates = ref({})
-
-// 点击群成员获取当前的id（用于名片）
-const handleClickMember = (id) => {
-  activeMemberId.value = activeMemberId.value === id ? null : id
-}
-
 // 聊天记录dialog
 const chatDialog = ref()
 

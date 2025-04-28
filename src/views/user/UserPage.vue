@@ -91,7 +91,7 @@ const dialogEmailVisible = ref(false)
               昵称：<span>{{ userStore.accountInfo.name }}</span>
             </div>
             <div class="span">
-              账号：<span>{{ userStore.accountInfo.id }}</span>
+              账号：<span>{{ userStore.accountInfo.account_id }}</span>
             </div>
             <div class="span">
               性别：<span>{{ userStore.accountInfo.gender }}</span>

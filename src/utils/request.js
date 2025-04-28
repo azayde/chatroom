@@ -1,12 +1,13 @@
-import { useRouter } from 'vue-router'
+// import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
 import axios from 'axios'
-const router = useRouter()
+import router from '@/router'
+// const router = useRouter()
 
 // const baseURL = 'http://192.168.1.114:8000/api'
 // const baseURL = 'http://192.168.3.34:8000/api'
 // const baseURL = 'http://192.168.1.122:8000/api'
-const baseURL = 'http://192.168.0.197:8000/api'
+const baseURL = 'http://192.168.0.196:8000/api'
 
 const userStore = useUserStore()
 
@@ -14,6 +15,7 @@ const instance = axios.create({
   // TODO 1. 基础地址，超时时间
   baseURL,
   timeout: 100000
+  // timeout: 1000
 })
 
 // 请求拦截器
@@ -47,6 +49,10 @@ instance.interceptors.response.use(
     // TODO 3. 处理业务失败
     // TODO 4. 摘取核心响应数据
     console.log(res)
+    if (res.data.code === 2007) {
+      router.push('/login')
+      // console.log(2007)
+    }
     return res
   },
   (err) => {
