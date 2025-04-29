@@ -28,7 +28,8 @@ instance.interceptors.request.use(
       '/account/token',
       '/account/infos/account',
       '/account/update',
-      '/account/delete'
+      '/account/delete',
+      '/user/update/pwd'
     ]
 
     // 判断使用哪种token

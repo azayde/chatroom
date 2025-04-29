@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, nextTick, onMounted, watch } from 'vue'
+import { ref, nextTick, onMounted, watch } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import { useChatStore } from '@/stores'
 import { formatTime } from '@/utils/time'
@@ -22,20 +22,12 @@ const handleBlur = () => {
   // 恢复原来的
 }
 
-// tab切换
-// const activeName = ref('')
-// console.log(activeName.value)
-
-// 日期
-// const value1 = ref('')
-
 const chatMsg = ref([])
 const currentPage = ref(1)
 const pageSize = ref(20)
 // 更多消息
 const hasMore = ref(true)
 const last_time = ref(Math.floor(Date.now() / 1000))
-// console.log(last_time.value)
 const loading = ref(false)
 // 滚动容器引用
 const scrollbarRef = ref(null)
@@ -50,10 +42,6 @@ const scrollToBottom = (force = false) => {
     // 计算是否需要滚动（距离底部50px内视为已到底部）
     if (force) {
       scrollContainer.scrollTop = scrollContainer.scrollHeight
-      // scrollContainer.scrollTo({
-      //   top: scrollContainer.scrollHeight,
-      //   behavior: 'smooth'
-      // })
     }
 
     const shouldScroll =
@@ -64,11 +52,6 @@ const scrollToBottom = (force = false) => {
 
     if (shouldScroll) {
       scrollContainer.scrollTop = scrollContainer.scrollHeight
-      // 备用方案：平滑滚动
-      // scrollContainer.scrollTo({
-      //   top: scrollContainer.scrollHeight,
-      //   behavior: 'smooth'
-      // })
     }
   })
 }

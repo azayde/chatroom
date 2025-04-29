@@ -17,7 +17,7 @@ watch(
 )
 // console.log(activeMsg.value)
 
-const emit = defineEmits(['refresh-top', 'refresh-pin'])
+const emit = defineEmits(['refresh-top', 'refresh-pin', 'refresh-revoke'])
 const isPin = ref(activeMsg.value?.is_pin || true)
 const isTop = ref(activeMsg.value?.is_top || true)
 // 置顶
@@ -50,6 +50,9 @@ const handlePin = async () => {
 // 撤回
 const handleRevoke = async () => {
   const res = await revokeMsgService({ id: activeMsg.value.id })
+  if (res.status === 200) {
+    emit('refresh-revoke')
+  }
   console.log(res)
 }
 </script>

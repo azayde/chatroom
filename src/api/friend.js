@@ -36,10 +36,10 @@ export const searchFriendByName = (name) => {
 }
 
 // 删除好友（双向删除）
-export const deleteFriendService = (data) => {
-  return request.delete('/setting/friend/delete', data)
-}
-
-// export const deleteFriendService = (id) => {
-//   return request.delete('/setting/friend/delete', {data: {relation_id: id}})
+// export const deleteFriendService = (data) => {
+//   return request.delete('/setting/friend/delete', data)
 // }
+
+export const deleteFriendService = (id) => {
+  return request.delete('/setting/friend/delete', { data: { relation_id: id } })
+}

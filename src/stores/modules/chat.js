@@ -34,6 +34,7 @@ export const useChatStore = defineStore(
       chatInfo.value = ''
       // groupMember.value = ''
     }
+    // const allChat = ref()
 
     return {
       chatInfo,

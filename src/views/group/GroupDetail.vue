@@ -48,38 +48,38 @@ const groupNotify = ref(false)
 const is_leader = ref(false)
 // 群成员信息
 const groupMember = ref([
-  {
-    account_id: 12345,
-    name: 'Alice Smith',
-    avatar:
-      'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg',
-    nickname: 'Alice',
-    is_leader: false
-  },
-  {
-    account_id: 704513048576,
-    name: 'Bob Johnson',
-    avatar:
-      'https://picx.zhimg.com/v2-52a6e836434d15d74a2121bbd6bed34d_720w.jpg?source=172ae18b',
-    nickname: 'Bob',
-    is_leader: true
-  },
-  {
-    account_id: 24680,
-    name: 'Charlie Brown',
-    avatar:
-      'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg',
-    nickname: 'Chuck',
-    is_leader: false
-  },
-  {
-    account_id: 13579,
-    name: 'Diana Miller',
-    avatar:
-      'https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con',
-    nickname: 'Di',
-    is_leader: false
-  }
+  // {
+  //   account_id: 12345,
+  //   name: 'Alice Smith',
+  //   avatar:
+  //     'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg',
+  //   nickname: 'Alice',
+  //   is_leader: false
+  // },
+  // {
+  //   account_id: 704513048576,
+  //   name: 'Bob Johnson',
+  //   avatar:
+  //     'https://picx.zhimg.com/v2-52a6e836434d15d74a2121bbd6bed34d_720w.jpg?source=172ae18b',
+  //   nickname: 'Bob',
+  //   is_leader: true
+  // },
+  // {
+  //   account_id: 24680,
+  //   name: 'Charlie Brown',
+  //   avatar:
+  //     'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg',
+  //   nickname: 'Chuck',
+  //   is_leader: false
+  // },
+  // {
+  //   account_id: 13579,
+  //   name: 'Diana Miller',
+  //   avatar:
+  //     'https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con',
+  //   nickname: 'Di',
+  //   is_leader: false
+  // }
 ])
 const totalMember = ref()
 const getGroupMember = async () => {
@@ -87,9 +87,13 @@ const getGroupMember = async () => {
   const res = await getGroupMemberService(
     groupStore.groupInfo.group_info.relation_id
   )
+  console.log(res)
   groupMember.value = res.data.data?.List || null
   totalMember.value = res.data.data.List.length
+  console.log(groupMember.value[0])
+  // if ()
   // groupStore.setGroupMember(totalMember.value)
+
   console.log(res)
 }
 
@@ -310,7 +314,7 @@ const getNotifyList = async () => {
 }
 getNotifyList()
 // 创建群公告
-const notify_content = ref()
+const notify_content = ref('在此创建新的公告，直接输入，并点击创建即可')
 const createNotify = async () => {
   console.log(activeGroup.value.relation_id)
   console.log(notify_content.value)
@@ -321,6 +325,7 @@ const createNotify = async () => {
     })
     console.log(res)
   }
+  groupNotify.value = false
 }
 // 更新群公告
 const newNotify = ref({
@@ -332,6 +337,7 @@ const handleUpdate = (obj) => {
   console.log(obj)
   newNotify.value.id = obj.id
   newNotify.value.msg_content = obj.msg_content
+  groupNotify.value = false
 }
 
 const updateNotify = async () => {
@@ -369,7 +375,7 @@ onMounted(() => {
         <div class="description">{{ activeGroup.group_info.description }}</div>
         <hr />
         <div class="title">群成员</div>
-        <div class="member">
+        <div class="member" v-if="groupMember">
           <avatar-card
             v-for="item in groupMember"
             :key="item.account_id"
@@ -380,7 +386,6 @@ onMounted(() => {
             <span>
               <el-icon><Plus /></el-icon>
             </span>
-
             <div class="member-name">添加</div>
           </div>
           <div class="remove">
@@ -532,11 +537,11 @@ onMounted(() => {
     :title="`${activeGroup.group_info.name}的群公告`"
   >
     <div class="editor">
-      <!-- <textarea
+      <textarea
         v-model="notify_content"
         name="notify"
         class="notify_editor"
-      ></textarea> -->
+      ></textarea>
       <div class="item" v-for="(item, index) in notifyList" :key="index">
         <span>
           {{ index }}

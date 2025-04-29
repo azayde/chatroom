@@ -55,15 +55,23 @@ export const useUserStore = defineStore(
     // 账号登出
     const logoutAccount = () => {
       accountInfo.value = {}
-      accountToken.value = ''
-      token.value = ''
+      removeAccountToken()
+      removeToken()
     }
-
     // 背景颜色
     const color = ref('rgba(232, 242, 255, 1)')
     const setColor = (value) => {
       color.value = value
     }
+    // 用户注销
+    const deleteUser = () => {
+      logoutAccount()
+      remember.value = false
+      user.value = {}
+      userInfo.value = {}
+      color.value = 'rgba(232, 242, 255, 1)'
+    }
+
     return {
       token,
       remember,
@@ -81,7 +89,8 @@ export const useUserStore = defineStore(
       setAccountInfo,
       logoutAccount,
       color,
-      setColor
+      setColor,
+      deleteUser
     }
   },
   {

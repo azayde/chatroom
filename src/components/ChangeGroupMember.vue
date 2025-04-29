@@ -6,13 +6,8 @@ import { Search } from '@element-plus/icons-vue'
 import { inviteMemberService } from '@/api/group.js'
 import { useGroupStore } from '@/stores'
 const groupStore = useGroupStore()
-const props = defineProps({
+defineProps({
   friendList: Array
-})
-console.log(props.friendList)
-props.friendList.forEach((item) => {
-  console.log('account_id:', item.friend_info.account_id)
-  // 如果发现重复，需联系后端修复数据
 })
 // 搜索框
 const input = ref('')

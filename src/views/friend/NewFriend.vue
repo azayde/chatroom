@@ -108,7 +108,7 @@ const handleRefuse = async (id) => {
           <!-- 对方申请 -->
           <div
             class="content2"
-            v-if="item.account_id_2 === userStore.accountInfo.id"
+            v-if="item.account_id_2 === userStore.accountInfo.account_id"
           >
             <div class="btn" v-if="item.status === '已申请'">
               <el-button

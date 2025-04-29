@@ -1,10 +1,10 @@
 <!-- 用户名片 -->
 <!--头像点击 or 好友界面 -->
 <script setup>
-import { Position, MoreFilled, Delete } from '@element-plus/icons-vue'
+import { Position, MoreFilled, Delete, Plus } from '@element-plus/icons-vue'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { deleteFriendService } from '@/api/friend.js'
+import { deleteFriendService, createApplicationService } from '@/api/friend.js'
 import { updateNickNameService } from '@/api/setting.js'
 import { useChatStore, useFriendStore } from '@/stores'
 
@@ -88,10 +88,20 @@ watch(isShow, () => handleSwitch('isShow'))
 // console.log(relation_id)
 // 删除好友
 const deleteFriend = async () => {
-  // await deleteFriendService(props.userInfo.relation_id)
+  const res = await deleteFriendService(props.userInfo.relation_id)
+  console.log(res)
   ElMessage.success('已删除')
 }
-// 没有数据传输时，怎么处理？？
+
+const addFriend = async () => {
+  const res = await createApplicationService({
+    account_id:
+      activeFiendInfo.value.friend_info?.account_id ||
+      activeFiendInfo.value.account_id,
+    application_msg: '你好'
+  })
+  console.log(res)
+}
 // 好友  -  非好友
 
 // 设置备注
@@ -201,8 +211,8 @@ const updateNickName = async () => {
       <el-button v-if="isFriend" type="danger" text bg @click="deleteFriend"
         ><el-icon><Delete /></el-icon>删除好友</el-button
       >
-      <el-button v-else type="success" text bg
-        ><el-icon><Delete /></el-icon>添加好友</el-button
+      <el-button v-else type="success" text bg @click="addFriend"
+        ><el-icon><Plus /></el-icon>添加好友</el-button
       >
     </div>
 

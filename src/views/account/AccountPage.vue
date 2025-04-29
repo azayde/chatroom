@@ -42,15 +42,14 @@ const handleEdit = (row) => {
 // 删除账号
 const handleDel = (row) => {
   // 删除
-  console.log(typeof row.id)
+  console.log(row.account_id)
 
   ElMessageBox.confirm('你确定要注销该账号吗？', '温馨提示', {
     type: 'warning',
     confirmButtonText: '确认',
     cancelButtonText: '取消'
   }).then(async () => {
-    const res = await deleteAccountService(row.id)
-    // const res = await deleteAccountService(1021631791104)
+    const res = await deleteAccountService(row.account_id)
     console.log(res)
   })
   console.log(row)
@@ -59,7 +58,9 @@ const handleDel = (row) => {
 
 // 提交
 const handleSubmit = async (data) => {
-  const index = accountList.value.findIndex((item) => item.id === data.id)
+  const index = accountList.value.findIndex(
+    (item) => item.account_id === data.account_id
+  )
   // 判断是添加还是编辑
   if (index === -1) {
     // 添加新账号
@@ -74,7 +75,7 @@ const handleSubmit = async (data) => {
     // 更新现有账号
     console.log(data)
     const res = await updateAccountService({
-      account_id: data.id,
+      account_id: data.account_id,
       name: data.name,
       gender: data.gender,
       signature: data.signature
@@ -182,7 +183,7 @@ const handleReset = () => {
             </template>
           </el-table-column>
           <el-table-column label="昵称" prop="name"></el-table-column>
-          <el-table-column label="账号" prop="id"></el-table-column>
+          <el-table-column label="账号" prop="account_id"></el-table-column>
           <el-table-column label="操作" width="150">
             <template #default="{ row }">
               <!-- 当前账号 ---  switch按钮可消失（切换） -->
@@ -209,7 +210,7 @@ const handleReset = () => {
                 @click="handleDel(row)"
               ></el-button>
               <el-button
-                v-if="row.id === activeAccountId"
+                v-if="row.account_id === activeAccountId"
                 :icon="Edit"
                 circle
                 type="primary"

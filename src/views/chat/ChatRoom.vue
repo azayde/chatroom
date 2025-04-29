@@ -261,6 +261,20 @@ const handleRefreshTop = () => {
 const handleRefreshPin = () => {
   getPinMsg()
 }
+const handleRefreshRevoke = () => {
+  console.log('已撤回')
+  // const index = chatMsg.value.findIndex(
+  //   (msg) => msg.id === selectMessage.value.id
+  // )
+  // console.log(index)
+  // if (index !== -1) {
+  //   // 标记为已撤回，并修改内容
+  //   chatMsg.value[index].is_revoked = true
+  //   chatMsg.value[index].msg_content = null
+  //   // 强制更新视图
+  //   chatMsg.value = [...chatMsg.value]
+  // }
+}
 
 // pin盒子
 const pinDialog = ref(false)
@@ -598,7 +612,7 @@ onUnmounted(() => {
               : activeChatInfo.group_info.name
           }}{{
             activeChatInfo.relation_type === 'group'
-              ? `(${groupMember?.length})`
+              ? `(${props.groupMember?.length})`
               : ''
           }}
         </h1>
@@ -643,6 +657,7 @@ onUnmounted(() => {
             :msg="selectMessage"
             @refresh-top="handleRefreshTop"
             @refresh-pin="handleRefreshPin"
+            @refresh-revoke="handleRefreshRevoke"
           ></context-menu>
         </div>
       </el-scrollbar>
@@ -839,7 +854,9 @@ onUnmounted(() => {
     .no-more,
     .loading-text,
     .loading-icon {
+      line-height: 50px;
       text-align: center;
+      color: #b8b5b5;
     }
   }
   .el-footer {

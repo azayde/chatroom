@@ -3,19 +3,32 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowRight } from '@element-plus/icons-vue'
-import { useUserStore } from '@/stores'
+import {
+  sendEmailService,
+  updatePwdService,
+  deleteUserService
+} from '@/api/user'
+import {
+  useUserStore,
+  useChatStore,
+  useFriendStore,
+  useGroupStore
+} from '@/stores'
+const userStore = useUserStore()
+const chatStore = useChatStore()
+const friendStore = useFriendStore()
+const groupStore = useGroupStore()
 // 路由
 const router = useRouter()
 // 仓库 - 用户
-const userStore = useUserStore()
 
 const goAccount = () => {
   router.push('/account')
 }
 
-const email = userStore.user.email
 // 表单内容
 const formModel = ref({
+  email: userStore.user.email,
   newEmail: '',
   password: '',
   repassword: '',
@@ -59,10 +72,72 @@ const rules = {
   ],
   code: [{ required: true, message: '请输入验证码', trigger: 'blur' }]
 }
+// 获取验证码
+// 总秒数
+const totalSecond = 60
+// 当前秒数
+const seconds = ref(60)
+let timer = null // 定时器
+const getCode = async () => {
+  // 当前没有定时器开着，并且当前秒数等于总秒数
+  if (!timer && seconds.value === totalSecond) {
+    // 发送请求获取验证码
+    const res = await sendEmailService(formModel.value)
+    console.log(res)
+    // 开启倒计时
+    timer = setInterval(() => {
+      seconds.value--
+      if (seconds.value <= 0) {
+        clearInterval(timer)
+        timer = null
+        seconds.value = totalSecond
+      }
+    }, 1000)
+  }
+}
 // 修改密码
-const dialogFormVisible = ref(false)
+const updatePassword = ref(false)
+const updatePwd = async () => {
+  updatePassword.value = false
+  await updatePwdService({
+    code: formModel.value.code,
+    newPassword: formModel.value.password
+  })
+  userStore.logoutAccount()
+  userStore.setRemember(false)
+  userStore.setUserInfo({})
+  userStore.setUser({})
+  chatStore.cleanChat()
+  friendStore.cleanFriend()
+  groupStore.cleanGroup()
+  router.push('/login')
+}
 // 修改邮箱
 const dialogEmailVisible = ref(false)
+
+// 注销用户
+const deleteUser = async () => {
+  await ElMessageBox.confirm('确定注销用户吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(async () => {
+    try {
+      const res = await deleteUserService()
+      console.log(res)
+      ElMessage.success('已注销')
+      userStore.logoutAccount()
+      userStore.removeToken()
+      chatStore.cleanChat()
+      friendStore.cleanFriend()
+      groupStore.cleanGroup()
+      router.push('/login')
+    } catch (err) {
+      console.log(err)
+      ElMessage.err('注销失败，请重试')
+    }
+  })
+}
 </script>
 
 <template>
@@ -110,7 +185,7 @@ const dialogEmailVisible = ref(false)
         ></span>
       </div>
       <hr />
-      <div class="pwd" @click="dialogFormVisible = true">
+      <div class="pwd" @click="updatePassword = true">
         <span class="title">修改密码</span>
         <span
           ><el-icon><ArrowRight /></el-icon
@@ -124,37 +199,47 @@ const dialogEmailVisible = ref(false)
         ></span>
       </div>
       <hr />
-      <div class="cancel">注销用户</div>
+      <div class="cancel" @click="deleteUser">注销用户</div>
     </el-main>
   </el-container>
 
   <!-- 对话框（修改密码） -->
   <el-dialog
-    v-model="dialogFormVisible"
+    v-model="updatePassword"
     title="修改密码"
     width="500"
     class="dialog"
   >
     <el-form :model="formModel" :rules="rules">
       <el-form-item label="用户邮箱">
-        <el-input v-model="email"></el-input>
+        <el-input v-model="formModel.email"></el-input>
       </el-form-item>
       <el-form-item label="新的密码" prop="password">
-        <el-input v-model="formModel.password"></el-input>
+        <el-input
+          v-model="formModel.password"
+          type="password"
+          show-password
+        ></el-input>
       </el-form-item>
-      <el-form-item label="确认密码" prop="repassword">
+      <el-form-item
+        label="确认密码"
+        prop="repassword"
+        type="password"
+        show-password
+      >
         <el-input v-model="formModel.repassword"></el-input>
       </el-form-item>
       <el-form-item label="验证码" prop="code">
-        <el-input v-model="formModel.code"></el-input>
+        <el-input v-model="formModel.code" class="input-code"></el-input>
+        <el-button @click="getCode" text bg class="btn">{{
+          seconds === totalSecond ? '获取验证码' : seconds + 's后重新发送'
+        }}</el-button>
       </el-form-item>
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取消</el-button>
-        <el-button type="primary" @click="dialogFormVisible = false">
-          确定
-        </el-button>
+        <el-button @click="updatePassword = false">取消</el-button>
+        <el-button type="primary" @click="updatePwd"> 确定 </el-button>
       </div>
     </template>
   </el-dialog>
@@ -169,7 +254,7 @@ const dialogEmailVisible = ref(false)
     <el-form :model="formModel" :rules="rules">
       <!-- 自动填充 -->
       <el-form-item label="旧邮箱">
-        <el-input v-model="email"></el-input>
+        <el-input v-model="formModel.email"></el-input>
       </el-form-item>
       <el-form-item label="新邮箱" prop="newEmail">
         <el-input v-model="formModel.newEmail"></el-input>
@@ -288,5 +373,17 @@ const dialogEmailVisible = ref(false)
       color: red;
     }
   }
+}
+.input-code {
+  padding-right: 110px;
+}
+.btn {
+  // 发送验证码的按钮
+  width: 105px;
+  position: absolute;
+  right: 3px;
+  top: 50%;
+  transform: translateY(-50%); // 垂直居中
+  z-index: 2;
 }
 </style>

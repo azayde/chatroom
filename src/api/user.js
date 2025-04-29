@@ -15,6 +15,10 @@ export const userLoginService = ({ email, password }) => {
   return request.post('/user/login', { email, password })
 }
 
+// 修改用户密码
+export const updatePwdService = (data) => {
+  return request.put('/user/update/pwd', data)
+}
 // 删除用户
 export const deleteUserService = () => {
   return request.delete('user/deleteUser')

@@ -32,6 +32,7 @@ const handleRightClick = (e) => {
         left: props.msgInfo.account_id !== userStore.accountInfo.account_id,
         right: props.msgInfo.account_id === userStore.accountInfo.account_id
       }"
+      v-if="!props.msgInfo?.is_revoke"
     >
       <div class="user-avatar">
         <el-avatar shape="square" :src="props.headImage"></el-avatar>
@@ -66,6 +67,13 @@ const handleRightClick = (e) => {
         </div>
       </el-link>
     </div> -->
+    </div>
+    <div class="chat-system" v-else>
+      {{
+        props.msgInfo.account_id !== userStore.accountInfo.account_id
+          ? `${props.name}撤回了一条消息`
+          : '你撤回了一条消息'
+      }}
     </div>
   </div>
 </template>

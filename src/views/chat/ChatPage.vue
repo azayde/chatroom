@@ -40,6 +40,7 @@ watch(
     chatShow.value = true
     chatInfo.value = chatStore.chatInfo
     console.log(newid)
+    getGroupMember()
   }
 )
 watch(
