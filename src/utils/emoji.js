@@ -113,7 +113,7 @@ let textToImg = (emoText) => {
   if (idx === -1) {
     return emoText
   }
-  let url = `/public/emoji/${idx}.gif`
+  let url = `/emoji/${idx}.gif`
   return `<img src="${url}" style="vertical-align: bottom;">`
 }
 
@@ -124,7 +124,7 @@ const transform = (content) => {
 // 将表情图片替换为文字
 const revertImgToText = (content) => {
   return content.replace(
-    /<img[^>]+src="\/public\/emoji\/(\d+)\.gif"[^>]*>/gi,
+    /<img[^>]+src="\/emoji\/(\d+)\.gif"[^>]*>/gi,
     (match, idx) => {
       let word = emoTextList[idx]
       return `#${word};`

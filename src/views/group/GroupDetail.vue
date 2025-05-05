@@ -5,7 +5,7 @@ import {
   Minus,
   ArrowRight,
   Position,
-  // Edit,
+  Edit,
   Delete
 } from '@element-plus/icons-vue'
 import { watch, ref, onMounted } from 'vue'
@@ -40,48 +40,15 @@ const props = defineProps({
   groupInfo: Object
 })
 // switch开关 （三个）
-const isPin = ref(groupStore.groupInfo.is_pin || false)
-const isShow = ref(groupStore.groupInfo.is_show || false)
-const isNotDisturb = ref(groupStore.groupInfo.is_not_disturb || false)
+let isPin = ref(props.groupInfo.is_pin || false)
+let isShow = ref(props.groupInfo.is_show || false)
+let isNotDisturb = ref(props.groupInfo.is_not_disturb || false)
 
 const groupNotify = ref(false)
 const is_leader = ref(false)
 // 群成员信息
-const groupMember = ref([
-  // {
-  //   account_id: 12345,
-  //   name: 'Alice Smith',
-  //   avatar:
-  //     'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg',
-  //   nickname: 'Alice',
-  //   is_leader: false
-  // },
-  // {
-  //   account_id: 704513048576,
-  //   name: 'Bob Johnson',
-  //   avatar:
-  //     'https://picx.zhimg.com/v2-52a6e836434d15d74a2121bbd6bed34d_720w.jpg?source=172ae18b',
-  //   nickname: 'Bob',
-  //   is_leader: true
-  // },
-  // {
-  //   account_id: 24680,
-  //   name: 'Charlie Brown',
-  //   avatar:
-  //     'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg',
-  //   nickname: 'Chuck',
-  //   is_leader: false
-  // },
-  // {
-  //   account_id: 13579,
-  //   name: 'Diana Miller',
-  //   avatar:
-  //     'https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con',
-  //   nickname: 'Di',
-  //   is_leader: false
-  // }
-])
-const totalMember = ref()
+const groupMember = ref([])
+// const totalMember = ref()
 const getGroupMember = async () => {
   // console.log(groupStore.groupInfo.group_info.relation_id)
   const res = await getGroupMemberService(
@@ -89,12 +56,16 @@ const getGroupMember = async () => {
   )
   console.log(res)
   groupMember.value = res.data.data?.List || null
-  totalMember.value = res.data.data.List.length
-  console.log(groupMember.value[0])
-  // if ()
-  // groupStore.setGroupMember(totalMember.value)
-
-  console.log(res)
+  // totalMember.value = res.data.data.List.length
+  // console.log(groupMember.value[0])
+  if (
+    groupMember.value &&
+    groupMember.value[0].account_id === userStore.accountInfo.account_id
+  ) {
+    is_leader.value = true
+  } else {
+    is_leader.value = false
+  }
 }
 
 // 当前群聊
@@ -106,7 +77,11 @@ watch(
   () => props.groupInfo,
   (newVal) => {
     activeGroup.value = newVal
+    isPin.value = props.groupInfo.is_pin || false
+    isShow.value = props.groupInfo.is_show || false
+    isNotDisturb.value = props.groupInfo.is_not_disturb || false
     getGroupMember()
+    getNotifyList()
   },
   { deep: true }
 )
@@ -160,11 +135,11 @@ const handleIs = (item) => {
 // // 修改昵称
 // const isEdit = ref(false)
 // const id = groupMember.value.findIndex(
-//   (item) => item.account_id === userStore.accountInfo.id
+//   (item) => item.account_id === userStore.accountInfo.account_id
 // )
 
 // const id = groupList.value.findIndex(
-//   (item) => item.friend_info.account_id === userStore.accountInfo.id
+//   (item) => item.friend_info.account_id === userStore.accountInfo.account_id
 // )
 // const nickName = ref()
 
@@ -305,16 +280,25 @@ const sendMsg = () => {
 }
 // 群公告列表
 const notifyList = ref()
+// 最新一条
+const lastNotify = ref()
 // 获取群公告
 const getNotifyList = async () => {
   console.log(activeGroup.value.relation_id)
   const res = await getAllNotifyService(activeGroup.value.relation_id)
   console.log(res)
-  notifyList.value = res.data.data.list
+  notifyList.value = res.data.data?.list || null
+  if (notifyList.value) {
+    lastNotify.value =
+      notifyList.value[notifyList.value.length - 1]?.msg_content || '暂无群公告'
+  }
 }
-getNotifyList()
+const openGroupNotify = () => {
+  groupNotify.value = true
+  getNotifyList()
+}
 // 创建群公告
-const notify_content = ref('在此创建新的公告，直接输入，并点击创建即可')
+const notify_content = ref()
 const createNotify = async () => {
   console.log(activeGroup.value.relation_id)
   console.log(notify_content.value)
@@ -337,14 +321,13 @@ const handleUpdate = (obj) => {
   console.log(obj)
   newNotify.value.id = obj.id
   newNotify.value.msg_content = obj.msg_content
-  groupNotify.value = false
+  updateNotify()
 }
-
 const updateNotify = async () => {
   const res = await updateNotifyService(newNotify.value)
   console.log(res)
+  groupNotify.value = false
 }
-
 // 删除群公告
 const handleDel = async (item) => {
   console.log(item.id)
@@ -360,6 +343,7 @@ const inviteFriend = () => {
 }
 onMounted(() => {
   getGroupMember()
+  getNotifyList()
   getFriendList()
 })
 </script>
@@ -367,7 +351,7 @@ onMounted(() => {
 <template>
   <el-container>
     <el-header>
-      <h1>{{ activeGroup.group_info.name }}({{ groupMember.length }})</h1>
+      <h1>{{ activeGroup.group_info.name }}({{ groupMember?.length || 0 }})</h1>
     </el-header>
     <el-main>
       <el-scrollbar>
@@ -409,11 +393,11 @@ onMounted(() => {
           </div>
         </div>
         <hr /> -->
-        <div class="Notify" @click="groupNotify = true">
+        <div class="Notify" @click="openGroupNotify">
           <div class="title">群公告</div>
           <!-- 显示最近的一条 -->
           <div class="notify">
-            <span>11111111111</span>
+            <span>{{ lastNotify }}</span>
             <span
               ><el-icon><ArrowRight /></el-icon
             ></span>
@@ -535,38 +519,58 @@ onMounted(() => {
   <el-dialog
     v-model="groupNotify"
     :title="`${activeGroup.group_info.name}的群公告`"
+    class="notify_dialog"
   >
-    <div class="editor">
-      <textarea
-        v-model="notify_content"
-        name="notify"
-        class="notify_editor"
-      ></textarea>
-      <div class="item" v-for="(item, index) in notifyList" :key="index">
-        <span>
-          {{ index }}
-        </span>
+    <el-scrollbar>
+      <div class="editor">
         <textarea
-          v-model="item.msg_content"
+          v-if="is_leader"
+          v-model="notify_content"
           name="notify"
           class="notify_editor"
-          @input="handleUpdate(item)"
+          placeholder="在此创建新的公告，直接输入，并点击创建即可;
+修改时可直接修改并点击修改按钮"
         ></textarea>
-        <el-button
-          :icon="Delete"
-          circle
-          type="danger"
-          plain
-          @click="handleDel(item)"
-        ></el-button>
+        <div class="item" v-for="(item, index) in notifyList" :key="index">
+          <div>
+            {{ index }}
+          </div>
+          <textarea
+            v-if="is_leader"
+            v-model="item.msg_content"
+            name="notify"
+            class="notify_editor"
+          ></textarea>
+          <div v-else class="notleader_notify">{{ item.msg_content }}</div>
+          <el-button
+            v-if="is_leader"
+            :icon="Edit"
+            circle
+            type="primary"
+            plain
+            @click="handleUpdate(item)"
+          ></el-button>
+          <el-button
+            v-if="is_leader"
+            :icon="Delete"
+            circle
+            type="danger"
+            plain
+            @click="handleDel(item)"
+          ></el-button>
+        </div>
       </div>
-      <hr />
-    </div>
+    </el-scrollbar>
+
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="groupNotify = false">取消</el-button>
-        <el-button type="primary" @click="createNotify"> 创建 </el-button>
-        <el-button type="primary" @click="updateNotify"> 修改 </el-button>
+        <el-button v-if="is_leader" type="primary" @click="createNotify">
+          创建
+        </el-button>
+        <!-- <el-button v-if="is_leader" type="primary" @click="updateNotify">
+          修改
+        </el-button> -->
       </div>
     </template>
   </el-dialog>
@@ -723,15 +727,35 @@ onMounted(() => {
     }
   }
 }
-.editor {
-  .notify_editor {
-    width: 736px;
-    height: auto;
-    min-height: 50px; /* 设置最小高度 */
-    max-height: 500px; /* 可设置最大高度 */
-    font-size: 16px;
-    border: none;
-    resize: none;
+.notify_dialog {
+  .el-scrollbar {
+    height: 387px;
+    .editor {
+      .item {
+        display: flex;
+        margin: 10px 0;
+        margin-right: 30px;
+        .notleader_notify {
+          margin: 0 10px;
+        }
+      }
+      textarea.notify_editor {
+        box-sizing: border-box;
+        width: 90%;
+        height: auto;
+        min-height: 50px; // 最小高度
+        max-height: 300px; // 最大高度
+        overflow-y: auto;
+        font-size: 16px;
+        border: none;
+        resize: none;
+        margin: 0 10px;
+        // &:focus {
+        //   outline: none;
+        //   border-color: #409eff;
+        // }
+      }
+    }
   }
 }
 </style>

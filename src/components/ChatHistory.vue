@@ -119,19 +119,10 @@ defineExpose({
   open
 })
 onMounted(async () => {
-  // console.log('activeName 初始值:', activeName.value)
   console.log('scrollbarRef 存在性:', !!scrollbarRef.value)
   await getChatList()
   await nextTick()
   scrollToBottom(true)
-  // nextTick(() => {
-  // const container = scrollbarRef.value?.wrapRef
-  // console.log(scrollbarRef.value)
-  // console.log(container)
-  // if (container) {
-  //   container.scrollTop = container.scrollHeight
-  // }
-  // })
 })
 watch(
   () => chatStore.chatInfo,

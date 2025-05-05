@@ -51,7 +51,12 @@ export const useUserStore = defineStore(
       console.log(obj)
       accountInfo.value = obj
     }
-
+    const setAccountAvatar = (url) => {
+      accountInfo.value = {
+        ...accountInfo.value,
+        avatar: url
+      }
+    }
     // 账号登出
     const logoutAccount = () => {
       accountInfo.value = {}
@@ -87,6 +92,7 @@ export const useUserStore = defineStore(
       setUser,
       setUserInfo,
       setAccountInfo,
+      setAccountAvatar,
       logoutAccount,
       color,
       setColor,

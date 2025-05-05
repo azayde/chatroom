@@ -1,7 +1,8 @@
 <script setup>
 import { ref } from 'vue'
+import { useUserStore } from '@/stores'
 import { updateAvatarService } from '@/api/user.js'
-
+const useStore = useUserStore()
 // 判断是否为修改账号
 const isEdit = ref(false)
 
@@ -20,30 +21,35 @@ const rules = {
   signature: [{ required: true, message: '请输入个性签名', trigger: 'blur' }],
   gender: [{ required: true, message: '请选择性别', trigger: 'change' }]
 }
+
+// 表单数据
+const formData = ref({ ...accountInfo })
+
 // 接口传参要form-data
 const imgUrl = ref('')
 const fd = new FormData()
 const onUploadFile = async (File) => {
   imgUrl.value = URL.createObjectURL(File.raw)
   fd.append('file', File.raw)
-  console.log(File)
+  // console.log(File)
 }
 const updateAvatar = async () => {
   for (let [key, value] of fd.entries()) {
     console.log(key, value)
   }
-  const res = await updateAvatarService(fd)
-  console.log(res)
+  if (imgUrl.value) {
+    const res = await updateAvatarService(fd)
+    console.log(res)
+    formData.value.avatar = res.data.data.url
+  }
 }
 // emit 传给父组件
 const emit = defineEmits(['submit'])
-// 表单数据
-const formData = ref({ ...accountInfo })
 
 const formRef = ref(null)
 // 提交表单
-const onSubmit = () => {
-  // console.log(formData.value)
+const onSubmit = async () => {
+  await updateAvatar()
   // 判断是否为空
   formRef.value.validate((valid) => {
     if (valid) {
@@ -59,12 +65,13 @@ const onSubmit = () => {
 }
 // 传给父组件的方法
 const open = (obj) => {
-  console.log(obj.row)
   if (obj.row) {
     // 修改
+    // console.log(obj.row)
     formData.value = { ...obj.row }
     imgUrl.value = formData.value.avatar
     isEdit.value = true
+    // console.log(formData.value)
   } else {
     formData.value = { ...accountInfo }
     imgUrl.value = ''

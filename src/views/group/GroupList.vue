@@ -58,68 +58,68 @@ const creatrGroup = async () => {
 // 群聊列表
 // const groupList = ref([])
 const groupList = ref([
-  {
-    relation_id: 22,
-    relation_type: 'group',
-    is_show: true,
-    pin_time: '2025-03-10T15:00:00',
-    last_show: '2025-03-11T10:00:00',
-    group_info: {
-      relation_id: 1010,
-      name: '低代码开发平台',
-      description: '探索低代码/零代码开发',
-      avatar: 'https://pic.616pic.com/ys_bnew_img/00/02/01/VafZfftlPM.jpg'
-    }
-  },
-  {
-    relation_id: 23,
-    relation_type: 'group',
-    is_show: false,
-    pin_time: '2025-03-09T20:00:00',
-    last_show: '2025-03-11T07:00:00',
-    group_info: {
-      relation_id: 1111,
-      name: '前端技术早报',
-      description: '每日推送最新的前端资讯',
-      avatar:
-        'https://ts1.tc.mm.bing.net/th/id/R-C.c105782760255c8c917f16e18bc62188?rik=oPIWUoft19kO5g&riu=http%3a%2f%2fwww.kuaipng.com%2fUploads%2fpic%2fw%2f2018%2f09-04%2f46419%2fwater_46419_698_698_.png&ehk=QbsUJSSSxFCkMQHvPXUi1KHvTmpKqTWCjP8Ao0Xaz%2fQ%3d&risl=&pid=ImgRaw&r=0'
-    }
-  },
-  {
-    relation_id: 24,
-    relation_type: 'group',
-    is_show: true,
-    pin_time: '2025-03-11T11:00:00',
-    last_show: '2025-03-11T11:15:00',
-    group_info: {
-      relation_id: 1212,
-      name: '数据分析交流群',
-      description: '分享数据分析技巧',
-      avatar: 'https://img.shetu66.com/2023/06/28/1687937373741115.png'
-    }
-  },
-  {
-    relation_id: 28,
-    relation_type: 'group',
-    is_show: false,
-    pin_time: '2025-03-05T14:15:00',
-    last_show: '2025-03-09T08:00:00',
-    group_info: {
-      relation_id: 101,
-      name: '技术交流群',
-      description: '分享技术，共同进步',
-      avatar:
-        'https://img.tukuppt.com/ad_preview/00/13/99/5e143031aaca7.jpg!/fw/980'
-    }
-  }
+  // {
+  //   relation_id: 22,
+  //   relation_type: 'group',
+  //   is_show: true,
+  //   pin_time: '2025-03-10T15:00:00',
+  //   last_show: '2025-03-11T10:00:00',
+  //   group_info: {
+  //     relation_id: 1010,
+  //     name: '低代码开发平台',
+  //     description: '探索低代码/零代码开发',
+  //     avatar: 'https://pic.616pic.com/ys_bnew_img/00/02/01/VafZfftlPM.jpg'
+  //   }
+  // },
+  // {
+  //   relation_id: 23,
+  //   relation_type: 'group',
+  //   is_show: false,
+  //   pin_time: '2025-03-09T20:00:00',
+  //   last_show: '2025-03-11T07:00:00',
+  //   group_info: {
+  //     relation_id: 1111,
+  //     name: '前端技术早报',
+  //     description: '每日推送最新的前端资讯',
+  //     avatar:
+  //       'https://ts1.tc.mm.bing.net/th/id/R-C.c105782760255c8c917f16e18bc62188?rik=oPIWUoft19kO5g&riu=http%3a%2f%2fwww.kuaipng.com%2fUploads%2fpic%2fw%2f2018%2f09-04%2f46419%2fwater_46419_698_698_.png&ehk=QbsUJSSSxFCkMQHvPXUi1KHvTmpKqTWCjP8Ao0Xaz%2fQ%3d&risl=&pid=ImgRaw&r=0'
+  //   }
+  // },
+  // {
+  //   relation_id: 24,
+  //   relation_type: 'group',
+  //   is_show: true,
+  //   pin_time: '2025-03-11T11:00:00',
+  //   last_show: '2025-03-11T11:15:00',
+  //   group_info: {
+  //     relation_id: 1212,
+  //     name: '数据分析交流群',
+  //     description: '分享数据分析技巧',
+  //     avatar: 'https://img.shetu66.com/2023/06/28/1687937373741115.png'
+  //   }
+  // },
+  // {
+  //   relation_id: 28,
+  //   relation_type: 'group',
+  //   is_show: false,
+  //   pin_time: '2025-03-05T14:15:00',
+  //   last_show: '2025-03-09T08:00:00',
+  //   group_info: {
+  //     relation_id: 101,
+  //     name: '技术交流群',
+  //     description: '分享技术，共同进步',
+  //     avatar:
+  //       'https://img.tukuppt.com/ad_preview/00/13/99/5e143031aaca7.jpg!/fw/980'
+  //   }
+  // }
 ])
 
 // 获取群聊列表
 const getGroupList = async () => {
   try {
     const res = await getGroupListService()
-    console.log(res.data.data.List)
-    groupList.value = res.data.data.List
+    console.log(res.data.data?.List)
+    groupList.value = res.data.data?.List || null
   } catch (err) {
     console.log(err)
     ElMessage.error('加载失败')

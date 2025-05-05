@@ -142,11 +142,13 @@ const getChatList = async () => {
 getChatList()
 
 // 当前聊天页
-const activeChat = ref(route.query.relation_id ? chatStore.chatInfo : 0)
+const activeChat = ref(route.query.relation_id ? chatStore.chatInfo : {})
 const emit = defineEmits(['get-message'])
+// 切换聊天会话
 const handleClick = (obj) => {
+  // 重置聊天的未读消息
+  chatStore.resetUnreadCount(obj.relation_id)
   activeChat.value = obj
-  // console.log(obj)
   emit('get-message', obj)
   router.push({
     path: '/chat/chatroom',
@@ -188,7 +190,12 @@ watch(
           }"
         >
           <div class="left">
-            <el-badge class="item" :value="0" :hidden="true">
+            <el-badge
+              class="item"
+              :value="chatStore.unreadCounts[item.relation_id] || 0"
+              :hidden="chatStore.unreadCounts[item.relation_id] === 0"
+              :max="99"
+            >
               <div class="avatar">
                 <el-avatar
                   shape="square"

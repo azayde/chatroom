@@ -12,7 +12,7 @@ import {
 } from '@element-plus/icons-vue'
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { throttle } from 'lodash-es' // 节流
-import { useUserStore, useChatStore, useGroupStore } from '@/stores'
+import { useUserStore, useChatStore } from '@/stores'
 import {
   // publishFileSerivce,
   sendFileService,
@@ -29,7 +29,6 @@ import { onMessage, offMessage, setMessageCallback } from '@/utils/websocket'
 
 const userStore = useUserStore()
 const chatStore = useChatStore()
-const groupStore = useGroupStore()
 // 聊天窗
 // const AllLoading = ref(true)
 const drawer = ref(false)
@@ -47,7 +46,7 @@ const loading = ref(false)
 // 更多消息
 const hasMore = ref(true)
 const last_time = ref(Math.floor(Date.now() / 1000))
-// console.log(last_time.value)
+console.log(last_time.value)
 const scrollbarRef = ref(null)
 const scrollToBottom = (force = false) => {
   console.log('滑动')
@@ -147,10 +146,17 @@ const getChatList = async () => {
 
 // 处理收到的新消息
 const handleNewMessage = (newMessage) => {
-  if (newMessage.relation_id === props.chatInfo.relation_id) {
+  // 当前聊天窗的id
+  const currentChatId = props.chatInfo.relation_id
+  // 直接显示消息
+  if (newMessage.relation_id === currentChatId) {
     chatStore.addChatMsg(newMessage)
     scrollToBottom(true)
     // getChatList()
+  } else {
+    console.log('未读+1')
+    // 非当前聊天，增加未读消息
+    chatStore.increaseUnreadCount(newMessage.relation_id)
   }
   console.log(newMessage)
 }
@@ -184,7 +190,7 @@ const handleAvatar = (info) => {
     return member ? member.avatar : ''
   }
   // 好友
-  return info.account_id === userStore.accountInfo.id
+  return info.account_id === userStore.accountInfo.account_id
     ? userStore.accountInfo.avatar
     : chatStore.chatInfo.friend_info?.avatar
 }
@@ -194,7 +200,6 @@ const handleName = (info) => {
   if (info.notify_type === ' system') return
   // groupMember不为空
   if (props.groupMember) {
-    // console.log('群聊')
     let member
     for (let ele of props.groupMember) {
       // console.log(ele)
@@ -206,24 +211,28 @@ const handleName = (info) => {
     return member ? member.name : ''
   }
   // 好友
-  return info.account_id === userStore.accountInfo.id
+  return info.account_id === userStore.accountInfo.account_id
     ? userStore.accountInfo.name
     : chatStore.chatInfo.friend_info?.name
 }
 //获取当前pin消息
 const pinMsg = ref()
 const getPinMsg = async () => {
+  pinMsg.value = ''
   const res = await getPinMsgService({
     relation_id: chatStore.chatInfo.relation_id,
     page: 1,
     pageSize: 100
   })
   console.log(res.data)
-  pinMsg.value = res.data.data.list || null
+  if (res.data.data?.list.length !== 0) {
+    pinMsg.value = res.data.data.list || null
+  }
 }
 //获取当前置顶消息
 const topMsg = ref()
 const getTopMsg = async () => {
+  topMsg.value = ''
   const res = await getTopMsgService({
     relation_id: chatStore.chatInfo.relation_id,
     page: 1,
@@ -253,6 +262,14 @@ const scrollToTopMsg = async () => {
     }, 3000)
   })
 }
+// 引用
+const handleReply = (obj) => {
+  inputEditorRef.value.relpyHtml({
+    name: handleName(obj),
+    msg_content: obj.msg_content
+  })
+  console.log(obj.id)
+}
 // 置顶更新
 const handleRefreshTop = () => {
   getTopMsg()
@@ -261,6 +278,7 @@ const handleRefreshTop = () => {
 const handleRefreshPin = () => {
   getPinMsg()
 }
+// 撤回消息TODO(即时渲染)
 const handleRefreshRevoke = () => {
   console.log('已撤回')
   // const index = chatMsg.value.findIndex(
@@ -454,32 +472,9 @@ const sendMsg = async () => {
 // 回车发送，shift+回车换行e.preventDefault()不管用!!!!!!TODO
 const handleKeyDown = (e) => {
   console.log(e)
-  if (e.key === 'Enter') {
-    // console.log('回车')
-    // e.preventDefault()
-    // console.log(e.defaultPrevented)
-    // const currentContent = inputEditorRef.value.getContent()
-    // console.log(currentContent)
-    // const isEmpty = htmlToPlainText(currentContent).trim().length === 0
-    if (e.shiftKey) {
-      return
-    } else {
-      e.preventDefault()
-      sendMsg()
-    }
-    // if (e.shiftKey) {
-    //   // Shift+Enter：插入换行
-    //   // inputEditorRef.value.insertText('\n')
-    // } else {
-    //   // e.preventDefault()
-    //   // 单独Enter键处理
-    //   // if (isEmpty) {
-    //   //   ElMessage.warning('请输入有效内容')
-    //   //   return
-    //   // }
-    //   console.log('发送')
-    //   // sendMsg()
-    // }
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault()
+    sendMsg()
   }
 }
 // 上传文件
@@ -499,7 +494,7 @@ const handleFileChange = async (file) => {
   // const formData = new FormData()
   // formData.append('file', file.raw) // 第三个参数 filename 可选
   // formData.append('relation_id', props.chatInfo.relation_id)
-  // formData.append('account_id', userStore.accountInfo.id)
+  // formData.append('account_id', userStore.accountInfo.account_id)
   // selectFile.value = [
   //   {
   //     id: file.uid,
@@ -610,7 +605,8 @@ onUnmounted(() => {
             activeChatInfo.relation_type === 'friend'
               ? activeChatInfo.nick_name || activeChatInfo.friend_info.name
               : activeChatInfo.group_info.name
-          }}{{
+          }}
+          {{
             activeChatInfo.relation_type === 'group'
               ? `(${props.groupMember?.length})`
               : ''
@@ -655,6 +651,7 @@ onUnmounted(() => {
             class="contextMenu"
             :style="{ top: menuTop + 'px', left: menuLeft + 'px' }"
             :msg="selectMessage"
+            @reply-msg="handleReply"
             @refresh-top="handleRefreshTop"
             @refresh-pin="handleRefreshPin"
             @refresh-revoke="handleRefreshRevoke"

@@ -51,8 +51,8 @@ const handleDel = (row) => {
   }).then(async () => {
     const res = await deleteAccountService(row.account_id)
     console.log(res)
+    getAccountList()
   })
-  console.log(row)
   // 重新渲染
 }
 
@@ -71,7 +71,7 @@ const handleSubmit = async (data) => {
     getAccountList()
     ElMessage.success('添加成功')
   } else {
-    accountEditRef.value.updateAvatar()
+    // accountEditRef.value.updateAvatar()
     // 更新现有账号
     console.log(data)
     const res = await updateAccountService({
@@ -85,10 +85,10 @@ const handleSubmit = async (data) => {
     // 重新渲染
     getAccountList()
     // 如果修改的是当前登录的账号
-    if (data.id === activeAccountId.value) {
+    if (data.account_id === activeAccountId.value) {
       // 更新账号信息
       userStore.setAccountInfo(data)
-      console.log(123)
+      console.log(data)
     }
     ElMessage.success('编辑成功')
   }

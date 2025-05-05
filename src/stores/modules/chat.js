@@ -10,11 +10,6 @@ export const useChatStore = defineStore(
     const setChatInfo = (value) => {
       chatInfo.value = value
     }
-    // // 群成员总人数
-    // const groupMember = ref()
-    // const setGroupMember = (value) => {
-    //   groupMember.value = value
-    // }
 
     // 当前聊天对象的聊天记录
     const chatMsg = ref()
@@ -32,20 +27,32 @@ export const useChatStore = defineStore(
     const cleanChat = () => {
       chatMsg.value = ''
       chatInfo.value = ''
-      // groupMember.value = ''
     }
-    // const allChat = ref()
 
+    // 未读消息列表
+    const unreadCounts = ref({})
+    // 增加未读计数
+    const increaseUnreadCount = (relation_id) => {
+      if (!unreadCounts.value[relation_id]) {
+        unreadCounts.value[relation_id] = 0
+      }
+      unreadCounts.value[relation_id]++
+    }
+    // 重置未读计数
+    const resetUnreadCount = (relation_id) => {
+      unreadCounts.value[relation_id] = 0
+    }
     return {
       chatInfo,
       chatMsg,
-      // groupMember,
-      // setGroupMember,
+      unreadCounts,
       setChatInfo,
       setChatMsg,
       addChatMsg,
       cleanChatMsg,
-      cleanChat
+      cleanChat,
+      increaseUnreadCount,
+      resetUnreadCount
     }
   },
   {

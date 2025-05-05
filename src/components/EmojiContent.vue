@@ -6,7 +6,7 @@ const props = defineProps({
 const emit = defineEmits(['getEmoji'])
 const handelClick = (emoText) => {
   let idx = emoTextList.indexOf(emoText)
-  let url = `/public/emoji/${idx}.gif`
+  let url = `/emoji/${idx}.gif`
   emit('getEmoji', url)
 }
 </script>

@@ -38,7 +38,7 @@ const handleRightClick = (e) => {
         <el-avatar shape="square" :src="props.headImage"></el-avatar>
       </div>
       <div class="ri_pao">
-        <div class="name">
+        <div class="name" v-if="props.name !== userStore.accountInfo.name">
           {{ props.name === userStore.accountInfo.name ? '' : props.name }}
         </div>
         <div

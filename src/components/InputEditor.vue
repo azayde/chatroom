@@ -20,7 +20,6 @@ const updateLength = () => {
   if (quill.getSelection()) {
     index.value = quill.getSelection().index
   }
-  // console.log(index.value)
 }
 
 const setValue = () => {
@@ -41,6 +40,23 @@ const emojiHandle = (val) => {
   }
 }
 
+// 引用样式
+const relpyHtml = (obj) => {
+  const replyMsg = `
+    <span style="color:#797979; background-color: #e8e8e8;">${obj.name}:${obj.msg_content}</span>
+    <div><br></div>
+  `
+  const quill = toRaw(quillRef.value).getQuill()
+  const position = quill.getSelection()?.index || 0
+
+  // 插入内容
+  quill.clipboard.dangerouslyPasteHTML(position, replyMsg)
+
+  // 设置光标位置到引用下方
+  quill.setSelection(position + replyMsg.length)
+}
+
+// 清除富文本框
 const clearContent = () => {
   data.content = ''
   if (quillRef.value) {
@@ -51,6 +67,7 @@ const clearContent = () => {
 defineExpose({
   getContent: () => data.content,
   emojiHandle,
+  relpyHtml,
   clearContent
 })
 </script>
@@ -76,6 +93,19 @@ defineExpose({
   width: 100%;
   height: 100%;
 }
+:deep(.ql-editor) {
+  .reply_msg {
+    &::before {
+      content: '>';
+      color: #409eff;
+      position: absolute;
+      left: -12px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  }
+}
+
 :deep(.ql-container) {
   border: none;
   .ql-editor {

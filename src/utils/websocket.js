@@ -24,8 +24,8 @@ let reConnect = () => {
 }
 
 // WebSocket链接地址
-let wsurl = 'ws://192.168.0.196:8000/chat'
-// let wsurl = 'ws://192.168.0.196:8000/chat'
+// let wsurl = 'ws://192.168.0.197:8000/chat'
+let wsurl = 'ws://123.249.32.125:8888/chat'
 
 // 消息回调函数
 let messageCallback = null
@@ -74,6 +74,7 @@ const createWebSocket = () => {
   initWebSocket()
 }
 
+// 发送消息
 const sendMsg_socket = (msg) => {
   if (!isConnect || isSending) return false
   isSending = true
@@ -94,13 +95,16 @@ const sendMsg_socket = (msg) => {
 
 // 接收消息
 const onMessage = () => {
-  console.log('监听……')
+  // const chatStore = useChatStore()
   if (isEventBound) return
   isEventBound = true
   socket.on('send_msg', (data) => {
     console.log('收到消息:', data)
     if (messageCallback) {
       messageCallback(data) // 通过回调传递消息
+      // if (data.relation_id !== chatStore.chatInfo.relation_id) {
+      //   chatStore.increaseUnreadCount(data.relation_id)
+      // }
     }
   })
 }

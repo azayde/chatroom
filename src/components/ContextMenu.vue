@@ -15,11 +15,19 @@ watch(
     // console.log(newVal)
   }
 )
-// console.log(activeMsg.value)
-
-const emit = defineEmits(['refresh-top', 'refresh-pin', 'refresh-revoke'])
+const emit = defineEmits([
+  'reply-msg',
+  'refresh-top',
+  'refresh-pin',
+  'refresh-revoke'
+])
 const isPin = ref(activeMsg.value?.is_pin || true)
 const isTop = ref(activeMsg.value?.is_top || true)
+// 引用
+const handleReply = () => {
+  console.log('引用')
+  emit('reply-msg', props.msg)
+}
 // 置顶
 const handleTop = async () => {
   console.log(isTop.value)
@@ -60,7 +68,7 @@ const handleRevoke = async () => {
 <template>
   <div class="context-menu">
     <div class="btn copy">复制</div>
-    <div class="btn reply">引用</div>
+    <div class="btn reply" @click="handleReply">引用</div>
     <div class="btn top" @click="handleTop">置顶</div>
     <div class="btn pin" @click="handlePin">pin</div>
     <div class="btn delete" @click="handleRevoke">撤回</div>

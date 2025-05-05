@@ -27,7 +27,7 @@ const totalMember = ref()
 const getGroupMember = async () => {
   console.log(route.query.relation_id)
   const res = await getGroupMemberService(route.query.relation_id)
-  console.log(res.data.data.List)
+  // console.log(res.data.data.List)
   groupMember.value = res.data.data?.List || null
   totalMember.value = res.data.data?.List.length || 0
 }

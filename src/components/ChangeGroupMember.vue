@@ -97,7 +97,7 @@ defineExpose({
                       :src="item.friend_info.avatar"
                     ></el-avatar>
                   </div>
-                  <span class="name">{{ item.friend_info.name }}</span>
+                  <span class="name">{{ item.nick_name }}</span>
                 </div>
               </el-checkbox>
             </el-checkbox-group>
