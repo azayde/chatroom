@@ -1,6 +1,6 @@
 <!-- 好友详细信息 -->
 <script setup>
-import { Plus, ArrowRight } from '@element-plus/icons-vue'
+import { ArrowRight } from '@element-plus/icons-vue'
 import { watch, ref } from 'vue'
 import {
   updateShowService,
@@ -35,11 +35,11 @@ const handleSwitch = async (msg) => {
   console.log(msg)
   console.log(isShow.value)
   if (msg === 'isNotDisturb') {
-    // const res = await updateDisturbService({
-    //   relation_id: relation_id.value,
-    //   isNotDisturb: isNotDisturb.value
-    // })
-    // console.log(res)
+    const res = await updateDisturbService({
+      relation_id: relation_id.value,
+      is_not_disturb: isNotDisturb.value
+    })
+    console.log(res)
   } else if (msg === 'isPin') {
     const res = await updatePinService({
       relation_id: relation_id.value,
@@ -47,11 +47,12 @@ const handleSwitch = async (msg) => {
     })
     console.log(res)
   } else if (msg === 'isShow') {
-    // const res = await updateShowService({
-    //   relation_id: relation_id.value,
-    //   isShow: isShow.value
-    // })
-    // console.log(res)
+    console.log(isShow.value)
+    const res = await updateShowService({
+      relation_id: relation_id.value,
+      is_show: isShow.value
+    })
+    console.log(res)
   }
 }
 watch(isNotDisturb, () => handleSwitch('isNotDisturb'))
@@ -65,7 +66,6 @@ watch(isShow, () => handleSwitch('isShow'))
 </script>
 
 <template>
-  <!-- {{ frinedInfo.relation_id }} -->
   <el-container>
     <el-header>
       <h1>{{ frinedInfo.friend_info.name }}</h1>

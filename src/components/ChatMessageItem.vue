@@ -8,6 +8,7 @@ const props = defineProps({
   headImage: String,
   name: String
 })
+console.log(props.msgInfo)
 // 右键菜单
 const emit = defineEmits(['setContextMenu'])
 const handleRightClick = (e) => {
@@ -47,6 +48,7 @@ const handleRightClick = (e) => {
           @contextmenu="handleRightClick($event)"
           v-html="transform(props.msgInfo.msg_content)"
         ></div>
+
         <div
           class="picture"
           v-show="props.msgInfo.msg_type === 'file'"
@@ -55,7 +57,9 @@ const handleRightClick = (e) => {
           <img class="img" :src="props.msgInfo.msg_content" alt="" />
         </div>
       </div>
-
+      <div class="rlymsg" v-show="msgInfo.rly_msg?.msg_content">
+        {{ msgInfo.rly_msg?.msg_content }}
+      </div>
       <!-- <div class="file">
       <el-link href="https://element-plus.org" :underline="false">
         <div class="item">
@@ -85,6 +89,7 @@ const handleRightClick = (e) => {
     color: #b8b5b5;
   }
   .chat-item {
+    // border: 1px solid #000;
     display: flex;
     align-items: center;
     // position: relative;
@@ -104,6 +109,21 @@ const handleRightClick = (e) => {
         padding-left: 15px;
         color: #b8b5b5;
       }
+    }
+    .rlymsg {
+      position: relative;
+      padding: 8px 12px;
+      // top: 40px;
+      margin: 5px 0;
+      color: #666;
+      background-color: #f0f2f5;
+      border-left: 4px solid #409eff;
+      border-right: 4px solid #409eff;
+      border-radius: 4px;
+      font-size: 12px;
+      line-height: 1.5;
+      max-width: 80%; // 限制最大宽度，避免过长
+      word-break: break-word; // 自动换行
     }
     // 文字
     .chat-pao {

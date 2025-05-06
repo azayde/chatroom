@@ -2,6 +2,7 @@
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 import { reactive, ref, toRaw } from 'vue'
+import { Close } from '@element-plus/icons-vue'
 
 const data = reactive({
   content: '',
@@ -23,9 +24,6 @@ const updateLength = () => {
 }
 
 const setValue = () => {
-  // const text = toRaw(quillRef.value).getHTML()
-  // console.log(text)
-  // emit('updateValue', text)
   updateLength()
 }
 // 处理emoji表情  向外导出
@@ -41,23 +39,26 @@ const emojiHandle = (val) => {
 }
 
 // 引用样式
+const reply_msg = ref(null)
 const relpyHtml = (obj) => {
-  const replyMsg = `
-    <span style="color:#797979; background-color: #e8e8e8;">${obj.name}:${obj.msg_content}</span>
-    <div><br></div>
-  `
-  const quill = toRaw(quillRef.value).getQuill()
-  const position = quill.getSelection()?.index || 0
+  reply_msg.value = obj
+  // const replyMsg = `
+  //   <span style="color:#797979; background-color: #e8e8e8;">${obj.name}:${obj.msg_content}</span>
+  //   <div><br></div>
+  // `
+  // const quill = toRaw(quillRef.value).getQuill()
+  // const position = quill.getSelection()?.index || 0
 
-  // 插入内容
-  quill.clipboard.dangerouslyPasteHTML(position, replyMsg)
+  // // 插入内容
+  // quill.clipboard.dangerouslyPasteHTML(position, replyMsg)
 
-  // 设置光标位置到引用下方
-  quill.setSelection(position + replyMsg.length)
+  // // 设置光标位置到引用下方
+  // quill.setSelection(position + replyMsg.length)
 }
 
 // 清除富文本框
 const clearContent = () => {
+  reply_msg.value = null
   data.content = ''
   if (quillRef.value) {
     const quill = quillRef.value.getQuill()
@@ -70,6 +71,7 @@ defineExpose({
   relpyHtml,
   clearContent
 })
+const emit = defineEmits(['keydown'])
 </script>
 
 <template>
@@ -83,8 +85,15 @@ defineExpose({
       content-type="html"
       @click="updateLength"
       @update:content="setValue()"
+      @keydown="(e) => emit('keydown', e)"
     >
     </quill-editor>
+  </div>
+  <div v-show="reply_msg">
+    <div class="reply_msg">
+      {{ reply_msg?.name }}: {{ reply_msg?.msg_content }}
+      <el-icon class="icon" @click="reply_msg = null"><Close /></el-icon>
+    </div>
   </div>
 </template>
 
@@ -93,19 +102,22 @@ defineExpose({
   width: 100%;
   height: 100%;
 }
-:deep(.ql-editor) {
-  .reply_msg {
-    &::before {
-      content: '>';
-      color: #409eff;
-      position: absolute;
-      left: -12px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
+.reply_msg {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 5px;
+  color: #797979;
+  background-color: #e8e8e8;
+  max-width: 80%; // 限制最大宽度，避免过长
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  .icon {
+    position: relative;
+    font-size: 14px;
+    cursor: pointer;
   }
 }
-
 :deep(.ql-container) {
   border: none;
   .ql-editor {

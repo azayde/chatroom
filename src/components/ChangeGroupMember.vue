@@ -37,13 +37,6 @@ watch(input, () => {
 })
 const checked = ref([])
 const inviteFriend = ref(false)
-// const friendList = ref([])
-// const getFriendList = async () => {
-//   const res = await getFriendListService()
-//   console.log(res.data.data)
-//   friendList.value = res.data.data.list
-// }
-// getFriendList()
 const handleSelect = (item) => {
   console.log(item)
   console.log(checked.value)
@@ -107,8 +100,8 @@ defineExpose({
         <el-main v-else> <search-list></search-list> </el-main>
       </div>
 
-      <div class="line"></div>
-      <div class="select">123</div>
+      <!-- <div class="line"></div>
+      <div class="select">123</div> -->
     </div>
     <template #footer>
       <div class="dialog-footer">
@@ -127,7 +120,7 @@ defineExpose({
   display: flex;
   // flex-direction: column;
   .friend {
-    width: 45%;
+    // width: 45%;
     display: flex;
     flex-direction: column;
   }
@@ -162,9 +155,9 @@ defineExpose({
       }
     }
   }
-  .line {
-    border-left: 1px solid #000;
-    height: 387px;
-  }
+  // .line {
+  //   border-left: 1px solid #000;
+  //   height: 387px;
+  // }
 }
 </style>

@@ -195,6 +195,7 @@ watch(
               :value="chatStore.unreadCounts[item.relation_id] || 0"
               :hidden="chatStore.unreadCounts[item.relation_id] === 0"
               :max="99"
+              :is-dot="item?.is_not_disturb"
             >
               <div class="avatar">
                 <el-avatar
@@ -221,8 +222,8 @@ watch(
               {{ item.msg_type === 'text' ? item.msg_content : '[文件]' }}
             </span>
           </div>
-        </div></el-scrollbar
-      >
+        </div>
+      </el-scrollbar>
     </el-main>
     <!-- 搜索结果列表 -->
     <el-main v-else> <search-list></search-list></el-main>

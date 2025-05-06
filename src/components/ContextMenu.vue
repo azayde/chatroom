@@ -12,7 +12,6 @@ watch(
   () => props.msg,
   (newVal) => {
     activeMsg.value = newVal
-    // console.log(newVal)
   }
 )
 const emit = defineEmits([

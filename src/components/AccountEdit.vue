@@ -1,8 +1,8 @@
 <script setup>
 import { ref } from 'vue'
-import { useUserStore } from '@/stores'
+// import { useUserStore } from '@/stores'
 import { updateAvatarService } from '@/api/user.js'
-const useStore = useUserStore()
+// const useStore = useUserStore()
 // 判断是否为修改账号
 const isEdit = ref(false)
 

@@ -159,7 +159,7 @@ const sendMsg = (obj) => {
       <el-button :icon="Plus" plain size="small" @click="bools = true" />
     </el-header>
     <el-main v-if="!IsSearch" class="list" v-loading="loading">
-      <el-scrollbar>
+      <el-scrollbar v-if="groupList">
         <div
           class="list-item"
           v-for="item in groupList"
@@ -171,8 +171,11 @@ const sendMsg = (obj) => {
             <el-avatar shape="square" :src="item.group_info.avatar"></el-avatar>
           </div>
           <span class="name">{{ item.group_info.name }}</span>
-        </div></el-scrollbar
-      >
+        </div>
+      </el-scrollbar>
+      <template v-else>
+        <el-empty description="暂无群聊" />
+      </template>
     </el-main>
     <!-- 搜索结果列表 -->
     <el-main v-else> <search-list></search-list></el-main>

@@ -13,6 +13,32 @@ let isSending = false // 全局发送状态锁
 
 // 延迟请求代码 的存储变量
 let rec
+
+// 心跳设置对象
+const heartCheck = {
+  timeout: 5000, // 心跳超时时间，单位为毫秒，这里设置为5秒
+  timeoutObj: null, // 延时发送消息对象的引用，用于启动心跳后重置对象
+  start: function () {
+    if (isConnect) {
+      console.log('发送WebSocket心跳') // 发送WebSocket心跳的日志输出
+      // let heartBeat = {
+      //   cmd: 1, // 心跳命令代码
+      //   data: {
+      //     userId: userId // 用户ID
+      //   }
+      // }
+      // socket.send(JSON.stringify(heartBeat)) // 发送心跳包
+    }
+  },
+
+  reset: function () {
+    clearTimeout(this.timeoutObj) // 清除上次的延时发送对象
+    this.timeoutObj = setTimeout(function () {
+      heartCheck.start() // 重新启动心跳
+    }, this.timeout)
+  }
+}
+
 // 重连函数
 let reConnect = () => {
   console.log('尝试重新连接')

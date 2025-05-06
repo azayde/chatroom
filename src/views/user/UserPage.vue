@@ -128,6 +128,7 @@ const deleteUser = async () => {
       ElMessage.success('已注销')
       userStore.logoutAccount()
       userStore.removeToken()
+      userStore.deleteUser()
       chatStore.cleanChat()
       friendStore.cleanFriend()
       groupStore.cleanGroup()

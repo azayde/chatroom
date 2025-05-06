@@ -130,7 +130,7 @@ const getChatList = async () => {
     chatStore.setChatMsg(chatMsg.value)
 
     await nextTick() // 等待 DOM 更新
-    // scrollToBottom(true) // 确保数据渲染后滚动
+    scrollToBottom(true) // 确保数据渲染后滚动
 
     if (scrollContainer) {
       const newHeight = scrollContainer.scrollHeight
@@ -245,29 +245,51 @@ const getTopMsg = async () => {
 // 点击置顶跳转到对应位置
 const scrollToTopMsg = async () => {
   console.log(topMsg.value)
-  // 根据消息id定位消息？
+  // 根据消息id定位消息
   console.log(topMsg.value.id)
-  const topTarget = document.getElementById(`msg-${topMsg.value.id}`)
-  if (topTarget) {
-    topTarget.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center'
-    })
+  const findAndScroll = () => {
+    const topTarget = document.getElementById(`msg-${topMsg.value.id}`)
+    console.log(topTarget)
+    if (topTarget) {
+      topTarget.scrollIntoView({
+        // behavior: 'smooth',
+        block: 'center'
+      })
+      nextTick(() => {
+        // 高亮
+        topTarget.classList.add('height-msg')
+        setTimeout(() => {
+          topTarget.classList.remove('height-msg')
+        }, 3000)
+      })
+      return true
+    }
+    return false
   }
-  nextTick(() => {
-    // 高亮
-    topTarget.classList.add('height-msg')
-    setTimeout(() => {
-      topTarget.classList.remove('height-msg')
-    }, 3000)
-  })
+  if (findAndScroll()) return
+  const loadAndRetry = async () => {
+    if (!hasMore.value) {
+      return
+    }
+    // if (hasMore.value) {
+    await getChatList()
+    await nextTick() // 等待DOM更新
+    if (!findAndScroll()) {
+      setTimeout(loadAndRetry, 0)
+    }
+  }
+  await loadAndRetry()
+
+  // }
 }
 // 引用
+const rlyId = ref(null)
 const handleReply = (obj) => {
   inputEditorRef.value.relpyHtml({
     name: handleName(obj),
     msg_content: obj.msg_content
   })
+  rlyId.value = obj.id
   console.log(obj.id)
 }
 // 置顶更新
@@ -356,13 +378,11 @@ const formData = new FormData()
 // 是否正在发送中
 const isSending = ref(false)
 const sendMsg = async () => {
-  // console.log(1111)
   // 发送内容
   if (isSending.value) return
   isSending.value = true
   try {
     // 区分纯文本or图片
-
     // 获取输入框中的内容
     const content = revertImgToText(inputEditorRef.value.getContent())
     console.log(content)
@@ -449,8 +469,8 @@ const sendMsg = async () => {
     // 发送消息（纯文本）
     const msg = ref({
       relation_id: props.chatInfo.relation_id,
-      msg_content: base64Message
-      // rly_msg_id
+      msg_content: base64Message,
+      rly_msg_id: rlyId.value
     })
 
     // 发送到服务器
@@ -464,6 +484,7 @@ const sendMsg = async () => {
     }
     // 清除输入框
     inputEditorRef.value.clearContent()
+    rlyId.value = null
   } finally {
     isSending.value = false
   }
@@ -471,7 +492,6 @@ const sendMsg = async () => {
 
 // 回车发送，shift+回车换行e.preventDefault()不管用!!!!!!TODO
 const handleKeyDown = (e) => {
-  console.log(e)
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault()
     sendMsg()
