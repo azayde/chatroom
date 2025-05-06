@@ -41,82 +41,83 @@ watch(input, () => {
 const createApplication = ref(false)
 // 好友列表
 const friendList = ref([
-  {
-    relation_id: 1,
-    relation_type: 'friend',
-    is_show: true,
-    pin_time: '2025-03-06T10:00:00',
-    last_show: '2025-03-06T09:55:00',
-    friend_info: {
-      account_id: 101,
-      name: 'Alice Smith',
-      gender: '女',
-      avatar:
-        'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
-    },
-    is_not_disturb: false,
-    is_pin: true
-  },
-  {
-    relation_id: 456,
-    relation_type: 'friend',
-    is_show: true,
-    pin_time: '2025-03-05T18:00:00',
-    last_show: '2025-03-06T10:05:00',
-    friend_info: {
-      account_id: 789,
-      name: 'Tech Enthusiasts',
-      gender: '男',
-      avatar:
-        'https://picx.zhimg.com/v2-52a6e836434d15d74a2121bbd6bed34d_720w.jpg?source=172ae18b'
-    },
-    is_not_disturb: true,
-    is_pin: true
-  },
-  {
-    relation_id: 789,
-    relation_type: 'friend',
-    is_show: false,
-    pin_time: '2025-03-04T22:00:00',
-    last_show: '2025-03-06T08:30:00',
-    friend_info: {
-      account_id: 101,
-      name: 'Bob Johnson',
-      gender: '男',
-      avatar:
-        'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
-    },
-    is_not_disturb: false,
-    is_pin: false
-  },
-  {
-    relation_id: 3,
-    relation_type: 'friend',
-    is_show: true,
-    pin_time: '2025-03-03T12:00:00',
-    last_show: '2025-03-06T10:10:00',
-    friend_info: {
-      account_id: 103,
-      name: 'Charlie',
-      gender: '女',
-      avatar:
-        'https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con'
-    },
-    is_not_disturb: true,
-    is_pin: false
-  }
+  // {
+  //   relation_id: 1,
+  //   relation_type: 'friend',
+  //   is_show: true,
+  //   pin_time: '2025-03-06T10:00:00',
+  //   last_show: '2025-03-06T09:55:00',
+  //   friend_info: {
+  //     account_id: 101,
+  //     name: 'Alice Smith',
+  //     gender: '女',
+  //     avatar:
+  //       'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
+  //   },
+  //   is_not_disturb: false,
+  //   is_pin: true
+  // },
+  // {
+  //   relation_id: 456,
+  //   relation_type: 'friend',
+  //   is_show: true,
+  //   pin_time: '2025-03-05T18:00:00',
+  //   last_show: '2025-03-06T10:05:00',
+  //   friend_info: {
+  //     account_id: 789,
+  //     name: 'Tech Enthusiasts',
+  //     gender: '男',
+  //     avatar:
+  //       'https://picx.zhimg.com/v2-52a6e836434d15d74a2121bbd6bed34d_720w.jpg?source=172ae18b'
+  //   },
+  //   is_not_disturb: true,
+  //   is_pin: true
+  // },
+  // {
+  //   relation_id: 789,
+  //   relation_type: 'friend',
+  //   is_show: false,
+  //   pin_time: '2025-03-04T22:00:00',
+  //   last_show: '2025-03-06T08:30:00',
+  //   friend_info: {
+  //     account_id: 101,
+  //     name: 'Bob Johnson',
+  //     gender: '男',
+  //     avatar:
+  //       'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
+  //   },
+  //   is_not_disturb: false,
+  //   is_pin: false
+  // },
+  // {
+  //   relation_id: 3,
+  //   relation_type: 'friend',
+  //   is_show: true,
+  //   pin_time: '2025-03-03T12:00:00',
+  //   last_show: '2025-03-06T10:10:00',
+  //   friend_info: {
+  //     account_id: 103,
+  //     name: 'Charlie',
+  //     gender: '女',
+  //     avatar:
+  //       'https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con'
+  //   },
+  //   is_not_disturb: true,
+  //   is_pin: false
+  // }
 ])
 
 // 获取好友列表
 const getFriendList = async () => {
   try {
     const res = await getFriendListService()
-    console.log(res.data.data)
+    console.log(res)
+    console.log(res.data.data.list)
     // 根据id获取账号信息
     // res.data.data.list.forEach((item) => {})
     for (let item of res.data.data.list) {
       console.log(item)
-      // console.log()
+      console.log(item.friend_info.account_id)
       const res1 = await getAccountInfoById(item.friend_info.account_id)
       console.log(res1)
       const info = {

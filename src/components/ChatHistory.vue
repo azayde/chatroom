@@ -1,7 +1,7 @@
 <script setup>
 import { ref, nextTick, onMounted, watch } from 'vue'
 import { Search } from '@element-plus/icons-vue'
-import { useChatStore } from '@/stores'
+import { useUserStore, useChatStore } from '@/stores'
 import { formatTime } from '@/utils/time'
 import {
   // getChatListByLastTime,
@@ -9,6 +9,10 @@ import {
 } from '@/api/chat.js'
 import { throttle } from 'lodash-es' // 节流
 
+const props = defineProps({
+  groupMember: Object
+})
+const userStore = useUserStore()
 const chatStore = useChatStore()
 // 聊天记录搜索框
 const input = ref('')
@@ -80,7 +84,7 @@ const getChatList = async () => {
       hasMore.value = false
       return
     }
-    console.log(newMsg)
+    // console.log(newMsg)
     // 记录最早消息事件
     last_time.value = new Date(newMsg[0].create_at).getTime() / 1000
     // 插入到现在的数据头部
@@ -138,6 +142,60 @@ watch(
     scrollToBottom(true)
   }
 )
+
+// 判断该条消息的头像
+const handleAvatar = (info) => {
+  // groupMember不为空
+  if (props.groupMember) {
+    // console.log('群聊')
+    let member
+    for (let ele of props.groupMember) {
+      // console.log(ele)
+      if (ele.account_id === info.account_id) {
+        member = ele
+        break
+      }
+    }
+    return member ? member.avatar : ''
+  }
+  // 好友
+  return info.account_id === userStore.accountInfo.account_id
+    ? userStore.accountInfo.avatar
+    : chatStore.chatInfo.friend_info?.avatar
+}
+// 判断发送该条消息的昵称
+const handleName = (info) => {
+  // console.log(info)
+  if (info.notify_type === ' system') return
+  // groupMember不为空
+  if (props.groupMember) {
+    let member
+    for (let ele of props.groupMember) {
+      // console.log(ele)
+      if (ele.account_id === info.account_id) {
+        member = ele
+        break
+      }
+    }
+    return member ? member.name : ''
+  }
+  // 好友
+  return info.account_id === userStore.accountInfo.account_id
+    ? userStore.accountInfo.name
+    : chatStore.chatInfo.friend_info?.name
+}
+
+const fileTypeIcon = {
+  pdf: 'icon-pdf',
+  txt: 'icon-wenbenwendang-txt',
+  ppt: 'icon-yanshiwendang-ppt_pptx',
+  zip: 'icon-yasuowenjian-zip_rar_7z',
+  excel: 'icon-biaoge-xlxs_xls',
+  mp4: 'icon-shipin-mov_mp4_avi',
+  doc: 'icon-wendang-docx_doc',
+  docx: 'icon-wendang-docx_doc',
+  exe: 'icon-kezhihangwenjian-exe'
+}
 </script>
 
 <template>
@@ -160,40 +218,49 @@ watch(
         <div class="left">
           <el-badge class="item" :value="0" :hidden="true">
             <div class="avatar">
-              <el-avatar
-                shape="square"
-                src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
-              ></el-avatar>
+              <el-avatar shape="square" :src="handleAvatar(item)"></el-avatar>
             </div>
           </el-badge>
         </div>
         <div class="right">
           <div class="top">
-            <span class="name">张三</span>
+            <span class="name">{{ handleName(item) }}</span>
             <span class="time_now">{{ formatTime(item.create_at) }}</span>
           </div>
-          <span class="message">{{ item.msg_content }}</span>
+          <span class="message" v-show="item.msg_type === 'text'">
+            {{ item.msg_content }}
+          </span>
+          <div
+            class="picture"
+            v-show="item.msg_type === 'file'"
+            v-if="
+              item.msg_content.split('.').pop() === 'png' ||
+              item.msg_content.split('.').pop() === 'jpg'
+            "
+          >
+            <img class="img" :src="item.msg_content" alt="" />
+          </div>
+          <div class="file" v-show="item.msg_type === 'file'" v-else>
+            <el-link :href="item?.msg_content" :underline="false">
+              <div class="item">
+                <div class="right">
+                  <span class="file_name">{{ item.file_name }}</span>
+                  <span class="file_size">{{
+                    (item.file_size / 1024).toFixed(2) + 'KB'
+                  }}</span>
+                </div>
+                <i
+                  class="iconfont"
+                  :class="
+                    fileTypeIcon[item.msg_content.split('.').pop()] ||
+                    'icon-qita'
+                  "
+                ></i>
+              </div>
+            </el-link>
+          </div>
         </div>
       </div>
-      <!-- <div class="list-item">
-        <div class="left">
-          <el-badge class="item" :value="0" :hidden="true">
-            <div class="avatar">
-              <el-avatar
-                shape="square"
-                src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
-              ></el-avatar>
-            </div>
-          </el-badge>
-        </div>
-        <div class="right">
-          <div class="top">
-            <span class="name">张三</span>
-            <span class="time_now">19:30</span>
-          </div>
-          <span class="message">12344243435gfhghfhgfg65655676676876875</span>
-        </div>
-      </div> -->
     </el-scrollbar>
   </el-dialog>
 </template>
@@ -254,6 +321,55 @@ watch(
         white-space: pre-wrap;
         overflow: hidden;
         text-overflow: ellipsis;
+      }
+      .picture {
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        .img {
+          width: 100%;
+          height: auto; // 高度自动按比例缩放
+          display: block; // 去除图片底部间隙
+          max-height: 300px; // 防止过高图片
+          object-fit: contain; // 保持比例完整显示
+        }
+      }
+      .file {
+        width: 200px;
+        .item {
+          width: 200px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin: 8px;
+          height: 55px;
+          background-color: #fff;
+          padding-left: 15px;
+          .iconfont {
+            font-size: 40px;
+            padding-right: 10px;
+          }
+          .right {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            .file_name {
+              font-size: 16px;
+              max-width: 100px;
+              color: #000;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+            .file_size {
+              font-size: 12px;
+              max-width: 50px;
+              color: #c4c4c4;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+          }
+        }
       }
     }
   }

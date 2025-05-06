@@ -50,8 +50,8 @@ let reConnect = () => {
 }
 
 // WebSocket链接地址
-// let wsurl = 'ws://192.168.0.197:8000/chat'
-let wsurl = 'ws://123.249.32.125:8888/chat'
+let wsurl = 'ws://192.168.0.197:8000/chat'
+// let wsurl = 'ws://123.249.32.125:8888/chat'
 
 // 消息回调函数
 let messageCallback = null

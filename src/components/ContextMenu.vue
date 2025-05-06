@@ -1,12 +1,14 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { updatePinMsg, updateTopMsg, revokeMsgService } from '@/api/chat'
-import { useChatStore } from '@/stores'
+import { useUserStore, useChatStore } from '@/stores'
+const userStore = useUserStore()
 const chatStore = useChatStore()
 // 传过来对应的消息
 const props = defineProps({
   msg: Object
 })
+console.log(props.msg)
 const activeMsg = ref()
 watch(
   () => props.msg,
@@ -66,11 +68,17 @@ const handleRevoke = async () => {
 
 <template>
   <div class="context-menu">
-    <div class="btn copy">复制</div>
+    <!-- <div class="btn copy">复制</div> -->
     <div class="btn reply" @click="handleReply">引用</div>
     <div class="btn top" @click="handleTop">置顶</div>
     <div class="btn pin" @click="handlePin">pin</div>
-    <div class="btn delete" @click="handleRevoke">撤回</div>
+    <div
+      class="btn delete"
+      @click="handleRevoke"
+      v-show="msg?.account_id === userStore.accountInfo.account_id"
+    >
+      撤回
+    </div>
   </div>
 </template>
 

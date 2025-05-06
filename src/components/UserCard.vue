@@ -5,7 +5,12 @@ import { Position, MoreFilled, Delete, Plus } from '@element-plus/icons-vue'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { deleteFriendService, createApplicationService } from '@/api/friend.js'
-import { updateNickNameService } from '@/api/setting.js'
+import {
+  updateNickNameService,
+  updateShowService,
+  updateDisturbService,
+  updatePinService
+} from '@/api/setting.js'
 import { useChatStore, useFriendStore } from '@/stores'
 
 const chatStore = useChatStore()
@@ -63,21 +68,21 @@ const handleSwitch = async (msg) => {
   // console.log(relation_id.value)
   // console.log(msg)
   if (msg === 'isNotDisturb') {
-    // await updateDisturbService({
-    //   relation_id: relation_id.value,
-    //   isNotDisturb: isNotDisturb.value
-    // })
+    await updateDisturbService({
+      relation_id: relation_id.value,
+      is_not_disturb: isNotDisturb.value
+    })
     // console.log(111)
   } else if (msg === 'isPin') {
-    // updatePinService({
-    //   relation_id: relation_id.value,
-    //   isPin: isPin.value
-    // })
+    updatePinService({
+      relation_id: relation_id.value,
+      is_pin: isPin.value
+    })
   } else if (msg === 'isShow') {
-    // updateShowService({
-    //   relation_id: relation_id.value,
-    //   isShow: isShow.value
-    // })
+    updateShowService({
+      relation_id: relation_id.value,
+      is_show: isShow.value
+    })
   }
 }
 watch(isNotDisturb, () => handleSwitch('isNotDisturb'))

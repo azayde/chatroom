@@ -1,14 +1,16 @@
 <!-- 聊天窗 -->
 <script setup>
+import { computed } from 'vue'
 import { transform } from '@/utils/emoji'
 import { useUserStore } from '@/stores'
+import { formatTime } from '@/utils/time'
 const userStore = useUserStore()
 const props = defineProps({
   msgInfo: Object,
   headImage: String,
-  name: String
+  name: String,
+  prevMsgInfo: Object
 })
-console.log(props.msgInfo)
 // 右键菜单
 const emit = defineEmits(['setContextMenu'])
 const handleRightClick = (e) => {
@@ -19,12 +21,48 @@ const handleRightClick = (e) => {
   }
   emit('setContextMenu', obj)
 }
+// 判断是否需要显示时间
+const showTime = computed(() => {
+  // 第一条消息必显示
+  if (!props.prevMsgInfo) return true
+
+  // 系统消息不显示
+  if (props.msgInfo.notify_type === 'system') return false
+
+  // 跨天/跨周必显示
+  const currentDate = new Date(props.msgInfo.create_at)
+  const prevDate = new Date(props.prevMsgInfo.create_at)
+  const isSameDay = currentDate.toDateString() === prevDate.toDateString()
+  const isSameWeek = currentDate.getWeek() === prevDate.getWeek()
+
+  if (!isSameDay || !isSameWeek) return true
+
+  // 间隔≥5分钟显示
+  const timeDiff = (currentDate - prevDate) / (1000 * 60) // 转换为分钟
+  return timeDiff >= 5
+})
+
+// 上传文件
+const fileTypeIcon = {
+  pdf: 'icon-pdf',
+  txt: 'icon-wenbenwendang-txt',
+  ppt: 'icon-yanshiwendang-ppt_pptx',
+  zip: 'icon-yasuowenjian-zip_rar_7z',
+  excel: 'icon-biaoge-xlxs_xls',
+  mp4: 'icon-shipin-mov_mp4_avi',
+  doc: 'icon-wendang-docx_doc',
+  docx: 'icon-wendang-docx_doc',
+  exe: 'icon-kezhihangwenjian-exe'
+}
 </script>
 
 <template>
   <div class="chat-msg-item">
     <div class="chat-system" v-show="msgInfo.notify_type === 'system'">
       {{ msgInfo.msg_content }}
+    </div>
+    <div class="time-stamp" v-if="showTime">
+      {{ formatTime(msgInfo.create_at) }}
     </div>
     <div
       v-show="msgInfo.notify_type === 'common'"
@@ -48,29 +86,40 @@ const handleRightClick = (e) => {
           @contextmenu="handleRightClick($event)"
           v-html="transform(props.msgInfo.msg_content)"
         ></div>
-
         <div
           class="picture"
           v-show="props.msgInfo.msg_type === 'file'"
           @contextmenu="handleRightClick($event)"
+          v-if="
+            props.msgInfo.msg_content.split('.').pop() === 'png' ||
+            props.msgInfo.msg_content.split('.').pop() === 'jpg'
+          "
         >
           <img class="img" :src="props.msgInfo.msg_content" alt="" />
+        </div>
+        <div class="file" v-show="props.msgInfo.msg_type === 'file'" v-else>
+          <el-link :href="props.msgInfo?.msg_content" :underline="false">
+            <div class="item">
+              <div class="right">
+                <span class="file_name">{{ props.msgInfo.file_name }}</span>
+                <span class="file_size">{{
+                  (props.msgInfo.file_size / 1024).toFixed(2) + 'KB'
+                }}</span>
+              </div>
+              <i
+                class="iconfont"
+                :class="
+                  fileTypeIcon[props.msgInfo.msg_content.split('.').pop()] ||
+                  'icon-qita'
+                "
+              ></i>
+            </div>
+          </el-link>
         </div>
       </div>
       <div class="rlymsg" v-show="msgInfo.rly_msg?.msg_content">
         {{ msgInfo.rly_msg?.msg_content }}
       </div>
-      <!-- <div class="file">
-      <el-link href="https://element-plus.org" :underline="false">
-        <div class="item">
-          <div class="right">
-            <span class="file_name">文件1</span>
-            <span class="file_size">1090024</span>
-          </div>
-          <i class="iconfont icon-pdf pdf"></i>
-        </div>
-      </el-link>
-    </div> -->
     </div>
     <div class="chat-system" v-else>
       {{
@@ -87,6 +136,13 @@ const handleRightClick = (e) => {
     line-height: 50px;
     text-align: center;
     color: #b8b5b5;
+  }
+  .time-stamp {
+    text-align: center;
+    color: #b8b5b5;
+    font-size: 12px;
+    margin: 8px 0;
+    clear: both; /* 防止浮动消息布局错乱 */
   }
   .chat-item {
     // border: 1px solid #000;
@@ -137,10 +193,10 @@ const handleRightClick = (e) => {
     }
     // 图片
     .picture {
-      max-width: 60%; // 与文字消息保持一致
-      margin: 0 15px; // 保持与文字相同的边距
+      // max-width: 60%; // 与文字消息保持一致
+      // margin: 0 15px; // 保持与文字相同的边距
       border-radius: 6px;
-      overflow: hidden;
+      // overflow: hidden;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       .img {
         width: 100%;
@@ -230,6 +286,9 @@ const handleRightClick = (e) => {
     .picture {
       margin-right: 10px;
     }
+    .file {
+      margin-right: 10px;
+    }
   }
   .chat-item.left {
     .chat-pao {
@@ -243,6 +302,9 @@ const handleRightClick = (e) => {
       }
     }
     .picture {
+      margin-left: 10px;
+    }
+    .file {
       margin-left: 10px;
     }
   }

@@ -122,7 +122,6 @@ const getChatList = async () => {
       hasMore.value = false
       return
     }
-    console.log(newMsg)
     // 记录最早消息事件
     last_time.value = new Date(newMsg[0].create_at).getTime() / 1000
     // 插入到现在的数据头部
@@ -130,7 +129,7 @@ const getChatList = async () => {
     chatStore.setChatMsg(chatMsg.value)
 
     await nextTick() // 等待 DOM 更新
-    scrollToBottom(true) // 确保数据渲染后滚动
+    // scrollToBottom(true) // 确保数据渲染后滚动
 
     if (scrollContainer) {
       const newHeight = scrollContainer.scrollHeight
@@ -378,6 +377,8 @@ const formData = new FormData()
 // 是否正在发送中
 const isSending = ref(false)
 const sendMsg = async () => {
+  const fd = new FormData()
+
   // 发送内容
   if (isSending.value) return
   isSending.value = true
@@ -419,19 +420,19 @@ const sendMsg = async () => {
         // console.log(base64Data)
         const file = base64toFile(src)
         console.log(file)
-        sendFile()
+        fd.append('relation_id', props.chatInfo.relation_id)
+        fd.append('file', file)
+        // sendFile()
+        const res = await sendFileService(fd)
+        console.log(res)
+        // 发送成功清空formData
+        for (const key of fd.keys()) {
+          fd.delete(key)
+        }
+        inputEditorRef.value.clearContent()
         return
-        // formData.append('relation_id', props.chatInfo.relation_id)
-        // formData.append('file', file)
-        // const res = await sendFileService(formData)
-        // console.log(res)
-        // // 发送成功清空formData
-        // for (const key of formData.keys()) {
-        //   formData.delete(key)
-        // }
       }
     }
-
     // 如果是图片+文本？？TODO
     let base64Message = ''
     if (imgTags.length > 0) {
@@ -442,16 +443,17 @@ const sendMsg = async () => {
         // console.log(base64Data)
         const file = base64toFile(src)
         console.log(file)
-        formData.append('relation_id', props.chatInfo.relation_id)
-        formData.append('file', file)
-        sendFile()
+        fd.append('relation_id', props.chatInfo.relation_id)
+        fd.append('file', file)
+        // sendFile()
+        const res = await sendFileService(fd)
+        console.log(res)
+        // 发送成功清空formData
+        for (const key of fd.keys()) {
+          fd.delete(key)
+        }
+        inputEditorRef.value.clearContent()
         return
-        // const res = await sendFileService(formData)
-        // console.log(res)
-        // // 发送成功清空formData
-        // for (const key of formData.keys()) {
-        //   formData.delete(key)
-        // }
       }
     } else {
       // 将纯文本编码为 UTF-8
@@ -506,7 +508,9 @@ const fileTypeIcon = {
   excel: 'icon-biaoge-xlxs_xls',
   mp4: 'icon-shipin-mov_mp4_avi',
   doc: 'icon-wendang-docx_doc',
-  docx: 'icon-wendang-docx_doc'
+  docx: 'icon-wendang-docx_doc',
+  exe: 'icon-kezhihangwenjian-exe',
+  qita: 'icon-qita'
 }
 // 选择文件上传
 const selectFile = ref([])
@@ -640,8 +644,7 @@ onUnmounted(() => {
       <div class="bottom" v-if="pinMsg || topMsg">
         <div class="is_top" v-if="topMsg" @click="scrollToTopMsg">
           <el-icon><Bell /></el-icon>
-          <!-- {{ topMsg }} -->
-          {{ topMsg.msg_content }}
+          {{ topMsg.msg_type === 'text' ? topMsg.msg_content : '[文件]' }}
         </div>
         <el-button text class="is_pin" v-if="pinMsg" @click="pinDialog = true">
           <el-icon><Star /></el-icon>
@@ -658,9 +661,10 @@ onUnmounted(() => {
         <div class="list">
           <!-- 聊天窗口  -->
           <chat-message-item
-            v-for="item in chatMsg"
+            v-for="(item, index) in chatMsg"
             :id="'msg-' + item.id"
             :msgInfo="item"
+            :prevMsgInfo="index > 0 ? chatMsg[index - 1] : null"
             :headImage="handleAvatar(item)"
             :name="handleName(item)"
             :key="item.id"
@@ -693,11 +697,11 @@ onUnmounted(() => {
             </el-icon>
           </el-upload>
           <!-- 上传文件 -->
-          <el-upload class="doc-uploader" :on-change="handleFileChange">
+          <!-- <el-upload class="doc-uploader" :on-change="handleFileChange">
             <el-icon>
               <img ref="emoji" src="@/assets/document.svg" alt="" />
             </el-icon>
-          </el-upload>
+          </el-upload> -->
           <!-- 聊天记录 -->
           <el-icon class="chat-history" @click="chatDialog.open()"
             ><ChatDotRound
@@ -743,7 +747,10 @@ onUnmounted(() => {
     </el-drawer>
 
     <!-- 聊天记录 -->
-    <chat-history ref="chatDialog"></chat-history>
+    <chat-history
+      ref="chatDialog"
+      :groupMember="props.groupMember"
+    ></chat-history>
     <!-- 发送文件或图片 -->
     <el-dialog v-model="fileDialog" class="file" draggable>
       <template #header>
@@ -776,7 +783,10 @@ onUnmounted(() => {
             :key="item.id"
           >
             <div class="item">
-              <i class="iconfont" :class="fileTypeIcon[item.file_type]"></i>
+              <i
+                class="iconfont"
+                :class="fileTypeIcon[item.file_type] || 'icon-wangye-web_h5'"
+              ></i>
               <div class="right">
                 <span class="file_name">{{ item.file_name }}</span>
                 <span class="file_size">{{ item.file_size }}</span>
@@ -807,7 +817,12 @@ onUnmounted(() => {
             <span class="name">{{ handleName(item) }}</span>
             <span class="time_now">{{ formatTime(item.create_at) }}</span>
           </div>
-          <span class="message">{{ item.msg_content }}</span>
+          <span class="message" v-show="item.msg_type === 'text'">
+            {{ item.msg_content }}
+          </span>
+          <div class="picture" v-show="item.msg_type === 'file'">
+            <img class="img" :src="item.msg_content" alt="" />
+          </div>
         </div>
       </div>
     </el-drawer>
@@ -1046,6 +1061,17 @@ hr {
       white-space: pre-wrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+    .picture {
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      .img {
+        width: 100%;
+        height: auto; // 高度自动按比例缩放
+        display: block; // 去除图片底部间隙
+        max-height: 300px; // 防止过高图片
+        object-fit: contain; // 保持比例完整显示
+      }
     }
   }
 }
