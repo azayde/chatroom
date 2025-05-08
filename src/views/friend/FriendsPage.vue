@@ -56,7 +56,6 @@ watch(
   <el-container>
     <friends-list @get-friend-info="getFriendInfo"></friends-list>
     <el-main>
-      <!-- <new-friend v-if="IsNewFriend" :newFriend="newFriend"></new-friend> -->
       <new-friend v-if="IsNewFriend"></new-friend>
       <!-- friendInfo 不为空时，展示 -->
       <user-card

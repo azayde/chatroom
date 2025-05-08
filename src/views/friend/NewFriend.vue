@@ -33,7 +33,6 @@ getNewFriendList()
 
 // 接受好友申请
 const handleAccept = async (id) => {
-  // const handleAccept = (id) => {
   console.log(id)
   const res = await acceptApplicationService(id)
   console.log(res)

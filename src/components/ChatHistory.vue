@@ -84,7 +84,6 @@ const getChatList = async () => {
       hasMore.value = false
       return
     }
-    // console.log(newMsg)
     // 记录最早消息事件
     last_time.value = new Date(newMsg[0].create_at).getTime() / 1000
     // 插入到现在的数据头部
@@ -104,8 +103,6 @@ getChatList()
 // 滚动处理
 const handleScroll = throttle(() => {
   const scrollContainer = scrollbarRef.value?.wrapRef
-  // console.log(scrollContainer)
-  // console.log(scrollContainer.scrollTop)
   if (!scrollContainer || loading.value) return
 
   // 距离顶部50px时加载
@@ -210,7 +207,7 @@ const fileTypeIcon = {
       @blur="handleBlur"
     >
     </el-input>
-    <!-- TODO 正常展示 -->
+    <!-- 正常展示 -->
     <el-scrollbar ref="scrollbarRef" @scroll="handleScroll">
       <div v-if="loading" class="loading-text">加载中...</div>
       <div v-if="!hasMore" class="no-more">没有更多消息了</div>

@@ -11,9 +11,17 @@ import {
   deleteAccountService,
   getAccountInfoById
 } from '@/api/user.js'
-import { useUserStore } from '@/stores'
 import { closeWebSocket, createWebSocket } from '@/utils/websocket.js'
+import {
+  useUserStore,
+  useChatStore,
+  useFriendStore,
+  useGroupStore
+} from '@/stores'
 const userStore = useUserStore()
+const chatStore = useChatStore()
+const friendStore = useFriendStore()
+const groupStore = useGroupStore()
 // 搜索框
 const inputInfo = ref('')
 
@@ -124,6 +132,9 @@ const handleSwtich = debounce(
     userStore.setAccountInfo(accountInfo)
     closeWebSocket()
     createWebSocket()
+    chatStore.cleanChat()
+    friendStore.cleanFriend()
+    groupStore.cleanGroup()
     // console.log(id)
     activeAccountId.value = id
     ElMessage.success('切换成功')

@@ -63,7 +63,7 @@ const handleSubmit = async (data) => {
 
 <template>
   <div class="account-list">
-    <template v-if="accountInfo.length > 0">
+    <template v-if="accountInfo?.length > 0">
       <div
         class="member-item"
         v-for="item in accountInfo"

@@ -8,8 +8,8 @@ import AccountList from '@/views/account/AccountList.vue'
 import {
   sendEmailService,
   userRegisterService,
-  userLoginService,
-  getAccountService
+  userLoginService
+  // getAccountService
 } from '@/api/user.js'
 
 import { useUserStore } from '@/stores'
@@ -99,7 +99,6 @@ const getCode = async () => {
       }
     }, 1000)
   }
-  // console.log('获取验证码')
 }
 
 // 点击注册
@@ -137,8 +136,6 @@ const login = async () => {
   const res = await userLoginService(formModel.value)
   console.log(res.data.data.token.access_token)
   userStore.setToken(res.data.data.token.access_token)
-  // data.data.token.refresh_token
-  // data.data.token.access_token
   // 是否记得账号密码（记住我）
   if (rememberCheck.value) {
     // 是 - 勾选记住我 - 存进store - 本地存储

@@ -37,7 +37,9 @@ const updateAvatar = async () => {
   for (let [key, value] of fd.entries()) {
     console.log(key, value)
   }
-  if (imgUrl.value) {
+  console.log(imgUrl.value.startsWith('blob'))
+  if (imgUrl.value.startsWith('blob')) {
+    console.log('头像')
     const res = await updateAvatarService(fd)
     console.log(res)
     formData.value.avatar = res.data.data.url
@@ -56,8 +58,12 @@ const onSubmit = async () => {
       emit('submit', {
         ...formData.value
       })
+
       // 提交表单时关闭对话框
       accountEditForm.value = false
+      // for (const key of formData.value.keys()) {
+      //   formData.value.delete(key)
+      // }
     } else {
       ElMessage.warning('请先完善信息，再点击确定')
     }

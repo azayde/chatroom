@@ -46,13 +46,15 @@ let isNotDisturb = ref(props.groupInfo.is_not_disturb || false)
 
 const groupNotify = ref(false)
 const is_leader = ref(false)
+// 当前群聊
+const activeGroup = ref(props.groupInfo)
+// console.log(activeGroup.value)
+activeGroup.value = props.groupInfo ? props.groupInfo : groupStore.groupInfo
 // 群成员信息
 const groupMember = ref([])
-// const totalMember = ref()
 const getGroupMember = async () => {
-  // console.log(groupStore.groupInfo.group_info.relation_id)
   const res = await getGroupMemberService(
-    groupStore.groupInfo.group_info.relation_id
+    activeGroup.value.group_info.relation_id
   )
   console.log(res)
   groupMember.value = res.data.data?.List || null
@@ -67,11 +69,6 @@ const getGroupMember = async () => {
     is_leader.value = false
   }
 }
-
-// 当前群聊
-const activeGroup = ref(props.groupInfo)
-// console.log(activeGroup.value)
-activeGroup.value = props.groupInfo ? props.groupInfo : groupStore.groupInfo
 
 watch(
   () => props.groupInfo,
@@ -132,46 +129,6 @@ const handleIs = (item) => {
   return false
 }
 
-// // 修改昵称
-// const isEdit = ref(false)
-// const id = groupMember.value.findIndex(
-//   (item) => item.account_id === userStore.accountInfo.account_id
-// )
-
-// const id = groupList.value.findIndex(
-//   (item) => item.friend_info.account_id === userStore.accountInfo.account_id
-// )
-// const nickName = ref()
-
-// const nick_name = ref(null)
-// const inp = ref(null)
-
-// // // 双击切换编辑状态
-// const handleNickName = () => {
-//   console.log(nick_name.value)
-//   isEdit.value = true
-//   nick_name.value.innerHTML = 'abc'
-//   // nick_name.value = groupList.value[id].friend_info.name
-//   nextTick(() => {
-//     inp.value.focus()
-//     inp.value.select()
-//   })
-// }
-// // 提交昵称修改
-// const updateNickName = async () => {
-//   isEdit.value = false
-//   console.log(groupStore.groupInfo.group_info.relation_id)
-//   console.log(nickName.value)
-//   const res = await updateNickNameService({
-//     relation_id: groupStore.groupInfo.group_info.relation_id,
-//     nick_name: nickName.value
-//   })
-//   console.log(res)
-//   // if (nick_name.value) {
-//   //   ElMessage.success('修改备注成功')
-//   // }
-// }
-
 // 聊天记录dialog
 const chatDialog = ref()
 
@@ -211,9 +168,9 @@ watch(isShow, () => handleSwitch('isShow'))
 //   groupEdit.value.open(activeGroup.value.group_info)
 // }
 const groupInfoEdit = ref(false)
-const group_name = ref(groupStore.groupInfo.group_info.name)
-const description = ref(groupStore.groupInfo.group_info.description)
-const imgUrl = ref(groupStore.groupInfo.group_info.avatar)
+const group_name = ref(activeGroup.value.group_info.name)
+const description = ref(activeGroup.value.group_info.description)
+const imgUrl = ref(activeGroup.value.group_info.avatar)
 const fd = new FormData()
 const onUploadFile = async (File) => {
   imgUrl.value = URL.createObjectURL(File.raw)
@@ -222,7 +179,7 @@ const onUploadFile = async (File) => {
 }
 const updateGroupInfo = async () => {
   groupInfoEdit.value = false
-  fd.append('relation_id', groupStore.groupInfo.group_info.relation_id)
+  fd.append('relation_id', activeGroup.value.group_info.relation_id)
   fd.append('name', group_name.value)
   fd.append('description', description.value)
   try {

@@ -70,7 +70,14 @@ const rules = {
       trigger: 'blur'
     }
   ],
-  code: [{ required: true, message: '请输入验证码', trigger: 'blur' }]
+  code: [
+    { required: true, message: '请输入验证码', trigger: 'blur' },
+    {
+      pattern: /^\d{6}$/,
+      message: '验证码格式不正确',
+      trigger: 'blur'
+    }
+  ]
 }
 // 获取验证码
 // 总秒数

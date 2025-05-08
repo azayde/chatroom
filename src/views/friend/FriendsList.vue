@@ -2,7 +2,7 @@
 <script setup>
 import { watch, ref } from 'vue'
 import { Search, Plus } from '@element-plus/icons-vue'
-import { debounce } from 'lodash-es' // 用于实现防抖功能
+// import { debounce } from 'lodash-es' // 用于实现防抖功能
 import {
   getFriendListService,
   createApplicationService,

@@ -99,9 +99,6 @@ defineExpose({
         <!-- 搜索结果列表 -->
         <el-main v-else> <search-list></search-list> </el-main>
       </div>
-
-      <!-- <div class="line"></div>
-      <div class="select">123</div> -->
     </div>
     <template #footer>
       <div class="dialog-footer">

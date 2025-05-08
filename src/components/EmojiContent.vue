@@ -14,7 +14,7 @@ const handelClick = (emoText) => {
 <template>
   <div
     class="emotion-box"
-    :style="{ left: props.pos.x - 260 + 'px', top: props.pos.y - 280 + 'px' }"
+    :style="{ left: props.pos.x - 185 + 'px', top: props.pos.y - 280 + 'px' }"
   >
     <el-scrollbar style="height: 250px">
       <div class="emotion-item-list">

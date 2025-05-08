@@ -4,8 +4,8 @@ import axios from 'axios'
 import router from '@/router'
 // const router = useRouter()
 
-const baseURL = 'http://192.168.0.197:8000/api'
-// const baseURL = 'http://123.249.32.125:8888/api'
+// const baseURL = 'http://192.168.0.196:8000/api'
+const baseURL = 'http://123.249.32.125:8888/api'
 
 const userStore = useUserStore()
 
@@ -25,7 +25,6 @@ instance.interceptors.request.use(
       '/account/create',
       '/account/token',
       '/account/infos/account',
-      '/account/update',
       '/account/delete',
       '/user/update/pwd',
       'user/deleteUser'

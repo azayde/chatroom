@@ -30,7 +30,6 @@ import { onMessage, offMessage, setMessageCallback } from '@/utils/websocket'
 const userStore = useUserStore()
 const chatStore = useChatStore()
 // 聊天窗
-// const AllLoading = ref(true)
 const drawer = ref(false)
 // 父传子
 const props = defineProps({
@@ -83,23 +82,9 @@ const scrollToBottom = (force = false) => {
 }
 // 根据account_id获取用户信息进行渲染
 // 获取聊天信息
-// const getChatList = async () => {
-//   const res = await getChatListByLastTime({
-//     relation_id: props.chatInfo.relation_id,
-//     last_time: last_time.value,
-//     page: currentPage.value,
-//     page_size: pageSize.value
-//   })
-//   chatMsg.value = res.data.data.list.filter((item) => item !== null)
-//   chatStore.setChatMsg(chatMsg.value)
-
-//   await nextTick() // 等待 DOM 更新
-//   scrollToBottom(true) // 确保数据渲染后滚动
-// }
 const getChatList = async () => {
   if (loading.value || !hasMore.value) return
   loading.value = true
-  // AllLoading.value = false
   // 获取当前滚动状态
   const scrollContainer = scrollbarRef.value?.wrapRef
   // 之前滚动条的位置
@@ -115,9 +100,7 @@ const getChatList = async () => {
       page_size: pageSize.value
     })
     console.log(res)
-    const newMsg = res.data.data.list
-      .filter((item) => item !== null && item.notify_type === 'common')
-      .reverse()
+    const newMsg = res.data.data.list.filter((item) => item !== null).reverse()
     if (newMsg.length === 0) {
       hasMore.value = false
       return
@@ -149,6 +132,8 @@ const handleNewMessage = (newMessage) => {
   const currentChatId = props.chatInfo.relation_id
   // 直接显示消息
   if (newMessage.relation_id === currentChatId) {
+    console.log(newMessage)
+
     chatStore.addChatMsg(newMessage)
     scrollToBottom(true)
     // getChatList()

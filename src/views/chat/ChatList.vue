@@ -38,51 +38,51 @@ const handleBlue = async () => {
 
 // 聊天列表
 const chatList = ref([
-  {
-    relation_id: 1,
-    relation_type: 'friend',
-    pin_time: '',
-    is_show: true,
-    friend_info: {
-      account_id: 101,
-      name: 'Alice Smith',
-      avatar:
-        'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
-    }
-  },
-  {
-    relation_id: 24,
-    relation_type: 'group',
-    pin_time: '',
-    group_info: {
-      relation_id: 1212,
-      name: '数据分析交流群',
-      description: '分享数据分析技巧',
-      avatar: 'https://img.shetu66.com/2023/06/28/1687937373741115.png'
-    }
-  },
-  {
-    relation_id: 3,
-    relation_type: 'friend',
-    pin_time: '2025-03-15T12:00:00Z',
-    friend_info: {
-      account_id: 103,
-      name: 'Charlie',
-      avatar:
-        'https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con'
-    }
-  },
-  {
-    relation_id: 22,
-    relation_type: 'group',
-    pin_time: '',
-    group_info: {
-      relation_id: 1010,
-      name: '低代码开发平台',
-      description: '探索低代码/零代码开发',
-      avatar: 'https://pic.616pic.com/ys_bnew_img/00/02/01/VafZfftlPM.jpg'
-    }
-  }
+  // {
+  //   relation_id: 1,
+  //   relation_type: 'friend',
+  //   pin_time: '',
+  //   is_show: true,
+  //   friend_info: {
+  //     account_id: 101,
+  //     name: 'Alice Smith',
+  //     avatar:
+  //       'https://q1.itc.cn/q_70/images03/20241212/702ee264f5aa44a3aec02043acf3a694.jpeg'
+  //   }
+  // },
+  // {
+  //   relation_id: 24,
+  //   relation_type: 'group',
+  //   pin_time: '',
+  //   group_info: {
+  //     relation_id: 1212,
+  //     name: '数据分析交流群',
+  //     description: '分享数据分析技巧',
+  //     avatar: 'https://img.shetu66.com/2023/06/28/1687937373741115.png'
+  //   }
+  // },
+  // {
+  //   relation_id: 3,
+  //   relation_type: 'friend',
+  //   pin_time: '2025-03-15T12:00:00Z',
+  //   friend_info: {
+  //     account_id: 103,
+  //     name: 'Charlie',
+  //     avatar:
+  //       'https://img.ixintu.com/download/jpg/201911/e25b904bc42a74d7d77aed81e66d772c.jpg!con'
+  //   }
+  // },
+  // {
+  //   relation_id: 22,
+  //   relation_type: 'group',
+  //   pin_time: '',
+  //   group_info: {
+  //     relation_id: 1010,
+  //     name: '低代码开发平台',
+  //     description: '探索低代码/零代码开发',
+  //     avatar: 'https://pic.616pic.com/ys_bnew_img/00/02/01/VafZfftlPM.jpg'
+  //   }
+  // }
 ])
 
 const chatPinList = ref([])
@@ -104,7 +104,7 @@ const getChatList = async () => {
     const res = await getChatShowListService()
     console.log(res)
 
-    chatList.value = res.data.data.list
+    chatList.value = res.data.data.list || null
     console.log(chatPinList.value)
     // 然后再进行排序
     const pinOrderMap = new Map()
@@ -129,7 +129,7 @@ const getChatList = async () => {
       }
       return 0
     })
-    console.log(chatList.value)
+    // console.log(chatList.value)
   } catch (err) {
     console.log(err)
     ElMessage.error('消息列表加载失败')
@@ -178,7 +178,7 @@ watch(
     </el-header>
     <!-- 聊天列表 -->
     <el-main v-if="!IsSearch" class="list" v-loading="loading">
-      <el-scrollbar>
+      <el-scrollbar v-if="chatList">
         <div
           class="list-item"
           v-for="item in chatList"
@@ -224,6 +224,9 @@ watch(
           </div>
         </div>
       </el-scrollbar>
+      <template v-else>
+        <el-empty description="暂无聊天" />
+      </template>
     </el-main>
     <!-- 搜索结果列表 -->
     <el-main v-else> <search-list></search-list></el-main>

@@ -71,11 +71,6 @@ watch(
   .chat-list {
     width: 215px;
   }
-  // .room{
-  //   // overflow: hidden;
-  //   // border: 1px solid #000;
-  //   // height: 100%;
-  // }
   .el-main {
     height: 94vh;
   }
