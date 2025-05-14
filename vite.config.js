@@ -24,5 +24,11 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
-  }
+  },
+  transpileDependencies: true, // 配置需要被 Babel 转译的依赖项。
+  outputDir: 'dist', //输出文件目录
+  assetsDir: 'static', //静态资源文件名称
+  productionSourceMap: false, //去除打包后js的map文件
+  lintOnSave: false,
+  runtimeCompiler: false //去掉console
 })
